@@ -15,13 +15,12 @@ public class OAuthAttributes {
     private String providerId;
 
     @Builder
-    public OAuthAttributes(String nameAttributeKey, String name, String email, String picture, String provider, String providerId) {
+    public OAuthAttributes(String nameAttributeKey, String name, String email, String picture, String provider) {
         this.nameAttributeKey = nameAttributeKey;
         this.name = name;
         this.email = email;
         this.picture = picture;
         this.provider = provider;
-        this.providerId = providerId;
     }
 
     public static OAuthAttributes of(String provider, Map<String, Object> attributes) {
@@ -39,7 +38,6 @@ public class OAuthAttributes {
                 .email((String) attributes.get("email"))
                 .picture((String) attributes.get("picture"))
                 .provider("google")
-                .providerId((String) attributes.get("sub"))
                 .nameAttributeKey("sub")
                 .build();
     }
@@ -52,7 +50,6 @@ public class OAuthAttributes {
                 .email((String) response.get("email"))
                 .picture((String) response.get("profile_image"))
                 .provider("naver")
-                .providerId((String) response.get("id"))
                 .nameAttributeKey("id")
                 .build();
     }
@@ -66,7 +63,6 @@ public class OAuthAttributes {
                 .email((String) kakaoAccount.get("email"))
                 .picture((String) profile.get("profile_image_url"))
                 .provider("kakao")
-                .providerId(String.valueOf(attributes.get("id")))
                 .nameAttributeKey("id")
                 .build();
     }
