@@ -1,7 +1,12 @@
-package com.moongchi.moongchi_be.user;
+package com.moongchi.moongchi_be.user.entity;
 
+import com.moongchi.moongchi_be.user.enums.Gender;
+import com.moongchi.moongchi_be.user.enums.UserRole;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -11,6 +16,9 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "users")
 @Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,6 +55,13 @@ public class User {
     @Column
     private String address;
 
+    @Column
+    private String provider;
+
+    @Column(name = "user_role")
+    @Enumerated(EnumType.STRING)
+    private UserRole userRole;
+
     @Column(name = "manner_leader")
     private double mannerLeader;
 
@@ -63,4 +78,11 @@ public class User {
     @UpdateTimestamp
     @Column(name = "update_at")
     private LocalDateTime updateAt;
+
+    public User update(String name) {
+        this.name = name;
+        return this;
+    }
+
+
 }
