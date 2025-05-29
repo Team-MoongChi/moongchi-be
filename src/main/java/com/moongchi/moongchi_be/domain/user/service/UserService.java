@@ -26,8 +26,8 @@ public class UserService {
             throw new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.");
         }
 
-        String email = jwtTokenProvider.getUserPk(refreshToken);
-        Optional<User> optionalUser = userRepository.findByEmail(email);
+        Long userId = jwtTokenProvider.getUserId(refreshToken);
+        Optional<User> optionalUser = userRepository.findById(userId);
         if (!optionalUser.isPresent()) {
             throw new IllegalArgumentException("유저를 찾을 수 없습니다.");
         }
