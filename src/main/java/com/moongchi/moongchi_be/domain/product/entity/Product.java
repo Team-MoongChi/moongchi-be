@@ -2,6 +2,7 @@ package com.moongchi.moongchi_be.domain.product.entity;
 
 import com.moongchi.moongchi_be.common.category.entity.Category;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 @Table(name = "products")
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 public class Product {
 
     @Id
@@ -20,9 +22,10 @@ public class Product {
     @Column(name = "product_id")
     private Long id;
 
-    @Column(length = 20)
+    @Column(length = 20, name = "name")
     private String name;
 
+    @Column(name = "price")
     private int price;
 
     @Column(name = "img_url",length = 250)
@@ -31,6 +34,7 @@ public class Product {
     @Column(name = "product_url", length = 250)
     private String productUrl;
 
+    @Column(name = "rating")
     private Double rating;
 
     @ManyToOne(fetch = FetchType.LAZY)
