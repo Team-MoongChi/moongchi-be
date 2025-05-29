@@ -1,12 +1,9 @@
-package com.moongchi.moongchi_be.user.entity;
+package com.moongchi.moongchi_be.domain.user.entity;
 
-import com.moongchi.moongchi_be.user.enums.Gender;
-import com.moongchi.moongchi_be.user.enums.UserRole;
+import com.moongchi.moongchi_be.domain.user.enums.Gender;
+import com.moongchi.moongchi_be.domain.user.enums.UserRole;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -58,6 +55,9 @@ public class User {
     @Column
     private String provider;
 
+    @Column(name = "interest_category")
+    private String interestCategory;
+
     @Column(name = "user_role")
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
@@ -81,7 +81,7 @@ public class User {
         return this;
     }
 
-    public User updateUser(String nickname, String phone, LocalDate birth, Gender gender){
+    public User updateUser(String nickname, String phone, LocalDate birth, Gender gender) {
         this.nickname = nickname;
         this.phone = phone;
         this.birth = birth;
@@ -90,7 +90,7 @@ public class User {
         return this;
     }
 
-    public User updateLocation(double latitude, double longitude, String address){
+    public User updateLocation(double latitude, double longitude, String address) {
         this.latitude = latitude;
         this.longitude = longitude;
         this.address = address;
@@ -98,5 +98,9 @@ public class User {
         return this;
     }
 
+    public User updateInterest(String interestCategory) {
+        this.interestCategory = interestCategory;
+        return this;
+    }
 
 }

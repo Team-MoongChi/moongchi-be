@@ -1,9 +1,9 @@
-package com.moongchi.moongchi_be.user.controller;
+package com.moongchi.moongchi_be.domain.user.controller;
 
-import com.moongchi.moongchi_be.user.dto.TokenResponseDto;
-import com.moongchi.moongchi_be.user.dto.UserDto;
-import com.moongchi.moongchi_be.user.entity.User;
-import com.moongchi.moongchi_be.user.service.UserService;
+import com.moongchi.moongchi_be.domain.user.dto.TokenResponseDto;
+import com.moongchi.moongchi_be.domain.user.dto.UserDto;
+import com.moongchi.moongchi_be.domain.user.entity.User;
+import com.moongchi.moongchi_be.domain.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -35,4 +35,9 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/interest-category")
+    public ResponseEntity<?> addInterestCategory(@RequestBody UserDto userDto){
+        userService.addInterestCategory(userDto);
+        return ResponseEntity.ok().build();
+    }
 }

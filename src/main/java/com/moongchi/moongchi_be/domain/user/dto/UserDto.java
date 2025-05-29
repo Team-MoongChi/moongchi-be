@@ -1,8 +1,8 @@
-package com.moongchi.moongchi_be.user.dto;
+package com.moongchi.moongchi_be.domain.user.dto;
 
-import com.moongchi.moongchi_be.user.entity.User;
-import com.moongchi.moongchi_be.user.enums.Gender;
-import com.moongchi.moongchi_be.user.enums.UserRole;
+import com.moongchi.moongchi_be.domain.user.entity.User;
+import com.moongchi.moongchi_be.domain.user.enums.Gender;
+import com.moongchi.moongchi_be.domain.user.enums.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,6 +24,7 @@ public class UserDto {
     private String profileUrl;
     private LocalDate birth;
     private Gender gender;
+    private String interestCategory;
     private double latitude;
     private double longitude;
     private String address;
