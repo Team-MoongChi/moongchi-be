@@ -1,8 +1,8 @@
-package com.moongchi.moongchi_be.config;
+package com.moongchi.moongchi_be.common.config;
 
-import com.moongchi.moongchi_be.auth.jwt.JwtAuthenticationFilter;
-import com.moongchi.moongchi_be.auth.jwt.JwtTokenProvider;
-import com.moongchi.moongchi_be.auth.oauth2.OAuth2SuccessHandler;
+import com.moongchi.moongchi_be.common.auth.jwt.JwtAuthenticationFilter;
+import com.moongchi.moongchi_be.common.auth.jwt.JwtTokenProvider;
+import com.moongchi.moongchi_be.common.auth.oauth2.OAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

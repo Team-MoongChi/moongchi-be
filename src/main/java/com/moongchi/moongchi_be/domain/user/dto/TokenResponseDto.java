@@ -1,4 +1,4 @@
-package com.moongchi.moongchi_be.user.dto;
+package com.moongchi.moongchi_be.domain.user.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

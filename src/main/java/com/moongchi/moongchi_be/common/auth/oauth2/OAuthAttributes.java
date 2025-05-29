@@ -1,4 +1,4 @@
-package com.moongchi.moongchi_be.auth.oauth2;
+package com.moongchi.moongchi_be.common.auth.oauth2;
 
 import lombok.Builder;
 import lombok.Getter;

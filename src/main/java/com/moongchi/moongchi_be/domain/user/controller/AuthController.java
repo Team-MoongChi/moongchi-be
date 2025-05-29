@@ -1,7 +1,7 @@
-package com.moongchi.moongchi_be.user.controller;
+package com.moongchi.moongchi_be.domain.user.controller;
 
-import com.moongchi.moongchi_be.user.dto.TokenResponseDto;
-import com.moongchi.moongchi_be.user.service.AuthService;
+import com.moongchi.moongchi_be.domain.user.dto.TokenResponseDto;
+import com.moongchi.moongchi_be.domain.user.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

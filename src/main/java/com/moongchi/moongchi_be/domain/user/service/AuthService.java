@@ -1,9 +1,9 @@
-package com.moongchi.moongchi_be.user.service;
+package com.moongchi.moongchi_be.domain.user.service;
 
-import com.moongchi.moongchi_be.user.dto.TokenResponseDto;
-import com.moongchi.moongchi_be.auth.jwt.JwtTokenProvider;
-import com.moongchi.moongchi_be.user.entity.User;
-import com.moongchi.moongchi_be.user.repository.UserRepository;
+import com.moongchi.moongchi_be.domain.user.dto.TokenResponseDto;
+import com.moongchi.moongchi_be.common.auth.jwt.JwtTokenProvider;
+import com.moongchi.moongchi_be.domain.user.entity.User;
+import com.moongchi.moongchi_be.domain.user.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

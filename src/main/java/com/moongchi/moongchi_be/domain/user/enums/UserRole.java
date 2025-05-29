@@ -1,4 +1,4 @@
-package com.moongchi.moongchi_be.user.enums;
+package com.moongchi.moongchi_be.domain.user.enums;
 
 import lombok.Getter;
 

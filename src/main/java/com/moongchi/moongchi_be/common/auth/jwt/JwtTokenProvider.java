@@ -1,6 +1,6 @@
-package com.moongchi.moongchi_be.auth.jwt;
+package com.moongchi.moongchi_be.common.auth.jwt;
 
-import com.moongchi.moongchi_be.user.enums.UserRole;
+import com.moongchi.moongchi_be.domain.user.enums.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;

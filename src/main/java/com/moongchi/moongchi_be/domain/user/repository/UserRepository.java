@@ -1,6 +1,6 @@
-package com.moongchi.moongchi_be.user.repository;
+package com.moongchi.moongchi_be.domain.user.repository;
 
-import com.moongchi.moongchi_be.user.entity.User;
+import com.moongchi.moongchi_be.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

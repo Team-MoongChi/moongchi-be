@@ -1,4 +1,4 @@
-package com.moongchi.moongchi_be.auth.jwt;
+package com.moongchi.moongchi_be.common.auth.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

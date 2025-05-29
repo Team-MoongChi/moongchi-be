@@ -1,9 +1,9 @@
-package com.moongchi.moongchi_be.auth.oauth2;
+package com.moongchi.moongchi_be.common.auth.oauth2;
 
-import com.moongchi.moongchi_be.auth.jwt.JwtTokenProvider;
-import com.moongchi.moongchi_be.user.entity.User;
-import com.moongchi.moongchi_be.user.enums.UserRole;
-import com.moongchi.moongchi_be.user.repository.UserRepository;
+import com.moongchi.moongchi_be.common.auth.jwt.JwtTokenProvider;
+import com.moongchi.moongchi_be.domain.user.entity.User;
+import com.moongchi.moongchi_be.domain.user.enums.UserRole;
+import com.moongchi.moongchi_be.domain.user.repository.UserRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
