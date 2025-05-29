@@ -33,7 +33,7 @@ public class User {
     @Column
     private String phone;
 
-    @Column
+    @Column(unique = true)
     private String email;
 
     @Column(name = "profile_url")
@@ -68,9 +68,6 @@ public class User {
     @Column(name = "manner_participant")
     private double mannerParticipant;
 
-    @Column(name = "interest-product")
-    private String interestProduct;
-
     @CreationTimestamp
     @Column(name = "create_at")
     private LocalDateTime createAt;
@@ -81,6 +78,23 @@ public class User {
 
     public User update(String name) {
         this.name = name;
+        return this;
+    }
+
+    public User updateUser(String nickname, String phone, LocalDate birth, Gender gender){
+        this.nickname = nickname;
+        this.phone = phone;
+        this.birth = birth;
+        this.gender = gender;
+
+        return this;
+    }
+
+    public User updateLocation(double latitude, double longitude, String address){
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.address = address;
+
         return this;
     }
 
