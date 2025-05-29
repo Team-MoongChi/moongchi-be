@@ -1,5 +1,6 @@
 package com.moongchi.moongchi_be.common.category.entity;
 
+import com.moongchi.moongchi_be.domain.group_product.entity.GroupProduct;
 import com.moongchi.moongchi_be.domain.product.entity.Product;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -39,6 +40,9 @@ public class Category {
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
     private List<Product> products;
 
+    @OneToMany(mappedBy = "category")
+    private List<GroupProduct> groupProducts;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -46,5 +50,6 @@ public class Category {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
 
 }
