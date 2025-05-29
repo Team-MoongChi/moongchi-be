@@ -1,6 +1,6 @@
-package com.moongchi.moongchi_be.auth.service;
+package com.moongchi.moongchi_be.user.service;
 
-import com.moongchi.moongchi_be.auth.dto.TokenResponseDto;
+import com.moongchi.moongchi_be.user.dto.TokenResponseDto;
 import com.moongchi.moongchi_be.auth.jwt.JwtTokenProvider;
 import com.moongchi.moongchi_be.user.entity.User;
 import com.moongchi.moongchi_be.user.repository.UserRepository;
