@@ -81,11 +81,12 @@ public class User {
         return this;
     }
 
-    public User updateUser(String nickname, String phone, LocalDate birth, Gender gender) {
+    public User updateUser(String nickname, String phone, LocalDate birth, Gender gender, String profileUrl) {
         this.nickname = nickname;
         this.phone = phone;
         this.birth = birth;
         this.gender = gender;
+        this.profileUrl = profileUrl;
 
         return this;
     }

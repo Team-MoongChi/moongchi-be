@@ -37,7 +37,7 @@ public class UserService {
         }
 
         User user = optionalUser.get();
-        User newUser = user.updateUser(userDto.getNickname(), userDto.getPhone(), userDto.getBirth(), userDto.getGender());
+        User newUser = user.updateUser(userDto.getNickname(), userDto.getPhone(), userDto.getBirth(), userDto.getGender(), userDto.getProfileUrl());
         this.userRepository.save(newUser);
 
         TokenResponseDto tokenResponseDto = authService.issueToken(request, response);
