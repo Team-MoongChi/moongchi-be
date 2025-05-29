@@ -23,21 +23,21 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<UserDto> getUser() {
-        User user = userService.getUser().get();
+    public ResponseEntity<UserDto> getUser(HttpServletRequest request) {
+        User user = userService.getUser(request).get();
         UserDto userDto = new UserDto(user);
         return ResponseEntity.ok(userDto);
     }
 
     @PostMapping("/location")
-    public ResponseEntity<?> addLocation(@RequestBody UserDto userDto) {
-        userService.addLocation(userDto);
+    public ResponseEntity<?> addLocation(@RequestBody UserDto userDto, HttpServletRequest request) {
+        userService.addLocation(userDto, request);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/interest-category")
-    public ResponseEntity<?> addInterestCategory(@RequestBody UserDto userDto){
-        userService.addInterestCategory(userDto);
+    public ResponseEntity<?> addInterestCategory(@RequestBody UserDto userDto, HttpServletRequest request){
+        userService.addInterestCategory(userDto, request);
         return ResponseEntity.ok().build();
     }
 }

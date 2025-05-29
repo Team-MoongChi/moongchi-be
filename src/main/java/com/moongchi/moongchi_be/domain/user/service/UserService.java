@@ -8,10 +8,6 @@ import com.moongchi.moongchi_be.domain.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -44,33 +40,23 @@ public class UserService {
         return tokenResponseDto;
     }
 
-    public Optional<User> getUser(){
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    public Optional<User> getUser(HttpServletRequest request){
+        String token = jwtTokenProvider.resolveToken(request);
+        if (token == null) return Optional.empty();
 
-        if (authentication instanceof UsernamePasswordAuthenticationToken token) {
-            Object principal = token.getPrincipal();
+        Long userId = jwtTokenProvider.getUserId(token);
+        return userRepository.findById(userId);
 
-            if (principal instanceof UserDetails userDetails) {
-                String email = userDetails.getUsername();
-                return userRepository.findByEmail(email);
-            }
-
-            if (principal instanceof String email) {
-                return userRepository.findByEmail(email);
-            }
-        }
-
-        return Optional.empty();
     }
 
-    public void addLocation(UserDto userDto){
-        User user = getUser().get();
+    public void addLocation(UserDto userDto, HttpServletRequest request){
+        User user = getUser(request).get();
         User newUser = user.updateLocation(userDto.getLatitude(), userDto.getLongitude(), userDto.getAddress());
         this.userRepository.save(newUser);
     }
 
-    public void addInterestCategory(UserDto userDto){
-        User user = getUser().get();
+    public void addInterestCategory(UserDto userDto, HttpServletRequest request){
+        User user = getUser(request).get();
         User newUser = user.updateInterest(userDto.getInterestCategory());
         this.userRepository.save(newUser);
     }

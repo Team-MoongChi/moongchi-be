@@ -25,14 +25,14 @@ public class AuthService {
             throw new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.");
         }
 
-        String email = jwtTokenProvider.getUserPk(refreshToken);
-        Optional<User> optionalUser = userRepository.findByEmail(email);
+        Long id = jwtTokenProvider.getUserId(refreshToken);
+        Optional<User> optionalUser = userRepository.findById(id);
         if (!optionalUser.isPresent()) {
             throw new IllegalArgumentException("유저를 찾을 수 없습니다.");
         }
 
         User user = optionalUser.get();
-        String accessToken = jwtTokenProvider.createToken(user.getEmail(), user.getName(), user.getUserRole());
+        String accessToken = jwtTokenProvider.createToken(user.getId(), user.getUserRole());
 
         Cookie deleteAccessTokenCookie = new Cookie("access_token", null);
         deleteAccessTokenCookie.setPath("/");
@@ -47,14 +47,14 @@ public class AuthService {
     public TokenResponseDto reissueToken(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = getRefreshToken(request);
 
-        String email = jwtTokenProvider.getUserPk(refreshToken);
-        Optional<User> optionalUser = userRepository.findByEmail(email);
+        Long id = jwtTokenProvider.getUserId(refreshToken);
+        Optional<User> optionalUser = userRepository.findById(id);
         if (!optionalUser.isPresent()) {
             throw new IllegalArgumentException("유저를 찾을 수 없습니다.");
         }
 
         User user = optionalUser.get();
-        String newAccessToken = jwtTokenProvider.createToken(user.getEmail(), user.getName(), user.getUserRole());
+        String newAccessToken = jwtTokenProvider.createToken(user.getId(), user.getUserRole());
         return new TokenResponseDto(newAccessToken);
 
     }

@@ -53,7 +53,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         User user = isNewUser ? registerNewUser(userInfo) : updateExistingUser(existingUserOpt.get(), userInfo);
 
         // 리프레쉬 토큰 발급
-        String refreshToken = jwtTokenProvider.createRefreshToken(user.getEmail());
+        String refreshToken = jwtTokenProvider.createRefreshToken(user.getId());
         addCookie(response, "refresh_token", refreshToken, 7 * 24 * 60 * 60); // 7일 유지
 
         String targetUrl;
@@ -66,7 +66,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                     .build().toUriString();
         } else {
             //기존유저
-            String accessToken = jwtTokenProvider.createToken(user.getEmail(), user.getName(), user.getUserRole());
+            String accessToken = jwtTokenProvider.createToken(user.getId(), user.getUserRole());
             addCookie(response, "access_token", accessToken, 60 * 60); // 1시간 유지
 
             targetUrl = CALLBACK_URI;

@@ -40,9 +40,9 @@ public class JwtTokenProvider {
     }
 
     // JWT 토큰 생성
-    public String createToken(String userPk, String name, UserRole role) {
-        Claims claims = Jwts.claims().setSubject(userPk);
-        claims.put("name", name);
+    public String createToken(Long userId,UserRole role) {
+        Claims claims = Jwts.claims().setSubject("accessToken");
+        claims.put("userId", userId);
         claims.put("role", role.name());
         Date now = new Date();
         return Jwts.builder()
@@ -53,10 +53,11 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public String createRefreshToken(String userPk) {
+    public String createRefreshToken(Long userId) {
         Date now = new Date();
         return Jwts.builder()
-                .setSubject(userPk)
+                .setSubject("refreshToken")
+                .claim("userId", userId)
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + refreshValidTime))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -91,6 +92,15 @@ public class JwtTokenProvider {
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
+    }
+
+    public Long getUserId(String token){
+        Claims claims = Jwts.parser()
+                .setSigningKey(key)
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.get("userId", Long.class);
     }
 
     // Request의 Header에서 token 값 가져오기
