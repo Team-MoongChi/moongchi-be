@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -39,5 +40,22 @@ public class CategoryService {
                 parentId,
                 subCategories
         );
+    }
+
+    @Transactional(readOnly = true)
+    public List<Long> getAllSubCategoryIds(Long categoryId) {
+        Category root = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
+
+        List<Long> categoryIds = new ArrayList<>();
+        collectCategoryIds(root,categoryIds);
+        return categoryIds;
+    }
+
+    private void collectCategoryIds(Category category, List<Long> ids) {
+        ids.add(category.getId());
+        for (Category sub : category.getSubCategories()) {
+            collectCategoryIds(sub,ids);
+        }
     }
 }

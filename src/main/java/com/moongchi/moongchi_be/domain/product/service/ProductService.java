@@ -1,6 +1,5 @@
 package com.moongchi.moongchi_be.domain.product.service;
 
-import com.moongchi.moongchi_be.common.category.repository.CategoryRepository;
 import com.moongchi.moongchi_be.domain.product.dto.ProductResponseDto;
 import com.moongchi.moongchi_be.domain.product.entity.Product;
 import com.moongchi.moongchi_be.domain.product.repository.ProductRepository;
@@ -15,7 +14,6 @@ import java.util.stream.Collectors;
 public class ProductService {
 
     private final ProductRepository productRepository;
-    private final CategoryRepository categoryRepository;
 
     public List<ProductResponseDto> getAllProducts() {
         List<Product> products = productRepository.findAll();
