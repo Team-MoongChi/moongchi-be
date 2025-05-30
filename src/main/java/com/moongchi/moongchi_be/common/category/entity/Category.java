@@ -1,6 +1,6 @@
 package com.moongchi.moongchi_be.common.category.entity;
 
-import com.moongchi.moongchi_be.domain.group_product.entity.GroupProduct;
+import com.moongchi.moongchi_be.domain.group_boards.entity.GroupProduct;
 import com.moongchi.moongchi_be.domain.product.entity.Product;
 import jakarta.persistence.*;
 import lombok.Getter;
