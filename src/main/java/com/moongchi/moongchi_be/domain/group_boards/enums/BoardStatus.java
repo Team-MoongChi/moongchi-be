@@ -1,5 +1,8 @@
-package com.moongchi.moongchi_be.domain.group_product.enums;
+package com.moongchi.moongchi_be.domain.group_boards.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum BoardStatus {
     OPEN("모집중"),
     CLOSING_SOON("마감임박"),

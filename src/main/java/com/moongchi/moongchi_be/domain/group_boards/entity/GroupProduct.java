@@ -1,4 +1,4 @@
-package com.moongchi.moongchi_be.domain.group_product.entity;
+package com.moongchi.moongchi_be.domain.group_boards.entity;
 
 import com.moongchi.moongchi_be.common.category.entity.Category;
 import com.moongchi.moongchi_be.domain.product.entity.Product;
@@ -39,8 +39,21 @@ public class GroupProduct {
     @JoinColumn(name = "product_id")
     private Product product;
 
-    @OneToMany(mappedBy = "product_image", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProductImage> productImages;
+    @OneToOne(mappedBy = "groupProduct")
+    private GroupBoard groupBoard;
 
+    @ElementCollection
+    private List<String> images;
+
+    public void updateGroupBoard(GroupBoard groupBoard){
+        this.groupBoard = groupBoard;
+    }
+
+    public void update(String name, int price,  String quantity, Category category){
+        this.name = name;
+        this.price = price;
+        this.quantity = quantity;
+        this.category = category;
+    }
 
 }
