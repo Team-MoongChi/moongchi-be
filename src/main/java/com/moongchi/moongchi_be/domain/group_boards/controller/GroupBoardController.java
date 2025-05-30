@@ -1,0 +1,37 @@
+package com.moongchi.moongchi_be.domain.group_boards.controller;
+
+import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardRequestDto;
+import com.moongchi.moongchi_be.domain.group_boards.service.GroupBoardService;
+import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/group-boards")
+public class GroupBoardController {
+
+    private final GroupBoardService groupBoardService;
+
+    @PostMapping
+    @Operation(summary = "공동구매 게시글")
+    public ResponseEntity<?> createPost(@RequestBody GroupBoardRequestDto dto, HttpServletRequest request) {
+        groupBoardService.createPost(dto, request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{group_board_id}")
+    public ResponseEntity<?> updatePost(@PathVariable("group_board_id") Long groupBoardId, @RequestBody GroupBoardRequestDto dto) {
+        groupBoardService.updatePost(groupBoardId, dto);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{group_board_id}")
+    public ResponseEntity<?> deletePost(@PathVariable("group_board_id") Long groupBoardId) {
+        groupBoardService.deletePost(groupBoardId);
+        return ResponseEntity.ok().build();
+    }
+
+}
