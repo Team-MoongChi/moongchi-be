@@ -19,11 +19,12 @@ public class GroupBoardDto {
     private String title;
     private String content;
     private String location;
+    private Double latitude;
+    private Double longitude;
     private BoardStatus boardStatus;
     private LocalDate deadline;
     private int totalUsers;
-    private LocalDateTime createAt;
-    private GroupProduct groupProduct;
+    private GroupProductDto groupProduct;
 }
 
 
