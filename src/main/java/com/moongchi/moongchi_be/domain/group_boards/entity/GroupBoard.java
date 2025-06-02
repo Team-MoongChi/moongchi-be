@@ -34,6 +34,12 @@ public class GroupBoard {
     @Column
     private String location;
 
+    @Column
+    private double latitude;
+
+    @Column
+    private double longitude;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "board_status")
     private BoardStatus boardStatus;
