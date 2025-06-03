@@ -66,7 +66,6 @@ public class GroupBoard {
     @UpdateTimestamp
     private LocalDateTime updateAt;
 
-    //== 비즈니스 로직 ==//
     public void updateGroupProduct(GroupProduct groupProduct) {
         this.groupProduct = groupProduct;
         groupProduct.updateGroupBoard(this);
