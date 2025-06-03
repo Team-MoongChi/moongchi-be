@@ -11,6 +11,7 @@ import com.moongchi.moongchi_be.domain.group_boards.entity.GroupProduct;
 import com.moongchi.moongchi_be.domain.group_boards.enums.BoardStatus;
 import com.moongchi.moongchi_be.domain.group_boards.repository.GroupBoardRepository;
 import com.moongchi.moongchi_be.domain.group_boards.repository.GroupProductRepository;
+import com.moongchi.moongchi_be.domain.product.dto.ProductDto;
 import com.moongchi.moongchi_be.domain.product.entity.Product;
 import com.moongchi.moongchi_be.domain.product.repository.ProductRepository;
 import com.moongchi.moongchi_be.domain.user.entity.User;
@@ -48,11 +49,20 @@ public class GroupBoardService {
                 .user(currentUser)
                 .build();
 
-        Category category = categoryRepository.findById(dto.getCategoryId()).get();
+        Category category = null;
+        if (dto.getCategoryId() != null) {
+            category = categoryRepository.findById(dto.getCategoryId())
+                    .orElse(null);
+        }
+
         Product product = null;
         if (dto.getProductId() != null) {
             product = productRepository.findById(dto.getProductId())
                     .orElse(null);
+        }
+
+        if (product != null && category == null) {
+            category = product.getCategory();
         }
 
         GroupProduct groupProduct = GroupProduct.builder()
@@ -85,7 +95,7 @@ public class GroupBoardService {
         groupBoardRepository.delete(groupBoard);
     }
 
-    public List<GroupBoardDto> getGroupBoardList(HttpServletRequest request){
+    public List<GroupBoardDto> getGroupBoardList(HttpServletRequest request) {
         User currentUser = userService.getUser(request).get();
         List<GroupBoard> groupBoards = groupBoardRepository.findNearbyPosts(currentUser.getLatitude(), currentUser.getLongitude());
 
@@ -94,12 +104,12 @@ public class GroupBoardService {
                 .collect(Collectors.toList());
     }
 
-    public GroupBoardDto getGroupBoard(Long groupBoardId){
+    public GroupBoardDto getGroupBoard(Long groupBoardId) {
         GroupBoard groupBoard = groupBoardRepository.findById(groupBoardId).get();
         return convertToDto(groupBoard);
     }
 
-    public List<GroupBoardDto> getMyGroupBoard(HttpServletRequest request){
+    public List<GroupBoardDto> getMyGroupBoard(HttpServletRequest request) {
         User currentUser = userService.getUser(request).get();
         List<GroupBoard> groupBoards = groupBoardRepository.findByUserId(currentUser.getId());
 
@@ -108,7 +118,7 @@ public class GroupBoardService {
                 .collect(Collectors.toList());
     }
 
-    public List<GroupBoardDto> getGroupBoardCategory(Long categoryId){
+    public List<GroupBoardDto> getGroupBoardCategory(Long categoryId) {
         List<GroupBoard> groupBoards = groupBoardRepository.findByCategoryId(categoryId);
 
         return groupBoards.stream()
@@ -119,8 +129,9 @@ public class GroupBoardService {
 
     private GroupBoardDto convertToDto(GroupBoard board) {
 
-        GroupProduct product = board.getGroupProduct();
-        Category category = product.getCategory();
+        GroupProduct groupProduct = board.getGroupProduct();
+        Product product = groupProduct.getProduct();
+        Category category = groupProduct.getCategory();
 
         List<CategoryResponseDto> subCategoryDTOs = category.getSubCategories().stream()
                 .map(sub -> CategoryResponseDto.builder()
@@ -137,13 +148,23 @@ public class GroupBoardService {
                 .subCategories(subCategoryDTOs)
                 .build();
 
-        GroupProductDto productDto = GroupProductDto.builder()
-                .id(product.getId())
-                .name(product.getName())
-                .price(product.getPrice())
-                .quantity(product.getQuantity())
-                .images(product.getImages())
+        ProductDto productDto = null;
+        if (product != null) {
+            productDto = ProductDto.builder()
+                    .id(product.getId())
+                    .imgUrl(product.getImgUrl())
+                    .productUrl(product.getProductUrl())
+                    .build();
+        }
+
+        GroupProductDto productDtoWrapper = GroupProductDto.builder()
+                .id(groupProduct.getId())
+                .name(groupProduct.getName())
+                .price(groupProduct.getPrice())
+                .quantity(groupProduct.getQuantity())
+                .images(groupProduct.getImages())
                 .category(categoryDto)
+                .product(productDto)
                 .build();
 
         return GroupBoardDto.builder()
@@ -151,12 +172,10 @@ public class GroupBoardService {
                 .title(board.getTitle())
                 .content(board.getContent())
                 .location(board.getLocation())
-                .latitude(board.getLatitude())
-                .longitude(board.getLongitude())
                 .boardStatus(board.getBoardStatus())
                 .deadline(board.getDeadline())
                 .totalUsers(board.getTotalUsers())
-                .groupProduct(productDto)
+                .groupProduct(productDtoWrapper)
                 .build();
     }
 
