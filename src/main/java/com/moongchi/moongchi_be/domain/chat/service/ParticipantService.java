@@ -1,10 +1,12 @@
 package com.moongchi.moongchi_be.domain.chat.service;
 
+import com.moongchi.moongchi_be.domain.chat.dto.ParticipantPaymentDto;
 import com.moongchi.moongchi_be.domain.chat.entity.*;
 import com.moongchi.moongchi_be.domain.chat.repository.ChatRoomRepository;
 import com.moongchi.moongchi_be.domain.chat.repository.ParticipantRepository;
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupBoard;
 import com.moongchi.moongchi_be.domain.group_boards.enums.BoardStatus;
+import com.moongchi.moongchi_be.domain.group_boards.repository.GroupBoardRepository;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import com.moongchi.moongchi_be.domain.user.repository.UserRepository;
 import com.moongchi.moongchi_be.domain.user.service.UserService;
@@ -15,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,8 +26,27 @@ public class ParticipantService {
     private final UserRepository userRepository;
     private final ParticipantRepository participantRepository;
     private final ChatRoomRepository chatRoomRepository;
+    private final GroupBoardRepository groupBoardRepository;
     private final ChatRoomService chatRoomService;
     private final UserService userService;
+
+    public List<ParticipantPaymentDto> getPaymentInfoByChatRoom(Long chatRoomId) {
+        List<Participant> participants = participantRepository.findAllByChatRoomId(chatRoomId);
+        GroupBoard groupBoard = groupBoardRepository.findByChatRoomId(chatRoomId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 채팅방 그룹게시판 없음"));
+
+        int totalAmount = groupBoard.getGroupProduct().getPrice(); // 총 공구 금액
+        int participantCount = participants.size();
+        int perPersonAmount = participantCount == 0 ? 0 : totalAmount / participantCount;
+
+        return participants.stream()
+                .map(p -> new ParticipantPaymentDto(
+                        p.getUser().getId(),
+                        p.getUser().getName(),
+                        p.getPaymentStatus(),
+                        perPersonAmount
+                )).collect(Collectors.toList());
+    }
 
     @Transactional
     public void joinChatRoom(Long chatRoomId, Long userId) {

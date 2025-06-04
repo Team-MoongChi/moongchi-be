@@ -1,5 +1,6 @@
 package com.moongchi.moongchi_be.domain.group_boards.entity;
 
+import com.moongchi.moongchi_be.domain.chat.entity.ChatRoom;
 import com.moongchi.moongchi_be.domain.group_boards.enums.BoardStatus;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import jakarta.persistence.*;
@@ -62,6 +63,10 @@ public class GroupBoard {
     @Column(name = "update_at")
     @UpdateTimestamp
     private LocalDateTime updateAt;
+
+    @OneToOne(mappedBy = "groupBoard", fetch = FetchType.LAZY)
+    private ChatRoom chatRoom;
+
 
     //== 비즈니스 로직 ==//
     public void updateGroupProduct(GroupProduct groupProduct) {

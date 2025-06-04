@@ -3,6 +3,7 @@ package com.moongchi.moongchi_be.domain.chat.controller;
 import com.moongchi.moongchi_be.domain.chat.dto.ChatRoomDetailDto;
 import com.moongchi.moongchi_be.domain.chat.dto.ChatRoomResponseDto;
 import com.moongchi.moongchi_be.domain.chat.dto.ChatRoomStatusUpdateRequest;
+import com.moongchi.moongchi_be.domain.chat.dto.ParticipantPaymentDto;
 import com.moongchi.moongchi_be.domain.chat.service.ChatRoomService;
 import com.moongchi.moongchi_be.domain.chat.service.ParticipantService;
 import com.moongchi.moongchi_be.domain.user.entity.User;
@@ -22,6 +23,12 @@ public class ChatRoomController {
     private final ChatRoomService chatRoomService;
     private final ParticipantService participantService;
     private final UserService userService;
+
+    @GetMapping("/{chatRoomId}/payment-info")
+    public ResponseEntity<List<ParticipantPaymentDto>> getPaymentInfo(@PathVariable Long chatRoomId) {
+        List<ParticipantPaymentDto> paymentInfo = participantService.getPaymentInfoByChatRoom(chatRoomId);
+        return ResponseEntity.ok(paymentInfo);
+    }
 
     @GetMapping
     public ResponseEntity<List<ChatRoomResponseDto>> getAllChatRooms(HttpServletRequest request) {

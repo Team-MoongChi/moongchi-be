@@ -5,8 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-
 import java.util.List;
+import java.util.Optional;
 
 public interface GroupBoardRepository extends JpaRepository<GroupBoard, Long> {
     @Query(value = "SELECT * FROM group_boards g WHERE " +
@@ -18,4 +18,7 @@ public interface GroupBoardRepository extends JpaRepository<GroupBoard, Long> {
 
     @Query("SELECT gb FROM GroupBoard gb WHERE gb.groupProduct.category.id = :categoryId")
     List<GroupBoard> findByCategoryId(@Param("categoryId") Long categoryId);
+
+    Optional<GroupBoard> findByChatRoomId(Long chatRoomId);
+
 }
