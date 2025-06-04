@@ -60,6 +60,16 @@ public class ChatRoomController {
         return ResponseEntity.ok("결제가 완료되었습니다.");
     }
 
+    @PostMapping("/{chatRoomId}/trade-complete")
+    public ResponseEntity<String> completeTrade(
+            @PathVariable Long chatRoomId,
+            HttpServletRequest request) {
+        User currentUser = userService.getUser(request)
+                .orElseThrow(() -> new RuntimeException("사용자 인증 실패"));
+        participantService.completeTrade(chatRoomId, currentUser.getId());
+
+        return ResponseEntity.ok("거래완료 처리되었습니다.");
+    }
 
     @PatchMapping("/{chatRoomId}/status")
     public ResponseEntity<?> updateStatus(
