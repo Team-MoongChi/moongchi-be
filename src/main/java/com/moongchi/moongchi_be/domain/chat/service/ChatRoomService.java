@@ -101,9 +101,9 @@ public class ChatRoomService {
                 .chatRoom(savedChatRoom)
                 .groupBoard(groupBoard)
                 .user(creator)
-                .role(Role.LEADER)  // 여기서 리더 역할 지정
+                .role(Role.LEADER)
                 .joinedAt(LocalDateTime.now())
-                .paymentStatus(PaymentStatus.UNPAID)
+                .paymentStatus(PaymentStatus.PAID)
                 .build();
         participantRepository.save(participant);
 

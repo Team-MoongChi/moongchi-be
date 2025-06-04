@@ -6,6 +6,7 @@ import com.moongchi.moongchi_be.domain.chat.repository.ParticipantRepository;
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupBoard;
 import com.moongchi.moongchi_be.domain.group_boards.enums.BoardStatus;
 import com.moongchi.moongchi_be.domain.user.entity.User;
+import com.moongchi.moongchi_be.domain.user.repository.UserRepository;
 import com.moongchi.moongchi_be.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,11 +14,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
 public class ParticipantService {
 
+    private final UserRepository userRepository;
     private final ParticipantRepository participantRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomService chatRoomService;
@@ -114,6 +117,86 @@ public class ParticipantService {
         if (allCompleted) {
             ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                     .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다."));
+            chatRoom.setStatus(ChatRoomStatus.COMPLETED);
+            groupBoard.setBoardStatus(BoardStatus.COMPLETED);
+
+            chatRoomRepository.save(chatRoom);
+        }
+    }
+
+
+    //시뮬레이터를 위한 코드
+    @Transactional
+    public void simulateJoin(Long chatRoomId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
+        GroupBoard groupBoard = chatRoom.getGroupBoard();
+
+        int maxCount = groupBoard.getTotalUsers();
+        int currentCount = participantRepository.countByChatRoomId(chatRoomId);
+
+        int toCreate = maxCount - currentCount;
+        if (toCreate <= 0) {
+            throw new IllegalStateException("참여자가 이미 최대 인원에 도달했습니다.");
+        }
+        for (int i = 1; i < maxCount; i++) {
+            User fakeUser = new User().setName("시뮬레이터유저" + i);
+            fakeUser = userRepository.save(fakeUser);
+
+            Participant participant = new Participant();
+            participant.setChatRoom(chatRoom);
+            participant.setGroupBoard(groupBoard);
+            participant.setUser(fakeUser);
+            participant.setRole(Role.MEMBER);
+            participant.setJoinedAt(LocalDateTime.now());
+            participant.setPaymentStatus(PaymentStatus.UNPAID);
+            participant.setSimulated(true);
+
+            participantRepository.save(participant);
+        }
+    }
+    @Transactional
+    public void simulatePayment(Long chatRoomId) {
+        Random random = new Random();
+        List<Participant> participants = participantRepository.findAllByChatRoomId(chatRoomId);
+        for (Participant p : participants) {
+            if (random.nextDouble() < 0.2) {
+                p.setPaymentStatus(PaymentStatus.UNPAID);
+            } else {
+                p.setPaymentStatus(PaymentStatus.PAID);
+            }
+            participantRepository.save(p);
+        }
+    }
+    @Transactional
+    public void simulatePurchase(Long chatRoomId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
+        chatRoom.setStatus(ChatRoomStatus.PURCHASED);
+    }
+    @Transactional
+    public void simulateTradeComplete(Long chatRoomId) {
+        Random random = new Random();
+        List<Participant> participants = participantRepository.findAllByChatRoomId(chatRoomId);
+
+        for (Participant p : participants) {
+            if (p.getRole() != Role.LEADER) {
+                // 70% 확률로 거래완료 처리, 30%는 미처리
+                p.setTradeCompleted(random.nextDouble() < 0.7);
+                participantRepository.save(p);
+            }
+        }
+
+        // 리더 제외 모든 멤버가 거래완료 눌렀는지 확인
+        boolean allCompleted = participants.stream()
+                .filter(p -> p.getRole() != Role.LEADER)
+                .allMatch(Participant::isTradeCompleted);
+
+        if (allCompleted) {
+            ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                    .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다."));
+            GroupBoard groupBoard = chatRoom.getGroupBoard();
+
             chatRoom.setStatus(ChatRoomStatus.COMPLETED);
             groupBoard.setBoardStatus(BoardStatus.COMPLETED);
 

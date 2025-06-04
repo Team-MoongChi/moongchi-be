@@ -114,4 +114,9 @@ public class User {
         return this;
     }
 
+    public User setName(String name) {
+        this.name = name;
+        return this;
+    }
+
 }

@@ -46,4 +46,6 @@ public class Participant {
     @Column(nullable = false, name = "trade_completed")
     private boolean tradeCompleted = false;
 
+    private boolean simulated;
+
 }

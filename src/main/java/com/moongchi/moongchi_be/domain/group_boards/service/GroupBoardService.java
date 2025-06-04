@@ -35,7 +35,7 @@ public class GroupBoardService {
     private final ChatRoomService chatRoomService;
 
     public void createPost(GroupBoardRequestDto dto, HttpServletRequest request) {
-        User currentUser = userService.getUser(request).get();
+        User currentUser = userService.getUser(request);
         Coordinate coordinate = kakaoMapService.getCoordinateFromAddress(dto.getLocation());
 
         GroupBoard groupBoard = GroupBoard.builder()
@@ -89,7 +89,7 @@ public class GroupBoardService {
     }
 
     public List<GroupBoardDto> getGroupBoardList(HttpServletRequest request){
-        User currentUser = userService.getUser(request).get();
+        User currentUser = userService.getUser(request);
         List<GroupBoard> groupBoards = groupBoardRepository.findNearbyPosts(currentUser.getLatitude(), currentUser.getLongitude());
 
         return groupBoards.stream()
@@ -103,7 +103,7 @@ public class GroupBoardService {
     }
 
     public List<GroupBoardDto> getMyGroupBoard(HttpServletRequest request){
-        User currentUser = userService.getUser(request).get();
+        User currentUser = userService.getUser(request);
         List<GroupBoard> groupBoards = groupBoardRepository.findByUserId(currentUser.getId());
 
         return groupBoards.stream()
