@@ -32,7 +32,7 @@ public class ChatRoom {
     private String title;
 
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL)
-    private List<Participant> participants = new ArrayList<>();
+    private List<Participant> participants;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
