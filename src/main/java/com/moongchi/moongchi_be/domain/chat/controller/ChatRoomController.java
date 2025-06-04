@@ -25,8 +25,7 @@ public class ChatRoomController {
 
     @GetMapping
     public ResponseEntity<List<ChatRoomResponseDto>> getAllChatRooms(HttpServletRequest request) {
-        User currentUser = userService.getUser(request)
-                .orElseThrow(() -> new RuntimeException("사용자 인증 실패"));
+        User currentUser = userService.getUser(request);
 
         List<ChatRoomResponseDto> rooms = chatRoomService.getUserChatRooms(currentUser.getId());
         return ResponseEntity.ok(rooms);
@@ -41,8 +40,7 @@ public class ChatRoomController {
 
     @PostMapping("/{chatRoomId}/join")
     public ResponseEntity<String> joinChatRoom(@PathVariable Long chatRoomId, HttpServletRequest request) {
-        User currentUser = userService.getUser(request)
-                .orElseThrow(() -> new RuntimeException("사용자 인증 실패"));
+        User currentUser = userService.getUser(request);
 
         participantService.joinChatRoom(chatRoomId, currentUser.getId());
 
@@ -51,8 +49,7 @@ public class ChatRoomController {
 
     @PostMapping("/{chatRoomId}/pay")
     public ResponseEntity<String> pay(@PathVariable Long chatRoomId, HttpServletRequest request) {
-        User currentUser = userService.getUser(request)
-                .orElseThrow(() -> new RuntimeException("사용자 인증 실패"));
+        User currentUser = userService.getUser(request);
 
         participantService.pay(chatRoomId, currentUser.getId());
 
@@ -63,8 +60,8 @@ public class ChatRoomController {
     public ResponseEntity<String> completeTrade(
             @PathVariable Long chatRoomId,
             HttpServletRequest request) {
-        User currentUser = userService.getUser(request)
-                .orElseThrow(() -> new RuntimeException("사용자 인증 실패"));
+        User currentUser = userService.getUser(request);
+
         participantService.completeTrade(chatRoomId, currentUser.getId());
 
         return ResponseEntity.ok("거래완료 처리되었습니다.");
