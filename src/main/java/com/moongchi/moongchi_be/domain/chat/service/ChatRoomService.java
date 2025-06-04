@@ -1,5 +1,7 @@
 package com.moongchi.moongchi_be.domain.chat.service;
 
+import com.moongchi.moongchi_be.common.exception.custom.CustomException;
+import com.moongchi.moongchi_be.common.exception.errorcode.ErrorCode;
 import com.moongchi.moongchi_be.domain.chat.dto.ChatRoomDetailDto;
 import com.moongchi.moongchi_be.domain.chat.dto.ChatRoomResponseDto;
 import com.moongchi.moongchi_be.domain.chat.dto.MessageDto;
@@ -56,7 +58,7 @@ public class ChatRoomService {
     @Transactional(readOnly = true)
     public ChatRoomDetailDto getChatRoomDetail(Long chatRoomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         // 참여자 목록 조회
         List<ParticipantDto> participants = participantRepository.findByChatRoomId(chatRoomId).stream()
@@ -110,15 +112,15 @@ public class ChatRoomService {
         return savedChatRoom;
     }
 
+    //TODO : 시스템 메시지 사용
     @Transactional
     public void updateChatRoomStatus(Long chatRoomId, ChatRoomStatus status) {
 
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-                .orElseThrow(()-> new IllegalArgumentException("해당 채팅방이 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         chatRoom.setStatus(status);
         chatRoomRepository.save(chatRoom);
-
 
         String systemMessage = getSystemMessageForStatus(status);
 

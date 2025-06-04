@@ -1,5 +1,7 @@
 package com.moongchi.moongchi_be.domain.chat.service;
 
+import com.moongchi.moongchi_be.common.exception.custom.CustomException;
+import com.moongchi.moongchi_be.common.exception.errorcode.ErrorCode;
 import com.moongchi.moongchi_be.domain.chat.dto.ParticipantPaymentDto;
 import com.moongchi.moongchi_be.domain.chat.entity.*;
 import com.moongchi.moongchi_be.domain.chat.repository.ChatRoomRepository;
@@ -33,7 +35,7 @@ public class ParticipantService {
     public List<ParticipantPaymentDto> getPaymentInfoByChatRoom(Long chatRoomId) {
         List<Participant> participants = participantRepository.findAllByChatRoomId(chatRoomId);
         GroupBoard groupBoard = groupBoardRepository.findByChatRoomId(chatRoomId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 채팅방 그룹게시판 없음"));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         int totalAmount = groupBoard.getGroupProduct().getPrice(); // 총 공구 금액
         int participantCount = participants.size();
@@ -51,7 +53,7 @@ public class ParticipantService {
     @Transactional
     public void joinChatRoom(Long chatRoomId, Long userId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
         GroupBoard groupBoard = chatRoom.getGroupBoard();
 
         // 이미 참여한 유저인지 체크
@@ -61,7 +63,7 @@ public class ParticipantService {
         }
 
         User user = userService.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         Participant participant = new Participant();
         participant.setChatRoom(chatRoom);
@@ -80,17 +82,18 @@ public class ParticipantService {
 
             chatRoom.setStatus(ChatRoomStatus.PAYING);
             groupBoard.setBoardStatus(BoardStatus.CLOSED);
-            chatRoomRepository.save(chatRoom);  // 상태 저장
+            chatRoomRepository.save(chatRoom);
+            groupBoardRepository.save(groupBoard);
         }
     }
 
     @Transactional
     public void pay(Long chatRoomId, Long userId) {
         Participant participant = participantRepository.findByChatRoomIdAndUserId(chatRoomId, userId)
-                .orElseThrow(() -> new IllegalArgumentException("참여 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         if (participant.getPaymentStatus() == PaymentStatus.PAID) {
-            throw new IllegalStateException("이미 결제한 사용자입니다.");
+            throw new CustomException(ErrorCode.CONFLICT);
         }
 
         // 결제 상태 변경
@@ -106,7 +109,7 @@ public class ParticipantService {
         if (allPaid) {
             // 채팅방 상태 직접 변경 (메시지 발송 없이)
             ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
+                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
             chatRoom.setStatus(ChatRoomStatus.PURCHASED);
             chatRoomRepository.save(chatRoom);
             }
@@ -115,15 +118,15 @@ public class ParticipantService {
     @Transactional
     public void completeTrade(Long chatRoomId, Long userId) {
         Participant participant = participantRepository.findByChatRoomIdAndUserId(chatRoomId, userId)
-                .orElseThrow(() -> new IllegalArgumentException("참여자 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
         GroupBoard groupBoard = participant.getGroupBoard();
 
         if (participant.getRole() == Role.LEADER) {
-            throw new IllegalStateException("리더는 거래완료 버튼을 누를 수 없습니다.");
+            throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
         if (participant.isTradeCompleted()) {
-            throw new IllegalStateException("이미 거래완료 처리된 사용자입니다.");
+            throw new CustomException(ErrorCode.CONFLICT);
         }
 
         participant.setTradeCompleted(true);
@@ -138,11 +141,12 @@ public class ParticipantService {
 
         if (allCompleted) {
             ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-                    .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다."));
+                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
             chatRoom.setStatus(ChatRoomStatus.COMPLETED);
             groupBoard.setBoardStatus(BoardStatus.COMPLETED);
-
             chatRoomRepository.save(chatRoom);
+            groupBoardRepository.save(groupBoard);
+
         }
     }
 
@@ -151,7 +155,7 @@ public class ParticipantService {
     @Transactional
     public void simulateJoin(Long chatRoomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
         GroupBoard groupBoard = chatRoom.getGroupBoard();
 
         int maxCount = groupBoard.getTotalUsers();
@@ -159,7 +163,7 @@ public class ParticipantService {
 
         int toCreate = maxCount - currentCount;
         if (toCreate <= 0) {
-            throw new IllegalStateException("참여자가 이미 최대 인원에 도달했습니다.");
+            throw new CustomException(ErrorCode.CONFLICT);
         }
         for (int i = 1; i < maxCount; i++) {
             User fakeUser = new User().setName("시뮬레이터유저" + i);
@@ -193,8 +197,9 @@ public class ParticipantService {
     @Transactional
     public void simulatePurchase(Long chatRoomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
         chatRoom.setStatus(ChatRoomStatus.PURCHASED);
+        chatRoomRepository.save(chatRoom);
     }
     @Transactional
     public void simulateTradeComplete(Long chatRoomId) {
@@ -216,7 +221,7 @@ public class ParticipantService {
 
         if (allCompleted) {
             ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-                    .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다."));
+                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
             GroupBoard groupBoard = chatRoom.getGroupBoard();
 
             chatRoom.setStatus(ChatRoomStatus.COMPLETED);
