@@ -1,6 +1,8 @@
 package com.moongchi.moongchi_be.domain.user.service;
 
 import com.moongchi.moongchi_be.common.auth.jwt.JwtTokenProvider;
+import com.moongchi.moongchi_be.common.exception.custom.CustomException;
+import com.moongchi.moongchi_be.common.exception.errorcode.ErrorCode;
 import com.moongchi.moongchi_be.domain.user.dto.TokenResponseDto;
 import com.moongchi.moongchi_be.domain.user.dto.UserDto;
 import com.moongchi.moongchi_be.domain.user.entity.User;
@@ -9,8 +11,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,16 +23,13 @@ public class UserService {
         String refreshToken = authService.getRefreshToken(request);
 
         if (refreshToken == null || !jwtTokenProvider.validateToken(refreshToken)) {
-            throw new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.");
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
 
         Long userId = jwtTokenProvider.getUserId(refreshToken);
-        Optional<User> optionalUser = userRepository.findById(userId);
-        if (!optionalUser.isPresent()) {
-            throw new IllegalArgumentException("유저를 찾을 수 없습니다.");
-        }
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
-        User user = optionalUser.get();
         User newUser = user.updateUser(userDto.getNickname(), userDto.getPhone(), userDto.getBirth(), userDto.getGender(), userDto.getProfileUrl());
         this.userRepository.save(newUser);
 
@@ -40,23 +37,25 @@ public class UserService {
         return tokenResponseDto;
     }
 
-    public Optional<User> getUser(HttpServletRequest request){
+    public User getUser(HttpServletRequest request){
         String token = jwtTokenProvider.resolveToken(request);
-        if (token == null) return Optional.empty();
+        if (token == null) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
+        }
 
         Long userId = jwtTokenProvider.getUserId(token);
-        return userRepository.findById(userId);
-
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
     }
 
     public void addLocation(UserDto userDto, HttpServletRequest request){
-        User user = getUser(request).get();
+        User user = getUser(request);
         User newUser = user.updateLocation(userDto.getLatitude(), userDto.getLongitude(), userDto.getAddress());
         this.userRepository.save(newUser);
     }
 
     public void addInterestCategory(UserDto userDto, HttpServletRequest request){
-        User user = getUser(request).get();
+        User user = getUser(request);
         User newUser = user.updateInterest(userDto.getInterestCategory());
         this.userRepository.save(newUser);
     }
