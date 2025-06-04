@@ -1,5 +1,6 @@
 package com.moongchi.moongchi_be.domain.chat.controller;
 
+import com.moongchi.moongchi_be.domain.chat.dto.ChatRoomDetailDto;
 import com.moongchi.moongchi_be.domain.chat.dto.ChatRoomResponseDto;
 import com.moongchi.moongchi_be.domain.chat.dto.ChatRoomStatusUpdateRequest;
 import com.moongchi.moongchi_be.domain.chat.service.ChatRoomService;
@@ -32,13 +33,11 @@ public class ChatRoomController {
     }
 
     @GetMapping("/{chatRoomId}")
-    public ResponseEntity<ChatRoomResponseDto> getChatRoomById(@PathVariable Long chatRoomId, HttpServletRequest request) {
-        User currentUser = userService.getUser(request)
-                .orElseThrow(() -> new RuntimeException("사용자 인증 실패"));
-
-        ChatRoomResponseDto room = chatRoomService.getChatRoomById(chatRoomId, currentUser.getId());
-        return ResponseEntity.ok(room);
+    public ResponseEntity<ChatRoomDetailDto> getChatRoomDetail(@PathVariable Long chatRoomId) {
+        ChatRoomDetailDto dto = chatRoomService.getChatRoomDetail(chatRoomId);
+        return ResponseEntity.ok(dto);
     }
+
 
     @PostMapping("/{chatRoomId}/join")
     public ResponseEntity<String> joinChatRoom(@PathVariable Long chatRoomId, HttpServletRequest request) {

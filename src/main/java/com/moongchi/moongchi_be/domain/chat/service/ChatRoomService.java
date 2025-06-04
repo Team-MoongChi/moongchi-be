@@ -1,7 +1,11 @@
 package com.moongchi.moongchi_be.domain.chat.service;
 
+import com.moongchi.moongchi_be.domain.chat.dto.ChatRoomDetailDto;
 import com.moongchi.moongchi_be.domain.chat.dto.ChatRoomResponseDto;
+import com.moongchi.moongchi_be.domain.chat.dto.MessageDto;
+import com.moongchi.moongchi_be.domain.chat.dto.ParticipantDto;
 import com.moongchi.moongchi_be.domain.chat.entity.*;
+import com.moongchi.moongchi_be.domain.chat.repository.ChatMessageRepository;
 import com.moongchi.moongchi_be.domain.chat.repository.ChatRoomRepository;
 import com.moongchi.moongchi_be.domain.chat.repository.ParticipantRepository;
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupBoard;
@@ -20,8 +24,8 @@ public class ChatRoomService {
 
     private final ChatRoomRepository chatRoomRepository;
     private final ParticipantRepository participantRepository;
+    private final ChatMessageRepository chatMessageRepository;
     private final ChatMessageService chatMessageService;
-
 
     @Transactional(readOnly = true)
     public List<ChatRoomResponseDto> getUserChatRooms(Long userId) {
@@ -50,29 +54,35 @@ public class ChatRoomService {
     }
 
     @Transactional(readOnly = true)
-    public ChatRoomResponseDto getChatRoomById(Long chatRoomId, Long userId) {
-        boolean isParticipant = participantRepository.existsByChatRoomIdAndUserId(chatRoomId, userId);
-        if (!isParticipant) {
-            throw new IllegalArgumentException("해당 채팅방에 참여하지 않았습니다.");
-        }
-
+    public ChatRoomDetailDto getChatRoomDetail(Long chatRoomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-                .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
 
-        int participantCount = participantRepository.countByChatRoomId(chatRoom.getId());
+        // 참여자 목록 조회
+        List<ParticipantDto> participants = participantRepository.findByChatRoomId(chatRoomId).stream()
+                .map(p -> new ParticipantDto(
+                        p.getUser().getId(),
+                        p.getUser().getNickname(),
+                        p.getUser().getProfileUrl()
+                )).collect(Collectors.toList());
 
-        return ChatRoomResponseDto.builder()
-                .id(chatRoom.getId())
-                .title(chatRoom.getTitle())
-                .status(chatRoom.getStatus())
-                .participantCount(participantCount)
-                .imgUrl(List.of(chatRoom.getGroupBoard().getGroupProduct().getImages()).toString())
-                .lastMessage(null)
-                .lastMessageTime(null)
-                .unreadCount(0)
-                .createdAt(chatRoom.getCreatedAt())
-                .updatedAt(chatRoom.getUpdatedAt())
-                .build();
+        // 메시지 목록 조회
+        List<MessageDto> messages = chatMessageRepository.findByChatRoomId(chatRoomId).stream()
+                .map(m -> new MessageDto(
+                        m.getId(),
+                        m.getUserId(),
+                        m.getMessage(),
+                        m.getMessageType().name(),
+                        m.getSendAt()
+                )).collect(Collectors.toList());
+
+        return new ChatRoomDetailDto(
+                chatRoom.getId(),
+                chatRoom.getTitle(),
+                chatRoom.getStatus().getKorean(),
+                participants,
+                messages
+        );
     }
 
     @Transactional
@@ -99,7 +109,6 @@ public class ChatRoomService {
 
         return savedChatRoom;
     }
-
 
     @Transactional
     public void updateChatRoomStatus(Long chatRoomId, ChatRoomStatus status) {
