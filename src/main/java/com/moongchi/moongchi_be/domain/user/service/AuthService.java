@@ -1,7 +1,9 @@
 package com.moongchi.moongchi_be.domain.user.service;
 
-import com.moongchi.moongchi_be.domain.user.dto.TokenResponseDto;
 import com.moongchi.moongchi_be.common.auth.jwt.JwtTokenProvider;
+import com.moongchi.moongchi_be.common.exception.custom.CustomException;
+import com.moongchi.moongchi_be.common.exception.errorcode.ErrorCode;
+import com.moongchi.moongchi_be.domain.user.dto.TokenResponseDto;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import com.moongchi.moongchi_be.domain.user.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
@@ -9,8 +11,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,16 +22,13 @@ public class AuthService {
         String refreshToken = getRefreshToken(request);
 
         if (refreshToken == null || !jwtTokenProvider.validateToken(refreshToken)) {
-            throw new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.");
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
 
-        Long id = jwtTokenProvider.getUserId(refreshToken);
-        Optional<User> optionalUser = userRepository.findById(id);
-        if (!optionalUser.isPresent()) {
-            throw new IllegalArgumentException("유저를 찾을 수 없습니다.");
-        }
+        Long userId = jwtTokenProvider.getUserId(refreshToken);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
-        User user = optionalUser.get();
         String accessToken = jwtTokenProvider.createToken(user.getId(), user.getUserRole());
 
         Cookie deleteAccessTokenCookie = new Cookie("access_token", null);
@@ -47,16 +44,12 @@ public class AuthService {
     public TokenResponseDto reissueToken(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = getRefreshToken(request);
 
-        Long id = jwtTokenProvider.getUserId(refreshToken);
-        Optional<User> optionalUser = userRepository.findById(id);
-        if (!optionalUser.isPresent()) {
-            throw new IllegalArgumentException("유저를 찾을 수 없습니다.");
-        }
+        Long userId = jwtTokenProvider.getUserId(refreshToken);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
-        User user = optionalUser.get();
         String newAccessToken = jwtTokenProvider.createToken(user.getId(), user.getUserRole());
         return new TokenResponseDto(newAccessToken);
-
     }
 
 
