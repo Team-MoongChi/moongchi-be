@@ -1,5 +1,7 @@
 package com.moongchi.moongchi_be.domain.product.service;
 
+import com.moongchi.moongchi_be.common.exception.custom.CustomException;
+import com.moongchi.moongchi_be.common.exception.errorcode.ErrorCode;
 import com.moongchi.moongchi_be.domain.product.dto.ProductResponseDto;
 import com.moongchi.moongchi_be.domain.product.entity.Product;
 import com.moongchi.moongchi_be.domain.product.repository.ProductRepository;
@@ -24,7 +26,7 @@ public class ProductService {
 
     public ProductResponseDto getProductById(Long productId) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 상품이 없습니다. id=" + productId));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
         return ProductResponseDto.from(product);
     }
 

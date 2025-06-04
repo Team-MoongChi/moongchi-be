@@ -3,6 +3,8 @@ package com.moongchi.moongchi_be.domain.product.service;
 import com.moongchi.moongchi_be.common.category.entity.Category;
 import com.moongchi.moongchi_be.common.category.repository.CategoryRepository;
 import com.moongchi.moongchi_be.common.category.service.CategoryService;
+import com.moongchi.moongchi_be.common.exception.custom.CustomException;
+import com.moongchi.moongchi_be.common.exception.errorcode.ErrorCode;
 import com.moongchi.moongchi_be.domain.product.dto.ProductResponseDto;
 import com.moongchi.moongchi_be.domain.product.dto.ProductSearchRequest;
 import com.moongchi.moongchi_be.domain.product.dto.SearchHistoryDto;
@@ -29,10 +31,9 @@ public class SearchService {
     public List<ProductResponseDto> searchProducts(ProductSearchRequest request) {
         String keyword = request.getKeyword();
         if (keyword == null || keyword.isBlank()) {
-            throw new IllegalArgumentException("검색어는 필수입니다.");
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
-        // 검색 기록 저장
         SearchHistory history = SearchHistory.builder()
                 .keyword(keyword)
                 .userId(request.getUserId()) // null 가능
@@ -40,7 +41,6 @@ public class SearchService {
                 .build();
         searchHistoryRepository.save(history);
 
-        // 1. 카테고리 매칭 시도
         Optional<Category> optionalCategory = categoryRepository.findByName(keyword);
         List<Product> products;
 
@@ -49,7 +49,6 @@ public class SearchService {
             List<Long> categoryIds = categoryService.getAllSubCategoryIds(categoryId);
             products = productRepository.findByCategoryIdIn(categoryIds);
         } else {
-            // fallback: 상품명으로 검색
             products = productRepository.findByNameContainingIgnoreCase(keyword);
         }
 
@@ -59,6 +58,9 @@ public class SearchService {
     }
 
     public List<SearchHistoryDto> getSearchHistoriesByUserId(Long userId) {
+        if (userId == null) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
         List<SearchHistory> histories = searchHistoryRepository.findByUserIdOrderBySearchAtDesc(userId);
         return histories.stream()
                 .map(SearchHistoryDto::from)
