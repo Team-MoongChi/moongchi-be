@@ -24,7 +24,7 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<UserDto> getUser(HttpServletRequest request) {
-        User user = userService.getUser(request).get();
+        User user = userService.getUser(request);
         UserDto userDto = new UserDto(user);
         return ResponseEntity.ok(userDto);
     }
