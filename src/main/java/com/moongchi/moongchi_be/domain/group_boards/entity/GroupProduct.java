@@ -39,17 +39,17 @@ public class GroupProduct {
     @JoinColumn(name = "product_id")
     private Product product;
 
-    @OneToOne(mappedBy = "groupProduct")
+    @OneToOne(mappedBy = "groupProduct", cascade = CascadeType.ALL, orphanRemoval = true)
     private GroupBoard groupBoard;
 
     @ElementCollection
     private List<String> images;
 
-    public void updateGroupBoard(GroupBoard groupBoard){
+    public void updateGroupBoard(GroupBoard groupBoard) {
         this.groupBoard = groupBoard;
     }
 
-    public void update(String name, int price,  String quantity, Category category){
+    public void update(String name, int price, String quantity, Category category) {
         this.name = name;
         this.price = price;
         this.quantity = quantity;
