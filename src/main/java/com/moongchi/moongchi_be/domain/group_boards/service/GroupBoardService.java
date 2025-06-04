@@ -194,7 +194,9 @@ public class GroupBoardService {
                         return ParticipantDto.builder()
                                 .id(p.getId())
                                 .userId(user.getId())
+                                .name(user.getName())
                                 .profileUrl(user.getProfileUrl())
+                                .role(p.getRole().toString())
                                 .build();
                     }).collect(Collectors.toList());
         }
