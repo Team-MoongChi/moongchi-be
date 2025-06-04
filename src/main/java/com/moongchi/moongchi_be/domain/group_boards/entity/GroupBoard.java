@@ -1,5 +1,6 @@
 package com.moongchi.moongchi_be.domain.group_boards.entity;
 
+import com.moongchi.moongchi_be.domain.chat.entity.ChatRoom;
 import com.moongchi.moongchi_be.domain.group_boards.enums.BoardStatus;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import jakarta.persistence.*;
@@ -57,6 +58,9 @@ public class GroupBoard {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    @OneToOne(mappedBy = "groupBoard")
+    private ChatRoom chatRoom;
 
     @Column(name = "create_at")
     @CreationTimestamp

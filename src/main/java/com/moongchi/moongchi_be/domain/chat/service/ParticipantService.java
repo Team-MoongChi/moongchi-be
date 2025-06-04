@@ -34,8 +34,7 @@ public class ParticipantService {
             throw new IllegalStateException("이미 참여한 채팅방입니다.");
         }
 
-        User user = userService.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+        User user = userService.findById(userId).get();
 
         Participant participant = new Participant();
         participant.setChatRoom(chatRoom);

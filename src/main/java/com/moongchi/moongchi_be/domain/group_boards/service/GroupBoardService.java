@@ -3,6 +3,10 @@ package com.moongchi.moongchi_be.domain.group_boards.service;
 import com.moongchi.moongchi_be.common.category.dto.CategoryResponseDto;
 import com.moongchi.moongchi_be.common.category.entity.Category;
 import com.moongchi.moongchi_be.common.category.repository.CategoryRepository;
+import com.moongchi.moongchi_be.common.exception.custom.CustomException;
+import com.moongchi.moongchi_be.common.exception.errorcode.ErrorCode;
+import com.moongchi.moongchi_be.domain.chat.dto.ParticipantDto;
+import com.moongchi.moongchi_be.domain.chat.entity.ChatRoom;
 import com.moongchi.moongchi_be.domain.chat.service.ChatRoomService;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardDto;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardRequestDto;
@@ -21,6 +25,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,7 +41,7 @@ public class GroupBoardService {
     private final ChatRoomService chatRoomService;
 
     public void createPost(GroupBoardRequestDto dto, HttpServletRequest request) {
-        User currentUser = userService.getUser(request).get();
+        User currentUser = userService.getUser(request);
         Coordinate coordinate = kakaoMapService.getCoordinateFromAddress(dto.getLocation());
 
         GroupBoard groupBoard = GroupBoard.builder()
@@ -54,13 +59,13 @@ public class GroupBoardService {
         Category category = null;
         if (dto.getCategoryId() != null) {
             category = categoryRepository.findById(dto.getCategoryId())
-                    .orElse(null);
+                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
         }
 
         Product product = null;
         if (dto.getProductId() != null) {
             product = productRepository.findById(dto.getProductId())
-                    .orElse(null);
+                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
         }
 
         if (product != null && category == null) {
@@ -78,14 +83,16 @@ public class GroupBoardService {
 
         groupBoard.updateGroupProduct(groupProduct);
         groupBoardRepository.save(groupBoard);
-        chatRoomService.createChatRoomWithParticipant(groupBoard,currentUser);
+        chatRoomService.createChatRoomWithParticipant(groupBoard, currentUser);
     }
 
     public void updatePost(Long group_board_id, GroupBoardRequestDto dto) {
-        GroupBoard groupBoard = groupBoardRepository.findById(group_board_id).get();
-        GroupProduct groupProduct = groupProductRepository.findById(groupBoard.getGroupProduct().getId()).get();
-
-        Category category = categoryRepository.findById(dto.getCategoryId()).get();
+        GroupBoard groupBoard = groupBoardRepository.findById(group_board_id)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+        GroupProduct groupProduct = groupProductRepository.findById(groupBoard.getGroupProduct().getId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+        Category category = categoryRepository.findById(dto.getCategoryId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         groupProduct.update(dto.getName(), dto.getPrice(), dto.getQuantity(), category);
         groupBoard.update(dto.getName(), dto.getContent(), dto.getLocation(), dto.getDeadLine(), dto.getTotalUsers(), groupProduct);
@@ -94,12 +101,13 @@ public class GroupBoardService {
     }
 
     public void deletePost(Long group_board_id) {
-        GroupBoard groupBoard = groupBoardRepository.findById(group_board_id).get();
+        GroupBoard groupBoard = groupBoardRepository.findById(group_board_id)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
         groupBoardRepository.delete(groupBoard);
     }
 
     public List<GroupBoardDto> getGroupBoardList(HttpServletRequest request) {
-        User currentUser = userService.getUser(request).get();
+        User currentUser = userService.getUser(request);
         List<GroupBoard> groupBoards = groupBoardRepository.findNearbyPosts(currentUser.getLatitude(), currentUser.getLongitude());
 
         return groupBoards.stream()
@@ -108,12 +116,13 @@ public class GroupBoardService {
     }
 
     public GroupBoardDto getGroupBoard(Long groupBoardId) {
-        GroupBoard groupBoard = groupBoardRepository.findById(groupBoardId).get();
+        GroupBoard groupBoard = groupBoardRepository.findById(groupBoardId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
         return convertToDto(groupBoard);
     }
 
     public List<GroupBoardDto> getMyGroupBoard(HttpServletRequest request) {
-        User currentUser = userService.getUser(request).get();
+        User currentUser = userService.getUser(request);
         List<GroupBoard> groupBoards = groupBoardRepository.findByUserId(currentUser.getId());
 
         return groupBoards.stream()
@@ -129,7 +138,7 @@ public class GroupBoardService {
                 .collect(Collectors.toList());
     }
 
-    public List<GroupBoardDto> getUserGroupBoard(Long userId){
+    public List<GroupBoardDto> getUserGroupBoard(Long userId) {
         List<GroupBoard> groupBoards = groupBoardRepository.findByUserId(userId);
 
         return groupBoards.stream()
@@ -144,19 +153,17 @@ public class GroupBoardService {
         Product product = groupProduct.getProduct();
         Category category = groupProduct.getCategory();
 
-        List<CategoryResponseDto> subCategoryDTOs = category.getSubCategories().stream()
-                .map(sub -> CategoryResponseDto.builder()
-                        .id(sub.getId())
-                        .name(sub.getName())
-                        .level(sub.getLevel())
-                        .build())
-                .collect(Collectors.toList());
+        if (groupProduct == null) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+        if (category == null) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
 
         CategoryResponseDto categoryDto = CategoryResponseDto.builder()
                 .id(category.getId())
                 .name(category.getName())
                 .level(category.getLevel())
-                .subCategories(subCategoryDTOs)
                 .build();
 
         ProductDto productDto = null;
@@ -178,6 +185,20 @@ public class GroupBoardService {
                 .product(productDto)
                 .build();
 
+        List<ParticipantDto> participants = new ArrayList<>();
+        ChatRoom chatRoom = board.getChatRoom();
+        if (chatRoom != null && chatRoom.getParticipants() != null) {
+            participants = chatRoom.getParticipants().stream()
+                    .map(p -> {
+                        User user = p.getUser();
+                        return ParticipantDto.builder()
+                                .id(p.getId())
+                                .userId(user.getId())
+                                .profileUrl(user.getProfileUrl())
+                                .build();
+                    }).collect(Collectors.toList());
+        }
+
         return GroupBoardDto.builder()
                 .id(board.getId())
                 .title(board.getTitle())
@@ -187,6 +208,7 @@ public class GroupBoardService {
                 .deadline(board.getDeadline())
                 .totalUsers(board.getTotalUsers())
                 .groupProduct(productDtoWrapper)
+                .participants(participants)
                 .build();
     }
 
