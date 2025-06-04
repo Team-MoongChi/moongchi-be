@@ -44,6 +44,10 @@ public class AuthService {
     public TokenResponseDto reissueToken(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = getRefreshToken(request);
 
+        if (refreshToken == null || !jwtTokenProvider.validateToken(refreshToken)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
+        }
+
         Long userId = jwtTokenProvider.getUserId(refreshToken);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));

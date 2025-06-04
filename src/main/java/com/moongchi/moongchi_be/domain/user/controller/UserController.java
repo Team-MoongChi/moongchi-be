@@ -1,6 +1,7 @@
 package com.moongchi.moongchi_be.domain.user.controller;
 
 import com.moongchi.moongchi_be.domain.user.dto.TokenResponseDto;
+import com.moongchi.moongchi_be.domain.user.dto.UserBasicDto;
 import com.moongchi.moongchi_be.domain.user.dto.UserDto;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import com.moongchi.moongchi_be.domain.user.service.UserService;
@@ -39,5 +40,11 @@ public class UserController {
     public ResponseEntity<?> addInterestCategory(@RequestBody UserDto userDto, HttpServletRequest request){
         userService.addInterestCategory(userDto, request);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/basic")
+    public ResponseEntity<UserBasicDto> getUserNameEmail(HttpServletRequest request){
+        UserBasicDto userBasicDto = userService.getUserBasic(request);
+        return ResponseEntity.ok(userBasicDto);
     }
 }
