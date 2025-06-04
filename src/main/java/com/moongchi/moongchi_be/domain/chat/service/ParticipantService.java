@@ -4,6 +4,7 @@ import com.moongchi.moongchi_be.domain.chat.entity.*;
 import com.moongchi.moongchi_be.domain.chat.repository.ChatRoomRepository;
 import com.moongchi.moongchi_be.domain.chat.repository.ParticipantRepository;
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupBoard;
+import com.moongchi.moongchi_be.domain.group_boards.enums.BoardStatus;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import com.moongchi.moongchi_be.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -50,8 +51,10 @@ public class ParticipantService {
         int currentParticipants = participantRepository.countByChatRoomId(chatRoomId);
         int maxCount = groupBoard.getTotalUsers();
 
-        if (currentParticipants >= maxCount) {
+        if (currentParticipants ==  maxCount) {
+
             chatRoom.setStatus(ChatRoomStatus.PAYING);
+            groupBoard.setBoardStatus(BoardStatus.CLOSED);
             chatRoomRepository.save(chatRoom);  // 상태 저장
         }
     }
@@ -88,6 +91,7 @@ public class ParticipantService {
     public void completeTrade(Long chatRoomId, Long userId) {
         Participant participant = participantRepository.findByChatRoomIdAndUserId(chatRoomId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("참여자 정보를 찾을 수 없습니다."));
+        GroupBoard groupBoard = participant.getGroupBoard();
 
         if (participant.getRole() == Role.LEADER) {
             throw new IllegalStateException("리더는 거래완료 버튼을 누를 수 없습니다.");
@@ -111,6 +115,8 @@ public class ParticipantService {
             ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                     .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다."));
             chatRoom.setStatus(ChatRoomStatus.COMPLETED);
+            groupBoard.setBoardStatus(BoardStatus.COMPLETED);
+
             chatRoomRepository.save(chatRoom);
         }
     }
