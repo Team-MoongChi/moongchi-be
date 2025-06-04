@@ -126,6 +126,14 @@ public class GroupBoardService {
                 .collect(Collectors.toList());
     }
 
+    public List<GroupBoardDto> getUserGroupBoard(Long userId){
+        List<GroupBoard> groupBoards = groupBoardRepository.findByUserId(userId);
+
+        return groupBoards.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
 
     private GroupBoardDto convertToDto(GroupBoard board) {
 
