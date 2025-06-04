@@ -175,7 +175,7 @@ public class GroupBoardService {
                     .build();
         }
 
-        GroupProductDto productDtoWrapper = GroupProductDto.builder()
+        GroupProductDto groupProductDto = GroupProductDto.builder()
                 .id(groupProduct.getId())
                 .name(groupProduct.getName())
                 .price(groupProduct.getPrice())
@@ -209,7 +209,7 @@ public class GroupBoardService {
                 .boardStatus(board.getBoardStatus())
                 .deadline(board.getDeadline())
                 .totalUsers(board.getTotalUsers())
-                .groupProduct(productDtoWrapper)
+                .groupProduct(groupProductDto)
                 .participants(participants)
                 .build();
     }
