@@ -3,6 +3,7 @@ package com.moongchi.moongchi_be.domain.group_boards.service;
 import com.moongchi.moongchi_be.common.category.dto.CategoryResponseDto;
 import com.moongchi.moongchi_be.common.category.entity.Category;
 import com.moongchi.moongchi_be.common.category.repository.CategoryRepository;
+import com.moongchi.moongchi_be.domain.chat.service.ChatRoomService;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardDto;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardRequestDto;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupProductDto;
@@ -32,6 +33,7 @@ public class GroupBoardService {
     private final ProductRepository productRepository;
     private final UserService userService;
     private final KakaoMapService kakaoMapService;
+    private final ChatRoomService chatRoomService;
 
     public void createPost(GroupBoardRequestDto dto, HttpServletRequest request) {
         User currentUser = userService.getUser(request).get();
@@ -76,6 +78,7 @@ public class GroupBoardService {
 
         groupBoard.updateGroupProduct(groupProduct);
         groupBoardRepository.save(groupBoard);
+        chatRoomService.createChatRoomWithParticipant(groupBoard,currentUser);
     }
 
     public void updatePost(Long group_board_id, GroupBoardRequestDto dto) {

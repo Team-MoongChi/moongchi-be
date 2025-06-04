@@ -60,4 +60,8 @@ public class UserService {
         this.userRepository.save(newUser);
     }
 
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id);
+    }
+    
 }
