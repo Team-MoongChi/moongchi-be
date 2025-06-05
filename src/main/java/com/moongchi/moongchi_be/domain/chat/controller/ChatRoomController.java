@@ -23,12 +23,6 @@ public class ChatRoomController {
     private final ParticipantService participantService;
     private final UserService userService;
 
-    @GetMapping("/{chatRoomId}/payment-info")
-    public ResponseEntity<List<ParticipantPaymentDto>> getPaymentInfo(@PathVariable Long chatRoomId) {
-        List<ParticipantPaymentDto> paymentInfo = participantService.getPaymentInfoByChatRoom(chatRoomId);
-        return ResponseEntity.ok(paymentInfo);
-    }
-
     @GetMapping
     public ResponseEntity<List<ChatRoomResponseDto>> getAllChatRooms(HttpServletRequest request) {
         User currentUser = userService.getUser(request);
@@ -72,16 +66,20 @@ public class ChatRoomController {
         return ResponseEntity.ok("거래완료 처리되었습니다.");
     }
 
-    @DeleteMapping("/{chatRoomId}/leave")
-    public ResponseEntity<Void> leaveChatRoom(
-            @PathVariable Long chatRomId,
-            User users) {
-
-        chatRoomService.leaveChatRoom(chatRomId,users.getId());
-        return ResponseEntity.noContent().build();
+    @GetMapping("/{chatRoomId}/payment-info")
+    public ResponseEntity<List<ParticipantPaymentDto>> getPaymentInfo(@PathVariable Long chatRoomId) {
+        List<ParticipantPaymentDto> paymentInfo = participantService.getPaymentInfoByChatRoom(chatRoomId);
+        return ResponseEntity.ok(paymentInfo);
     }
 
+    @DeleteMapping("/{chatRoomId}/leave")
+    public ResponseEntity<Void> leaveChatRoom(
+            @PathVariable Long chatRoomId,HttpServletRequest request) {
 
+        User cuttentUser = userService.getUser(request);
+        chatRoomService.leaveChatRoom(chatRoomId,cuttentUser.getId());
+        return ResponseEntity.noContent().build();
+    }
 
 //    @PatchMapping("/{chatRoomId}/status")
 //    public ResponseEntity<?> updateStatus(
