@@ -42,7 +42,7 @@ public class ChatRoomService {
 
                     return ChatRoomResponseDto.builder()
                             .id(chatRoom.getId())
-                            .title(chatRoom.getTitle())
+                            .title(chatRoom.getGroupBoard().getGroupProduct().getName() + chatRoom.getGroupBoard().getGroupProduct().getQuantity() + "공구방")
                             .status(chatRoom.getStatus())
                             .participantCount(participantCount)
                             .imgUrl(
@@ -97,7 +97,7 @@ public class ChatRoomService {
     public ChatRoom createChatRoomWithParticipant(GroupBoard groupBoard, User creator) {
         // 1. 채팅방 생성
         ChatRoom chatRoom = new ChatRoom();
-        chatRoom.setTitle(groupBoard.getTitle());
+        chatRoom.setTitle(groupBoard.getGroupProduct().getName() + " " + groupBoard.getGroupProduct().getQuantity() + " 공구방" );
         chatRoom.setStatus(ChatRoomStatus.RECRUITING);
         chatRoom.setGroupBoard(groupBoard);
         chatRoom.setCreatedAt(LocalDateTime.now());
@@ -123,7 +123,7 @@ public class ChatRoomService {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
-        if(chatRoom.getStatus() != ChatRoomStatus.RECRUITED) {
+        if(chatRoom.getStatus() != ChatRoomStatus.RECRUITING) {
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
 
