@@ -1,6 +1,7 @@
 package com.moongchi.moongchi_be.domain.chat.dto;
 
 import com.moongchi.moongchi_be.domain.chat.entity.PaymentStatus;
+import com.moongchi.moongchi_be.domain.chat.entity.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,6 +11,7 @@ import lombok.Setter;
 public class ParticipantPaymentDto {
     private Long userid;
     private String userName;
+    private Role role;
     private PaymentStatus paymentStatus;
     private int patAmount;
 }

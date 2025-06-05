@@ -45,6 +45,7 @@ public class ParticipantService {
                 .map(p -> new ParticipantPaymentDto(
                         p.getUser().getId(),
                         p.getUser().getName(),
+                        p.getRole(),
                         p.getPaymentStatus(),
                         perPersonAmount
                 )).collect(Collectors.toList());
