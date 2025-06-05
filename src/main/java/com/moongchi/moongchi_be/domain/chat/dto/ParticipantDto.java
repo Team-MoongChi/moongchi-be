@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class ParticipantDto {
     private Long id;
     private Long userId;
-    private String name;
+    private String nickname;
     private String profileUrl;
     private String role;
     private Double mannerLeader;
