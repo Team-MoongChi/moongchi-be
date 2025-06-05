@@ -1,6 +1,7 @@
 package com.moongchi.moongchi_be.domain.product.entity;
 
 import com.moongchi.moongchi_be.common.category.entity.Category;
+import com.moongchi.moongchi_be.domain.group_boards.entity.GroupProduct;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 @Entity
@@ -40,6 +42,9 @@ public class Product {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id",nullable = false)
     private Category category;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<GroupProduct> groupProducts;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
