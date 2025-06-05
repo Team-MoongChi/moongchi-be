@@ -84,4 +84,8 @@ public class GroupBoard {
         this.groupProduct = groupProduct;
     }
 
+    public void updateStatus(BoardStatus boardStatus){
+        this.boardStatus = boardStatus;
+    }
+
 }
