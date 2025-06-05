@@ -2,7 +2,6 @@ package com.moongchi.moongchi_be.domain.chat.controller;
 
 import com.moongchi.moongchi_be.domain.chat.dto.ChatRoomDetailDto;
 import com.moongchi.moongchi_be.domain.chat.dto.ChatRoomResponseDto;
-import com.moongchi.moongchi_be.domain.chat.dto.ChatRoomStatusUpdateRequest;
 import com.moongchi.moongchi_be.domain.chat.dto.ParticipantPaymentDto;
 import com.moongchi.moongchi_be.domain.chat.service.ChatRoomService;
 import com.moongchi.moongchi_be.domain.chat.service.ParticipantService;
@@ -44,7 +43,6 @@ public class ChatRoomController {
         return ResponseEntity.ok(dto);
     }
 
-
     @PostMapping("/{chatRoomId}/join")
     public ResponseEntity<String> joinChatRoom(@PathVariable Long chatRoomId, HttpServletRequest request) {
         User currentUser = userService.getUser(request);
@@ -74,12 +72,23 @@ public class ChatRoomController {
         return ResponseEntity.ok("거래완료 처리되었습니다.");
     }
 
-    @PatchMapping("/{chatRoomId}/status")
-    public ResponseEntity<?> updateStatus(
-            @PathVariable Long chatRoomId,
-            @RequestBody ChatRoomStatusUpdateRequest request) {
-        chatRoomService.updateChatRoomStatus(chatRoomId,request.getStatus());
-        return ResponseEntity.ok("채팅방 상태가 '" + request.getStatus().getKorean() + "'(으)로 변경 되었습니다.");
+    @DeleteMapping("/{chatRoomId}/leave")
+    public ResponseEntity<Void> leaveChatRoom(
+            @PathVariable Long chatRomId,
+            User users) {
+
+        chatRoomService.leaveChatRoom(chatRomId,users.getId());
+        return ResponseEntity.noContent().build();
     }
+
+
+
+//    @PatchMapping("/{chatRoomId}/status")
+//    public ResponseEntity<?> updateStatus(
+//            @PathVariable Long chatRoomId,
+//            @RequestBody ChatRoomStatusUpdateRequest request) {
+//        chatRoomService.updateChatRoomStatus(chatRoomId,request.getStatus());
+//        return ResponseEntity.ok("채팅방 상태가 '" + request.getStatus().getKorean() + "'(으)로 변경 되었습니다.");
+//    }
 
 }
