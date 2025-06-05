@@ -43,6 +43,7 @@ public class Participant {
     @Column(name = "payment_status")
     private PaymentStatus paymentStatus;
 
+    @Builder.Default
     @Column(nullable = false, name = "trade_completed")
     private boolean tradeCompleted = false;
 

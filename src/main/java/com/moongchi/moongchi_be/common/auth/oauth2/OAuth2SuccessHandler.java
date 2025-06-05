@@ -15,11 +15,8 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
 
@@ -60,10 +57,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         if (isNewUser) {
             //신규유저
-            targetUrl = UriComponentsBuilder.fromUriString(SIGNUP_URI)
-                    .queryParam("email", URLEncoder.encode(user.getEmail(), StandardCharsets.UTF_8))
-                    .queryParam("name", URLEncoder.encode(user.getName(), StandardCharsets.UTF_8))
-                    .build().toUriString();
+            targetUrl = SIGNUP_URI;
         } else {
             //기존유저
             String accessToken = jwtTokenProvider.createToken(user.getId(), user.getUserRole());

@@ -76,7 +76,7 @@ public class User {
     private double mannerParticipant;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<GroupBoard> groupBoards = new ArrayList<>();
+    private List<GroupBoard> groupBoards;
 
     @CreationTimestamp
     @Column(name = "create_at")

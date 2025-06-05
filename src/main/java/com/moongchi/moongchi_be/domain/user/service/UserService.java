@@ -4,6 +4,7 @@ import com.moongchi.moongchi_be.common.auth.jwt.JwtTokenProvider;
 import com.moongchi.moongchi_be.common.exception.custom.CustomException;
 import com.moongchi.moongchi_be.common.exception.errorcode.ErrorCode;
 import com.moongchi.moongchi_be.domain.user.dto.TokenResponseDto;
+import com.moongchi.moongchi_be.domain.user.dto.UserBasicDto;
 import com.moongchi.moongchi_be.domain.user.dto.UserDto;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import com.moongchi.moongchi_be.domain.user.repository.UserRepository;
@@ -13,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -39,6 +39,25 @@ public class UserService {
         return tokenResponseDto;
     }
 
+    public UserBasicDto getUserBasic(HttpServletRequest request){
+        String refreshToken = authService.getRefreshToken(request);
+
+        if (refreshToken == null || !jwtTokenProvider.validateToken(refreshToken)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
+        }
+
+        Long userId = jwtTokenProvider.getUserId(refreshToken);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        UserBasicDto userBasicDto = UserBasicDto.builder()
+                .name(user.getName())
+                .email(user.getEmail())
+                .build();
+
+        return userBasicDto;
+    }
+
     public User getUser(HttpServletRequest request){
         String token = jwtTokenProvider.resolveToken(request);
         if (token == null) {
@@ -49,6 +68,7 @@ public class UserService {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
     }
+
 
     public void addLocation(UserDto userDto, HttpServletRequest request){
         User user = getUser(request);

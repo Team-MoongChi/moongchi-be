@@ -2,7 +2,6 @@ package com.moongchi.moongchi_be.domain.group_boards.controller;
 
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardDto;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardRequestDto;
-import com.moongchi.moongchi_be.domain.group_boards.entity.GroupBoard;
 import com.moongchi.moongchi_be.domain.group_boards.service.GroupBoardService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
@@ -59,6 +58,12 @@ public class GroupBoardController {
     @GetMapping("categories/{category_id}")
     public ResponseEntity<List<GroupBoardDto>> getGroupBoardCategory(@PathVariable("category_id") Long categoryId){
         List<GroupBoardDto> groupBoards = groupBoardService.getGroupBoardCategory(categoryId);
+        return ResponseEntity.ok(groupBoards);
+    }
+
+    @GetMapping("/users/{user_id}")
+    public ResponseEntity<List<GroupBoardDto>> getUserGroupBoard(@PathVariable("user_id") Long userId){
+        List<GroupBoardDto> groupBoards = groupBoardService.getUserGroupBoard(userId);
         return ResponseEntity.ok(groupBoards);
     }
 }

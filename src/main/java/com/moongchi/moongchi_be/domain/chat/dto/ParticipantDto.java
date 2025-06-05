@@ -10,6 +10,9 @@ import lombok.Setter;
 @Builder
 public class ParticipantDto {
     private Long id;
+    private Long userId;
     private String nickname;
     private String profileUrl;
+    private String role;
+    private Double mannerLeader;
 }

@@ -56,6 +56,9 @@ public class GroupBoard {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @OneToOne(mappedBy = "groupBoard")
+    private ChatRoom chatRoom;
+
     @Column(name = "create_at")
     @CreationTimestamp
     private LocalDateTime createAt;
@@ -66,7 +69,6 @@ public class GroupBoard {
 
     @OneToOne(mappedBy = "groupBoard", fetch = FetchType.LAZY)
     private ChatRoom chatRoom;
-
 
     //== 비즈니스 로직 ==//
     public void updateGroupProduct(GroupProduct groupProduct) {
