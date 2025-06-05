@@ -7,6 +7,7 @@ import com.moongchi.moongchi_be.common.exception.custom.CustomException;
 import com.moongchi.moongchi_be.common.exception.errorcode.ErrorCode;
 import com.moongchi.moongchi_be.domain.chat.dto.ParticipantDto;
 import com.moongchi.moongchi_be.domain.chat.entity.ChatRoom;
+import com.moongchi.moongchi_be.domain.chat.entity.Role;
 import com.moongchi.moongchi_be.domain.chat.service.ChatRoomService;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardDto;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardRequestDto;
@@ -24,6 +25,7 @@ import com.moongchi.moongchi_be.domain.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +42,7 @@ public class GroupBoardService {
     private final KakaoMapService kakaoMapService;
     private final ChatRoomService chatRoomService;
 
+    @Transactional
     public void createPost(GroupBoardRequestDto dto, HttpServletRequest request) {
         User currentUser = userService.getUser(request);
         Coordinate coordinate = kakaoMapService.getCoordinateFromAddress(dto.getLocation());
@@ -86,6 +89,7 @@ public class GroupBoardService {
         chatRoomService.createChatRoomWithParticipant(groupBoard, currentUser);
     }
 
+    @Transactional
     public void updatePost(Long group_board_id, GroupBoardRequestDto dto) {
         GroupBoard groupBoard = groupBoardRepository.findById(group_board_id)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
@@ -100,12 +104,14 @@ public class GroupBoardService {
         groupBoardRepository.save(groupBoard);
     }
 
+    @Transactional
     public void deletePost(Long group_board_id) {
         GroupBoard groupBoard = groupBoardRepository.findById(group_board_id)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
         groupBoardRepository.delete(groupBoard);
     }
 
+    @Transactional(readOnly = true)
     public List<GroupBoardDto> getGroupBoardList(HttpServletRequest request) {
         User currentUser = userService.getUser(request);
         List<GroupBoard> groupBoards = groupBoardRepository.findNearbyPosts(currentUser.getLatitude(), currentUser.getLongitude());
@@ -115,12 +121,14 @@ public class GroupBoardService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public GroupBoardDto getGroupBoard(Long groupBoardId) {
         GroupBoard groupBoard = groupBoardRepository.findById(groupBoardId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
         return convertToDto(groupBoard);
     }
 
+    @Transactional(readOnly = true)
     public List<GroupBoardDto> getMyGroupBoard(HttpServletRequest request) {
         User currentUser = userService.getUser(request);
         List<GroupBoard> groupBoards = groupBoardRepository.findByUserId(currentUser.getId());
@@ -130,6 +138,7 @@ public class GroupBoardService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<GroupBoardDto> getGroupBoardCategory(Long categoryId) {
         List<GroupBoard> groupBoards = groupBoardRepository.findByCategoryId(categoryId);
 
@@ -138,6 +147,7 @@ public class GroupBoardService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<GroupBoardDto> getUserGroupBoard(Long userId) {
         List<GroupBoard> groupBoards = groupBoardRepository.findByUserId(userId);
 
@@ -145,8 +155,7 @@ public class GroupBoardService {
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
-
-
+    
     private GroupBoardDto convertToDto(GroupBoard board) {
 
         GroupProduct groupProduct = board.getGroupProduct();
@@ -194,12 +203,16 @@ public class GroupBoardService {
                         return ParticipantDto.builder()
                                 .id(p.getId())
                                 .userId(user.getId())
-                                .name(user.getName())
+                                .nickname(user.getNickname())
                                 .profileUrl(user.getProfileUrl())
-                                .mannerLeader("LEADER".equals(p.getRole().toString()) ? user.getMannerLeader() : null)
+                                .mannerLeader(p.getRole() == Role.LEADER ? user.getMannerLeader() : null)
                                 .role(p.getRole().toString())
                                 .build();
                     }).collect(Collectors.toList());
+        }
+
+        if (board.getTotalUsers() - participants.size() == 1){
+            board.updateStatus(BoardStatus.CLOSING_SOON);
         }
 
         return GroupBoardDto.builder()
