@@ -2,6 +2,7 @@ package com.moongchi.moongchi_be.domain.chat.service;
 
 import com.moongchi.moongchi_be.common.exception.custom.CustomException;
 import com.moongchi.moongchi_be.common.exception.errorcode.ErrorCode;
+import com.moongchi.moongchi_be.domain.chat.dto.GroupPaymentResponseDto;
 import com.moongchi.moongchi_be.domain.chat.dto.ParticipantPaymentDto;
 import com.moongchi.moongchi_be.domain.chat.entity.*;
 import com.moongchi.moongchi_be.domain.chat.repository.ChatRoomRepository;
@@ -31,25 +32,6 @@ public class ParticipantService {
     private final GroupBoardRepository groupBoardRepository;
     private final ChatRoomService chatRoomService;
     private final UserService userService;
-
-    public List<ParticipantPaymentDto> getPaymentInfoByChatRoom(Long chatRoomId) {
-        List<Participant> participants = participantRepository.findAllByChatRoomId(chatRoomId);
-        GroupBoard groupBoard = groupBoardRepository.findByChatRoomId(chatRoomId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
-
-        int totalAmount = groupBoard.getGroupProduct().getPrice(); // 총 공구 금액
-        int participantCount = participants.size();
-        int perPersonAmount = participantCount == 0 ? 0 : totalAmount / participantCount;
-
-        return participants.stream()
-                .map(p -> new ParticipantPaymentDto(
-                        p.getUser().getId(),
-                        p.getUser().getName(),
-                        p.getRole(),
-                        p.getPaymentStatus(),
-                        perPersonAmount
-                )).collect(Collectors.toList());
-    }
 
     @Transactional
     public void joinChatRoom(Long chatRoomId, Long userId) {
@@ -115,6 +97,28 @@ public class ParticipantService {
             chatRoomRepository.save(chatRoom);
             }
         }
+
+    public GroupPaymentResponseDto getPaymentInfoByChatRoom(Long chatRoomId) {
+        List<Participant> participants = participantRepository.findAllByChatRoomId(chatRoomId);
+        GroupBoard groupBoard = groupBoardRepository.findByChatRoomId(chatRoomId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        int totalAmount = groupBoard.getGroupProduct().getPrice(); // 총 공구 금액
+        int participantCount = participants.size();
+        int perPersonAmount = participantCount == 0 ? 0 : totalAmount / participantCount;
+
+        List<ParticipantPaymentDto> dtos = participants.stream()
+                .map(p -> new ParticipantPaymentDto(
+                        p.getUser().getId(),
+                        p.getUser().getName(),
+                        p.getRole(),
+                        p.getPaymentStatus(),
+                        perPersonAmount
+                )).collect(Collectors.toList());
+
+        return new GroupPaymentResponseDto(totalAmount,dtos);
+    }
+
 
     @Transactional
     public void completeTrade(Long chatRoomId, Long userId) {

@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter @Setter
 @AllArgsConstructor
 public class ParticipantPaymentDto {
-    private Long userid;
+    private Long userId;
     private String userName;
     private Role role;
     private PaymentStatus paymentStatus;
