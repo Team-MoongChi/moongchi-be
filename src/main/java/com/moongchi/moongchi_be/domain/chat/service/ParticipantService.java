@@ -137,7 +137,6 @@ public class ParticipantService {
         participant.setTradeCompleted(true);
         participantRepository.save(participant);
 
-        // 리더 제외 모든 멤버가 거래완료 눌렀는지 확인
         List<Participant> participants = participantRepository.findAllByChatRoomId(chatRoomId);
 
         boolean allCompleted = participants.stream()
@@ -185,6 +184,14 @@ public class ParticipantService {
 
             participantRepository.save(participant);
         }
+        int updatedCount = participantRepository.countByChatRoomId(chatRoomId);
+        if (updatedCount >= maxCount) {
+            chatRoom.setStatus(ChatRoomStatus.RECRUITED); 
+            groupBoard.setBoardStatus(BoardStatus.CLOSED);
+            chatRoomRepository.save(chatRoom);
+            groupBoardRepository.save(groupBoard);
+        }
+
     }
     @Transactional
     public void simulatePayment(Long chatRoomId) {
