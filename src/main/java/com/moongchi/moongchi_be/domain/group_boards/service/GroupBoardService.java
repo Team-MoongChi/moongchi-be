@@ -156,7 +156,7 @@ public class GroupBoardService {
                 .collect(Collectors.toList());
     }
     
-    private GroupBoardDto convertToDto(GroupBoard board) {
+    public GroupBoardDto convertToDto(GroupBoard board) {
 
         GroupProduct groupProduct = board.getGroupProduct();
         Product product = groupProduct.getProduct();
