@@ -14,27 +14,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class SimulateController {
     private final ParticipantService participantService;
 
-    @PostMapping("/{chatRoomId}/simulate-join")
-    public ResponseEntity<String> simulateJoin(@PathVariable Long chatRoomId) {
+    @PostMapping("/{chatRoomId}/simulate-all")
+    public ResponseEntity<String> simulateAll(@PathVariable Long chatRoomId) {
         participantService.simulateJoin(chatRoomId);
-        return ResponseEntity.ok("참여자 시뮬레이션 완료");
-    }
-
-    @PostMapping("/{chatRoomId}/simulate-payment")
-    public ResponseEntity<String> simulatePayment(@PathVariable Long chatRoomId) {
         participantService.simulatePayment(chatRoomId);
-        return ResponseEntity.ok("결제 시뮬레이션 완료");
-    }
-
-    @PostMapping("/{chatRoomId}/simulate-purchase")
-    public ResponseEntity<String> simulatePurchase(@PathVariable Long chatRoomId) {
         participantService.simulatePurchase(chatRoomId);
-        return ResponseEntity.ok("구매 시뮬레이션 완료");
+        participantService.simulateTradeComplete(chatRoomId);
+        return ResponseEntity.ok("전체 시뮬레이션 완료");
     }
 
-    @PostMapping("/{chatRoomId}/simulate-trade-complete")
-    public ResponseEntity<String> simulateTradeComplete(@PathVariable Long chatRoomId) {
-        participantService.simulateTradeComplete(chatRoomId);
-        return ResponseEntity.ok("거래 완료 시뮬레이션 완료");
-    }
 }
