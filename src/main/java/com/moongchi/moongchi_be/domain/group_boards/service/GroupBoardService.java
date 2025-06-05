@@ -224,7 +224,7 @@ public class GroupBoardService {
                 .deadline(board.getDeadline())
                 .totalUsers(board.getTotalUsers())
                 .currentUsers(participants.size())
-                .groupProduct(groupProductDto)
+//                .groupProduct(groupProductDto)
                 .participants(participants)
                 .build();
     }
