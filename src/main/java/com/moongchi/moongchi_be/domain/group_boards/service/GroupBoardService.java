@@ -210,6 +210,7 @@ public class GroupBoardService {
                 .boardStatus(board.getBoardStatus())
                 .deadline(board.getDeadline())
                 .totalUsers(board.getTotalUsers())
+                .currentUsers(participants.size())
                 .groupProduct(groupProductDto)
                 .participants(participants)
                 .build();

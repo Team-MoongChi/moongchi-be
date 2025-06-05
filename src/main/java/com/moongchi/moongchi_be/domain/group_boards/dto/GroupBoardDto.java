@@ -22,6 +22,7 @@ public class GroupBoardDto {
     private BoardStatus boardStatus;
     private LocalDate deadline;
     private int totalUsers;
+    private int currentUsers;
     private GroupProductDto groupProduct;
     private List<ParticipantDto> participants;
 }
