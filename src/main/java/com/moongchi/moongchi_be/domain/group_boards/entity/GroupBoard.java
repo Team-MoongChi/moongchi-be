@@ -67,9 +67,6 @@ public class GroupBoard {
     @UpdateTimestamp
     private LocalDateTime updateAt;
 
-    @OneToOne(mappedBy = "groupBoard", fetch = FetchType.LAZY)
-    private ChatRoom chatRoom;
-
     //== 비즈니스 로직 ==//
     public void updateGroupProduct(GroupProduct groupProduct) {
         this.groupProduct = groupProduct;

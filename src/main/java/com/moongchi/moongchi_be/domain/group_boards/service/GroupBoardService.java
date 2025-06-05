@@ -194,7 +194,7 @@ public class GroupBoardService {
                         return ParticipantDto.builder()
                                 .id(p.getId())
                                 .userId(user.getId())
-                                .name(user.getName())
+                                .nickname(user.getNickname())
                                 .profileUrl(user.getProfileUrl())
                                 .mannerLeader("LEADER".equals(p.getRole().toString()) ? user.getMannerLeader() : null)
                                 .role(p.getRole().toString())

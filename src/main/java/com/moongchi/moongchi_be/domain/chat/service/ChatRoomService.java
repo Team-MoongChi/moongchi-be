@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,7 +45,12 @@ public class ChatRoomService {
                             .title(chatRoom.getTitle())
                             .status(chatRoom.getStatus())
                             .participantCount(participantCount)
-                            .imgUrl(List.of(chatRoom.getGroupBoard().getGroupProduct().getImages()).toString())
+                            .imgUrl(
+                                    Optional.ofNullable(chatRoom.getGroupBoard().getGroupProduct().getImages())
+                                            .filter(images -> !images.isEmpty())
+                                            .map(images -> images.get(0))
+                                            .orElse(null)
+                            )
                             .lastMessage(null)  // 메시지 로직은 아직 구현 안 됐으니 null 처리
                             .lastMessageTime(null)
                             .unreadCount(0)  // 추후 구현
@@ -61,7 +67,7 @@ public class ChatRoomService {
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         // 참여자 목록 조회
-        List<ParticipantDto> participants = participantRepository.findByChatRoomId(chatRoomId).stream()
+        List<ParticipantDto> participants = participantRepository.findAllByChatRoomId(chatRoomId).stream()
                 .map(p -> new ParticipantDto(
                         p.getUser().getId(),
                         p.getUser().getNickname(),
@@ -112,34 +118,53 @@ public class ChatRoomService {
         return savedChatRoom;
     }
 
-    //TODO : 시스템 메시지 사용
     @Transactional
-    public void updateChatRoomStatus(Long chatRoomId, ChatRoomStatus status) {
-
+    public void leaveChatRoom(Long chatRoomId,Long userId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
-        chatRoom.setStatus(status);
-        chatRoomRepository.save(chatRoom);
+        if(chatRoom.getStatus() != ChatRoomStatus.RECRUITED) {
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
 
-        String systemMessage = getSystemMessageForStatus(status);
+        Participant participant = participantRepository.findByChatRoomIdAndUserId(chatRoomId,userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.FORBIDDEN));
 
-        chatMessageService.sendSystemMessage(
-                chatRoom.getId().toString(),
-                systemMessage
-        );
+        if(participant.getRole() == Role.LEADER) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+
+        participantRepository.delete(participant);
     }
 
-    private String getSystemMessageForStatus(ChatRoomStatus status) {
-        return switch (status) {
-            case RECRUITING -> "공구가 시작 되었습니다. 참여자를 모집 중입니다.";
-            case RECRUITED -> "모집이 완료 되었습니다. 각 참여자들은 결제를 진행해주세요.";
-            case PAYING -> "결제가 시작되었습니다. n분의 1 결제를 완료해주세요.";
-            case PURCHASED -> "물품 구매가 완료되었습니다. 오프라인 만남을 진행해주세요.";
-            case COMPLETED -> "공구가 완료되었습니다. 리뷰를 남겨주세요.";
-        };
-    }
-
+    //TODO : 시스템 메시지 사용
+//    @Transactional
+//    public void updateChatRoomStatus(Long chatRoomId, ChatRoomStatus status) {
+//
+//        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+//                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+//
+//        chatRoom.setStatus(status);
+//        chatRoomRepository.save(chatRoom);
+//
+//        String systemMessage = getSystemMessageForStatus(status);
+//
+//        chatMessageService.sendSystemMessage(
+//                chatRoom.getId().toString(),
+//                systemMessage
+//        );
+//    }
+//
+//    private String getSystemMessageForStatus(ChatRoomStatus status) {
+//        return switch (status) {
+//            case RECRUITING -> "공구가 시작 되었습니다. 참여자를 모집 중입니다.";
+//            case RECRUITED -> "모집이 완료 되었습니다. 각 참여자들은 결제를 진행해주세요.";
+//            case PAYING -> "결제가 시작되었습니다. n분의 1 결제를 완료해주세요.";
+//            case PURCHASED -> "물품 구매가 완료되었습니다. 오프라인 만남을 진행해주세요.";
+//            case COMPLETED -> "공구가 완료되었습니다. 리뷰를 남겨주세요.";
+//        };
+//    }
+//
 
 
 }
