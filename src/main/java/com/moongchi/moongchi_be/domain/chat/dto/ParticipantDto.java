@@ -15,4 +15,5 @@ public class ParticipantDto {
     private String name;
     private String profileUrl;
     private String role;
+    private Double mannerLeader;
 }

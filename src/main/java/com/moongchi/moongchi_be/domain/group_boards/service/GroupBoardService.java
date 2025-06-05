@@ -196,6 +196,7 @@ public class GroupBoardService {
                                 .userId(user.getId())
                                 .name(user.getName())
                                 .profileUrl(user.getProfileUrl())
+                                .mannerLeader("LEADER".equals(p.getRole().toString()) ? user.getMannerLeader() : null)
                                 .role(p.getRole().toString())
                                 .build();
                     }).collect(Collectors.toList());
