@@ -1,6 +1,7 @@
 package com.moongchi.moongchi_be.domain.group_boards.controller;
 
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardDto;
+import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardListDto;
 import com.moongchi.moongchi_be.domain.group_boards.service.SearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +19,8 @@ public class SearchController {
     private final SearchService searchService;
 
     @GetMapping("/search")
-    public ResponseEntity<List<GroupBoardDto>> search(@RequestParam String keyword){
-        List<GroupBoardDto> groupBoardDtos = searchService.search(keyword);
+    public ResponseEntity<List<GroupBoardListDto>> search(@RequestParam String keyword){
+        List<GroupBoardListDto> groupBoardDtos = searchService.search(keyword);
         return ResponseEntity.ok(groupBoardDtos);
     }
 }

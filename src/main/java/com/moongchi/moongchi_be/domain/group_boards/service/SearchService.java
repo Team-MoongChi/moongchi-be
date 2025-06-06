@@ -1,6 +1,7 @@
 package com.moongchi.moongchi_be.domain.group_boards.service;
 
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardDto;
+import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardListDto;
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupBoard;
 import com.moongchi.moongchi_be.domain.group_boards.repository.GroupBoardRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,11 +16,11 @@ public class SearchService {
     private final GroupBoardRepository groupBoardRepository;
     private final GroupBoardService groupBoardService;
 
-    public List<GroupBoardDto> search(String keyword){
+    public List<GroupBoardListDto> search(String keyword){
         List<GroupBoard> groupBoards = groupBoardRepository.findByTitleContaining(keyword);
 
         return groupBoards.stream()
-                .map(groupBoardService::convertToDto)
+                .map(groupBoardService::convertToListDto)
                 .collect(Collectors.toList());
     }
 }
