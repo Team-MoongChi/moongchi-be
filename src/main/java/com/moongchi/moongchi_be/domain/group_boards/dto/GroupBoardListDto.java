@@ -4,27 +4,26 @@ import com.moongchi.moongchi_be.domain.chat.dto.ParticipantDto;
 import com.moongchi.moongchi_be.domain.group_boards.enums.BoardStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
-@Data
+@Getter
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class GroupBoardDto {
+public class GroupBoardListDto {
     private Long id;
     private String title;
     private int price;
-    private String content;
     private String location;
     private BoardStatus boardStatus;
-    private LocalDate deadline;
     private int totalUsers;
     private int currentUsers;
-    private String productUrl;
-    private List<String> images;
+    private String image;
+    private LocalDateTime createAt;
     private List<ParticipantDto> participants;
 }
-
-
