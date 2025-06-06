@@ -25,7 +25,7 @@ public class GroupBoardDto {
     private LocalDate deadline;
     private int totalUsers;
     private int currentUsers;
-    private ProductDto product;
+    private String productUrl;
     private List<String> images;
     private List<ParticipantDto> participants;
 }

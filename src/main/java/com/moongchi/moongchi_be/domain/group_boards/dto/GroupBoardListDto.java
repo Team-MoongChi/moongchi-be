@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -15,11 +17,13 @@ import java.util.List;
 @Builder
 public class GroupBoardListDto {
     private Long id;
+    private String title;
     private int price;
     private String location;
     private BoardStatus boardStatus;
     private int totalUsers;
     private int currentUsers;
     private String image;
+    private LocalDateTime createAt;
     private List<ParticipantDto> participants;
 }
