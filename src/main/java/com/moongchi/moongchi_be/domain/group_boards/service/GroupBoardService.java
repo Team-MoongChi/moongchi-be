@@ -1,6 +1,5 @@
 package com.moongchi.moongchi_be.domain.group_boards.service;
 
-import com.moongchi.moongchi_be.common.category.dto.CategoryResponseDto;
 import com.moongchi.moongchi_be.common.category.entity.Category;
 import com.moongchi.moongchi_be.common.category.repository.CategoryRepository;
 import com.moongchi.moongchi_be.common.exception.custom.CustomException;
@@ -12,13 +11,11 @@ import com.moongchi.moongchi_be.domain.chat.service.ChatRoomService;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardDto;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardListDto;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardRequestDto;
-import com.moongchi.moongchi_be.domain.group_boards.dto.GroupProductDto;
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupBoard;
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupProduct;
 import com.moongchi.moongchi_be.domain.group_boards.enums.BoardStatus;
 import com.moongchi.moongchi_be.domain.group_boards.repository.GroupBoardRepository;
 import com.moongchi.moongchi_be.domain.group_boards.repository.GroupProductRepository;
-import com.moongchi.moongchi_be.domain.product.dto.ProductDto;
 import com.moongchi.moongchi_be.domain.product.entity.Product;
 import com.moongchi.moongchi_be.domain.product.repository.ProductRepository;
 import com.moongchi.moongchi_be.domain.user.entity.User;
