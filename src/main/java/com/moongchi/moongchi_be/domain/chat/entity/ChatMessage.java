@@ -20,12 +20,12 @@ public class ChatMessage {
 
     private String chatRoomId;
 
+    private String participantId;
+
     private MessageType messageType = MessageType.TEXT;
 
     @CreatedDate
     private LocalDateTime sendAt;
-
-    private String userId;
 
     private String message;
 

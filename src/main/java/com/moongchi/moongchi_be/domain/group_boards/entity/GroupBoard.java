@@ -1,6 +1,7 @@
 package com.moongchi.moongchi_be.domain.group_boards.entity;
 
 import com.moongchi.moongchi_be.domain.chat.entity.ChatRoom;
+import com.moongchi.moongchi_be.domain.chat.entity.Participant;
 import com.moongchi.moongchi_be.domain.group_boards.enums.BoardStatus;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import jakarta.persistence.*;
@@ -10,6 +11,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "group_boards")
@@ -58,6 +60,9 @@ public class GroupBoard {
 
     @OneToOne(mappedBy = "groupBoard")
     private ChatRoom chatRoom;
+
+    @OneToMany(mappedBy = "groupBoard")
+    private List<Participant> participants;
 
     @Column(name = "create_at")
     @CreationTimestamp
