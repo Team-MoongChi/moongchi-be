@@ -18,11 +18,11 @@ import java.util.List;
 public class GroupBoardListDto {
     private Long id;
     private String title;
-    private int price;
+    private Integer price;
     private String location;
     private BoardStatus boardStatus;
-    private int totalUsers;
-    private int currentUsers;
+    private Integer totalUsers;
+    private Integer currentUsers;
     private String image;
     private LocalDateTime createAt;
     private List<ParticipantDto> participants;

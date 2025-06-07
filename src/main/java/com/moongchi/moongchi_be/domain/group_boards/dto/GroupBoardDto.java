@@ -17,13 +17,13 @@ import java.util.List;
 public class GroupBoardDto {
     private Long id;
     private String title;
-    private int price;
+    private Integer price;
     private String content;
     private String location;
     private BoardStatus boardStatus;
     private LocalDate deadline;
-    private int totalUsers;
-    private int currentUsers;
+    private Integer totalUsers;
+    private Integer currentUsers;
     private String productUrl;
     private List<String> images;
     private List<ParticipantDto> participants;

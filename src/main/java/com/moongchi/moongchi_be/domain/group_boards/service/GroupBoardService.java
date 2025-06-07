@@ -80,7 +80,7 @@ public class GroupBoardService {
                 .quantity(dto.getQuantity())
                 .category(category)
                 .product(product)
-                .images(dto.getImages())
+                .images(dto.getImages() == null ? Collections.singletonList(product.getImgUrl()): dto.getImages())
                 .build();
 
         groupBoard.updateGroupProduct(groupProduct);
@@ -155,7 +155,42 @@ public class GroupBoardService {
                 .collect(Collectors.toList());
     }
 
-    private GroupBoardListDto convertToListDto(GroupBoard board){
+    @Transactional(readOnly = true)
+    public List<GroupBoardDto> getProductGroupBoardList(Long productId) {
+        List<GroupBoard> groupBoards = groupBoardRepository.findByProductId(productId);
+
+        return groupBoards.stream()
+                .map(this::convertToParticipanDto)
+                .collect(Collectors.toList());
+    }
+
+    private GroupBoardDto convertToParticipanDto(GroupBoard board) {
+        List<ParticipantDto> participants = new ArrayList<>();
+        ChatRoom chatRoom = board.getChatRoom();
+        if (chatRoom != null && chatRoom.getParticipants() != null) {
+            participants = chatRoom.getParticipants().stream()
+                    .map(p -> {
+                        User user = p.getUser();
+                        return ParticipantDto.builder()
+                                .userId(user.getId())
+                                .profileUrl(user.getProfileUrl())
+                                .mannerLeader(p.getRole() == Role.LEADER ? user.getMannerLeader() : null)
+                                .role(p.getRole().toString())
+                                .build();
+                    }).collect(Collectors.toList());
+
+        }
+
+        return GroupBoardDto.builder()
+                .id(board.getId())
+                .totalUsers(board.getTotalUsers())
+                .currentUsers(participants.size())
+                .participants(participants)
+                .deadline(board.getDeadline())
+                .build();
+    }
+
+    private GroupBoardListDto convertToListDto(GroupBoard board) {
         GroupProduct groupProduct = board.getGroupProduct();
         Product product = groupProduct.getProduct();
 
@@ -228,7 +263,5 @@ public class GroupBoardService {
                 .participants(participants)
                 .build();
     }
-
-
 
 }
