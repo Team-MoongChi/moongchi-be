@@ -58,10 +58,10 @@ public class GroupBoard {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToOne(mappedBy = "groupBoard")
+    @OneToOne(mappedBy = "groupBoard",cascade = CascadeType.ALL, orphanRemoval = true)
     private ChatRoom chatRoom;
 
-    @OneToMany(mappedBy = "groupBoard")
+    @OneToMany(mappedBy = "groupBoard",cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Participant> participants;
 
     @Column(name = "create_at")
