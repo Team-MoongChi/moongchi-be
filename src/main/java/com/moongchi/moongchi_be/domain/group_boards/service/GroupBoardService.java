@@ -187,8 +187,8 @@ public class GroupBoardService {
 
         List<ParticipantDto> participants = new ArrayList<>();
         ChatRoom chatRoom = board.getChatRoom();
-        if (chatRoom != null && chatRoom.getParticipants() != null) {
-            participants = chatRoom.getParticipants().stream()
+        if (chatRoom != null && chatRoom.getGroupBoard().getParticipants() != null) {
+            participants = chatRoom.getGroupBoard().getParticipants().stream()
                     .map(p -> {
                         User user = p.getUser();
                         return ParticipantDto.builder()
