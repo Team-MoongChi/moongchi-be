@@ -13,6 +13,8 @@ import com.moongchi.moongchi_be.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class ParticipantService {
@@ -28,27 +30,24 @@ public class ParticipantService {
         GroupBoard board = groupBoardRepository.findById(groupBoardId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
-        // 중복 참가 방지
         if (participantRepository.existsByUserIdAndGroupBoardId(userId, groupBoardId)) {
             throw new CustomException(ErrorCode.CONFLICT);
         }
 
-        // 모집 인원 초과 방지
         int currentCount = participantRepository.countByGroupBoardId(groupBoardId);
         if (currentCount >= board.getTotalUsers()) {
             throw new CustomException(ErrorCode.CONFLICT);
         }
 
-        // participant 생성
         Participant participant = new Participant();
         participant.setUser(userRepository.findById(userId).orElseThrow());
         participant.setGroupBoard(board);
         participant.setPaymentStatus(PaymentStatus.UNPAID);
         participant.setTradeCompleted(false);
         participant.setRole(Role.MEMBER);
+        participant.setJoinedAt(LocalDateTime.now());
         participantRepository.save(participant);
 
-        // 상태 업데이트 (모집완료)
         if (currentCount + 1 == board.getTotalUsers()) {
             board.setBoardStatus(BoardStatus.CLOSED);
 
@@ -63,5 +62,6 @@ public class ParticipantService {
 //                    "모든 인원이 모였습니다. 결제를 진행해주세요.");
         }
     }
+    
 
 }
