@@ -163,52 +163,44 @@ public class ChatRoomService {
         int currentParticipants = participantRepository.countByChatRoomId(chatRoomId);
 
         List<Participant> participants = participantRepository.findAllByChatRoomId(chatRoomId);
-        boolean allPaid = participants.stream()
-                .allMatch(p -> p.getPaymentStatus() == PaymentStatus.PAID);
+        boolean allPaid = participants.stream().allMatch(p -> p.getPaymentStatus() == PaymentStatus.PAID);
+        boolean anyPaid = participants.stream().anyMatch(p -> p.getPaymentStatus() == PaymentStatus.PAID);
+        boolean allTraded = participants.stream().allMatch(Participant::isTradeCompleted);
 
-//        //영수증 인증
-//        boolean receiptCertified = groupBoard.isReceiptCertified();
+        ChatRoomStatus prev = chatRoom.getStatus();
+        ChatRoomStatus next = prev;
 
-        boolean allTradeCompleted = participants.stream()
-                .allMatch(Participant::isTradeCompleted);
+        switch (prev) {
 
-        ChatRoomStatus prevStatus = chatRoom.getStatus();
-        ChatRoomStatus newStatus = prevStatus;
-
-        switch (prevStatus) {
             case RECRUITING:
                 if (currentParticipants == requiredParticipants) {
-                    newStatus = ChatRoomStatus.RECRUITED;
+                    next = ChatRoomStatus.RECRUITED;
                 }
                 break;
-
             case RECRUITED:
-                if (allPaid) {
-                    newStatus = ChatRoomStatus.PAYING;
-                }
-                break;
-
             case PAYING:
-                // 영수증 인증시 코드 추가
-                newStatus = ChatRoomStatus.PURCHASED;
+                if (allPaid) {
+                    next = ChatRoomStatus.PURCHASED;
+                } else if (anyPaid) {
+                    next = ChatRoomStatus.PAYING;
+                }
                 break;
 
             case PURCHASED:
-                if (allTradeCompleted) {
-                    newStatus = ChatRoomStatus.COMPLETED;
+                if (allTraded) {
+                    next = ChatRoomStatus.COMPLETED;
                 }
                 break;
 
-            case COMPLETED:
+            default:
                 break;
         }
 
-        if (newStatus != prevStatus) {
-            chatRoom.setStatus(newStatus);
+        if (next != prev) {
+            chatRoom.setStatus(next);
             chatRoomRepository.save(chatRoom);
         }
+        return next;
 
-        return newStatus;
     }
-
 }
