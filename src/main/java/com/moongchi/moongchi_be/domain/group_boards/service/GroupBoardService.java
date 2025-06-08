@@ -5,7 +5,7 @@ import com.moongchi.moongchi_be.common.category.entity.Category;
 import com.moongchi.moongchi_be.common.category.repository.CategoryRepository;
 import com.moongchi.moongchi_be.common.exception.custom.CustomException;
 import com.moongchi.moongchi_be.common.exception.errorcode.ErrorCode;
-import com.moongchi.moongchi_be.domain.chat.dto.ParticipantDto;
+import com.moongchi.moongchi_be.domain.chat.dto.BoardParticipantDto;
 import com.moongchi.moongchi_be.domain.chat.entity.ChatRoom;
 import com.moongchi.moongchi_be.domain.chat.service.ChatRoomService;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardDto;
@@ -185,13 +185,13 @@ public class GroupBoardService {
                 .product(productDto)
                 .build();
 
-        List<ParticipantDto> participants = new ArrayList<>();
+        List<BoardParticipantDto> participants = new ArrayList<>();
         ChatRoom chatRoom = board.getChatRoom();
         if (chatRoom != null && chatRoom.getGroupBoard().getParticipants() != null) {
             participants = chatRoom.getGroupBoard().getParticipants().stream()
                     .map(p -> {
                         User user = p.getUser();
-                        return ParticipantDto.builder()
+                        return BoardParticipantDto.builder()
                                 .id(p.getId())
                                 .userId(user.getId())
                                 .nickname(user.getNickname())

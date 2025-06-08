@@ -81,9 +81,7 @@ public class ChatRoomService {
             price = product.getPrice();
         }
 
-        // 모집 인원 수
         int totalUsers = chatRoom.getGroupBoard().getTotalUsers();
-        // 1인당 부담 금액 (내림으로 계산하려면 totalPrice / totalUsers)
         int perPersonPrice = (totalUsers > 0)
                 ? (price / totalUsers)
                 : 0;
@@ -94,6 +92,7 @@ public class ChatRoomService {
                         p.getUser().getId(),
                         p.getUser().getNickname(),
                         p.getUser().getProfileUrl(),
+                        p.getRole().toString(),
                         p.getPaymentStatus().toString(),
                         p.isTradeCompleted(),
                         perPersonPrice
@@ -139,6 +138,7 @@ public class ChatRoomService {
                 .groupBoard(groupBoard)
                 .user(creator)
                 .role(Role.LEADER)
+                .tradeCompleted(true)
                 .joinedAt(LocalDateTime.now())
                 .paymentStatus(PaymentStatus.PAID)
                 .build();
@@ -192,7 +192,6 @@ public class ChatRoomService {
                 // 영수증 인증시 코드 추가
                 newStatus = ChatRoomStatus.PURCHASED;
                 break;
-
 
             case PURCHASED:
                 if (allTradeCompleted) {
