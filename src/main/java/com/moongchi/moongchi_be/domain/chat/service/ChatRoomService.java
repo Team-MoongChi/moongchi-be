@@ -11,6 +11,7 @@ import com.moongchi.moongchi_be.domain.chat.repository.ChatMessageRepository;
 import com.moongchi.moongchi_be.domain.chat.repository.ChatRoomRepository;
 import com.moongchi.moongchi_be.domain.chat.repository.ParticipantRepository;
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupBoard;
+import com.moongchi.moongchi_be.domain.group_boards.entity.GroupProduct;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,72 +31,101 @@ public class ChatRoomService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatMessageService chatMessageService;
 
+    //채팅방 조회
     @Transactional(readOnly = true)
     public List<ChatRoomResponseDto> getUserChatRooms(Long userId) {
         List<Participant> participants = participantRepository.findByUserId(userId);
 
         return participants.stream()
-                .map(Participant::getChatRoom)
-                .distinct()
+                .map(Participant::getGroupBoard)
+                .map(GroupBoard::getChatRoom)
+                .filter(Objects::nonNull)
                 .map(chatRoom -> {
-                    int participantCount = participantRepository.countByChatRoomId(chatRoom.getId());
+                    GroupBoard board = chatRoom.getGroupBoard();
+                    GroupProduct product = board.getGroupProduct();
+
+                    String title = (product != null)
+                            ? product.getName() + product.getQuantity() + "공구방"
+                            : "상품 정보 없음 공구방";
+
+                    String imgUrl = (product != null && product.getImages() != null && !product.getImages().isEmpty())
+                            ? product.getImages().get(0)
+                            : null;
 
                     return ChatRoomResponseDto.builder()
                             .id(chatRoom.getId())
-                            .title(chatRoom.getGroupBoard().getGroupProduct().getName() + chatRoom.getGroupBoard().getGroupProduct().getQuantity() + "공구방")
-                            .status(chatRoom.getStatus())
-                            .participantCount(participantCount)
-                            .imgUrl(
-                                    Optional.ofNullable(chatRoom.getGroupBoard().getGroupProduct().getImages())
-                                            .filter(images -> !images.isEmpty())
-                                            .map(images -> images.get(0))
-                                            .orElse(null)
-                            )
-                            .lastMessage(null)  // 메시지 로직은 아직 구현 안 됐으니 null 처리
+                            .title(title)
+                            .status(chatRoom.getStatus().getKorean())
+                            .imgUrl(imgUrl)
+                            .participantCount(participantRepository.countByGroupBoardId(board.getId()))
+                            .lastMessage(null)
                             .lastMessageTime(null)
-                            .unreadCount(0)  // 추후 구현
-                            .createdAt(chatRoom.getCreatedAt())
-                            .updatedAt(chatRoom.getUpdatedAt())
+                            .unreadCount(0)
                             .build();
                 })
+
                 .collect(Collectors.toList());
     }
 
+    //채팅방 상세조회
     @Transactional(readOnly = true)
     public ChatRoomDetailDto getChatRoomDetail(Long chatRoomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+        GroupProduct product = chatRoom.getGroupBoard().getGroupProduct();
+        String imgUrl = null;
+        int price = 0;
 
-        // 참여자 목록 조회
+        if (product != null && product.getImages() != null && !product.getImages().isEmpty()) {
+            imgUrl = product.getImages().get(0);
+            price = product.getPrice();
+        }
+
+        // 모집 인원 수
+        int totalUsers = chatRoom.getGroupBoard().getTotalUsers();
+        // 1인당 부담 금액 (내림으로 계산하려면 totalPrice / totalUsers)
+        int perPersonPrice = (totalUsers > 0)
+                ? (price / totalUsers)
+                : 0;
+
         List<ParticipantDto> participants = participantRepository.findAllByChatRoomId(chatRoomId).stream()
                 .map(p -> new ParticipantDto(
+                        p.getId(),
                         p.getUser().getId(),
                         p.getUser().getNickname(),
-                        p.getUser().getProfileUrl()
+                        p.getUser().getProfileUrl(),
+                        p.getPaymentStatus().toString(),
+                        p.isTradeCompleted(),
+                        perPersonPrice
                 )).collect(Collectors.toList());
 
-        // 메시지 목록 조회
-        List<MessageDto> messages = chatMessageRepository.findByChatRoomId(chatRoomId).stream()
+        List<MessageDto> messages = chatMessageRepository
+                .findByChatRoomIdOrderBySendAtAsc(chatRoomId.toString())
+                .stream()
                 .map(m -> new MessageDto(
                         m.getId(),
-                        m.getUserId(),
+                        m.getParticipantId(),
                         m.getMessage(),
                         m.getMessageType().name(),
                         m.getSendAt()
-                )).collect(Collectors.toList());
+                ))
+                .collect(Collectors.toList());
 
         return new ChatRoomDetailDto(
                 chatRoom.getId(),
                 chatRoom.getTitle(),
                 chatRoom.getStatus().getKorean(),
+                imgUrl,
+                price,
                 participants,
                 messages
         );
     }
 
+
+    // 채팅방 생성
     @Transactional
     public ChatRoom createChatRoomWithParticipant(GroupBoard groupBoard, User creator) {
-        // 1. 채팅방 생성
         ChatRoom chatRoom = new ChatRoom();
         chatRoom.setTitle(groupBoard.getGroupProduct().getName() + " " + groupBoard.getGroupProduct().getQuantity() + " 공구방" );
         chatRoom.setStatus(ChatRoomStatus.RECRUITING);
@@ -106,7 +136,6 @@ public class ChatRoomService {
         ChatRoom savedChatRoom = chatRoomRepository.save(chatRoom);
 
         Participant participant = Participant.builder()
-                .chatRoom(savedChatRoom)
                 .groupBoard(groupBoard)
                 .user(creator)
                 .role(Role.LEADER)
@@ -118,53 +147,69 @@ public class ChatRoomService {
         return savedChatRoom;
     }
 
+    public ChatRoom getChatRoom(Long chatRoomId) {
+        return chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+    }
+
+    //채팅방 상태 업데이트
     @Transactional
-    public void leaveChatRoom(Long chatRoomId,Long userId) {
+    public ChatRoomStatus updateChatRoomStatus(Long chatRoomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
-        if(chatRoom.getStatus() != ChatRoomStatus.RECRUITING) {
-            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+        GroupBoard groupBoard = chatRoom.getGroupBoard();
+        int requiredParticipants = groupBoard.getTotalUsers();
+        int currentParticipants = participantRepository.countByChatRoomId(chatRoomId);
+
+        List<Participant> participants = participantRepository.findAllByChatRoomId(chatRoomId);
+        boolean allPaid = participants.stream()
+                .allMatch(p -> p.getPaymentStatus() == PaymentStatus.PAID);
+
+//        //영수증 인증
+//        boolean receiptCertified = groupBoard.isReceiptCertified();
+
+        boolean allTradeCompleted = participants.stream()
+                .allMatch(Participant::isTradeCompleted);
+
+        ChatRoomStatus prevStatus = chatRoom.getStatus();
+        ChatRoomStatus newStatus = prevStatus;
+
+        switch (prevStatus) {
+            case RECRUITING:
+                if (currentParticipants == requiredParticipants) {
+                    newStatus = ChatRoomStatus.RECRUITED;
+                }
+                break;
+
+            case RECRUITED:
+                if (allPaid) {
+                    newStatus = ChatRoomStatus.PAYING;
+                }
+                break;
+
+            case PAYING:
+                // 영수증 인증시 코드 추가
+                newStatus = ChatRoomStatus.PURCHASED;
+                break;
+
+
+            case PURCHASED:
+                if (allTradeCompleted) {
+                    newStatus = ChatRoomStatus.COMPLETED;
+                }
+                break;
+
+            case COMPLETED:
+                break;
         }
 
-        Participant participant = participantRepository.findByChatRoomIdAndUserId(chatRoomId,userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.FORBIDDEN));
-
-        if(participant.getRole() == Role.LEADER) {
-            throw new CustomException(ErrorCode.FORBIDDEN);
+        if (newStatus != prevStatus) {
+            chatRoom.setStatus(newStatus);
+            chatRoomRepository.save(chatRoom);
         }
 
-        participantRepository.delete(participant);
+        return newStatus;
     }
-
-    //TODO : 시스템 메시지 사용
-//    @Transactional
-//    public void updateChatRoomStatus(Long chatRoomId, ChatRoomStatus status) {
-//
-//        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-//                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
-//
-//        chatRoom.setStatus(status);
-//        chatRoomRepository.save(chatRoom);
-//
-//        String systemMessage = getSystemMessageForStatus(status);
-//
-//        chatMessageService.sendSystemMessage(
-//                chatRoom.getId().toString(),
-//                systemMessage
-//        );
-//    }
-//
-//    private String getSystemMessageForStatus(ChatRoomStatus status) {
-//        return switch (status) {
-//            case RECRUITING -> "공구가 시작 되었습니다. 참여자를 모집 중입니다.";
-//            case RECRUITED -> "모집이 완료 되었습니다. 각 참여자들은 결제를 진행해주세요.";
-//            case PAYING -> "결제가 시작되었습니다. n분의 1 결제를 완료해주세요.";
-//            case PURCHASED -> "물품 구매가 완료되었습니다. 오프라인 만남을 진행해주세요.";
-//            case COMPLETED -> "공구가 완료되었습니다. 리뷰를 남겨주세요.";
-//        };
-//    }
-//
-
 
 }

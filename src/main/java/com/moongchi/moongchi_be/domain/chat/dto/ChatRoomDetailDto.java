@@ -15,6 +15,8 @@ public class ChatRoomDetailDto {
     private Long id;
     private String title;
     private String status;
+    private String imgUrl;
+    private int price;
     private List<ParticipantDto> participants;
     private List<MessageDto> messages;
 }

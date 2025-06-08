@@ -11,6 +11,9 @@ public class ParticipantDto {
     private String nickname;
     private String profileUrl;
     private String role;
+    private String payStatement;
+    private boolean tradeCompleted;
+    private int perPersonPrice;
     private Double mannerLeader;
 
     @Builder
@@ -24,9 +27,13 @@ public class ParticipantDto {
     }
 
     @Builder
-    public ParticipantDto(Long userId,String nickname, String profileUrl) {
+    public ParticipantDto(Long id,Long userId,String nickname, String profileUrl,String payStatement, boolean tradeCompleted,int perPersonPrice) {
+        this.id = id;
         this.userId = userId;
         this.nickname = nickname;
         this.profileUrl = profileUrl;
+        this.payStatement = payStatement;
+        this.tradeCompleted = tradeCompleted;
+        this.perPersonPrice = perPersonPrice;
     }
 }
