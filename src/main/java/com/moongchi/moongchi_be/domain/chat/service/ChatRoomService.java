@@ -199,8 +199,29 @@ public class ChatRoomService {
         if (next != prev) {
             chatRoom.setStatus(next);
             chatRoomRepository.save(chatRoom);
+
+            // 상태별 메시지 내용 생성 (예시)
+            String msg = switch (next) {
+                case RECRUITED -> "모집이 완료되었습니다! 결제를 진행해 주세요.";
+                case PAYING -> "일부 결제가 완료되었습니다. 나머지 인원도 결제해 주세요.";
+                case PURCHASED -> "공동구매가 완료되었습니다! 거래 장소/시간을 공지해 주세요.";
+                case COMPLETED -> "거래가 모두 완료되었습니다. 리뷰를 작성해 보세요!";
+                default -> "채팅방 상태가 " + next.name() + "로 변경되었습니다.";
+            };
+            sendSystemMessage(chatRoomId, msg);
         }
         return next;
 
     }
+
+    public void sendSystemMessage(Long chatRoomId, String message) {
+        ChatMessage systemMsg = ChatMessage.builder()
+                .chatRoomId(chatRoomId.toString())
+                .participantId(null) 
+                .message(message)
+                .messageType(MessageType.SYSTEM)
+                .build();
+        chatMessageRepository.save(systemMsg);
+    }
+
 }
