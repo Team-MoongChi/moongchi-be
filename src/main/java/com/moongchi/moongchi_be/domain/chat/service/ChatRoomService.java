@@ -217,7 +217,7 @@ public class ChatRoomService {
     public void sendSystemMessage(Long chatRoomId, String message) {
         ChatMessage systemMsg = ChatMessage.builder()
                 .chatRoomId(chatRoomId.toString())
-                .participantId(null) 
+                .participantId(null)
                 .message(message)
                 .messageType(MessageType.SYSTEM)
                 .build();
