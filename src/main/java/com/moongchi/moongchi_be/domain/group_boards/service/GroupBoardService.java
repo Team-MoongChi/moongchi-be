@@ -165,13 +165,12 @@ public class GroupBoardService {
     }
 
     private GroupBoardDto convertToParticipanDto(GroupBoard board) {
-        List<ParticipantDto> participants = new ArrayList<>();
-        ChatRoom chatRoom = board.getChatRoom();
-        if (chatRoom != null && chatRoom.getParticipants() != null) {
-            participants = chatRoom.getParticipants().stream()
+        List<BoardParticipantDto> participants = new ArrayList<>();
+        if (board.getParticipants() != null) {
+            participants = board.getParticipants().stream()
                     .map(p -> {
                         User user = p.getUser();
-                        return ParticipantDto.builder()
+                        return BoardParticipantDto.builder()
                                 .userId(user.getId())
                                 .profileUrl(user.getProfileUrl())
                                 .mannerLeader(p.getRole() == Role.LEADER ? user.getMannerLeader() : null)
@@ -234,13 +233,12 @@ public class GroupBoardService {
         GroupProduct groupProduct = board.getGroupProduct();
         Product product = groupProduct.getProduct();
 
-        List<ParticipantDto> participants = new ArrayList<>();
-        ChatRoom chatRoom = board.getChatRoom();
-        if (chatRoom != null && chatRoom.getParticipants() != null) {
-            participants = chatRoom.getParticipants().stream()
+        List<BoardParticipantDto> participants = new ArrayList<>();
+        if (board.getParticipants() != null) {
+            participants = board.getParticipants().stream()
                     .map(p -> {
                         User user = p.getUser();
-                        return ParticipantDto.builder()
+                        return BoardParticipantDto.builder()
                                 .userId(user.getId())
                                 .nickname(user.getNickname())
                                 .profileUrl(user.getProfileUrl())

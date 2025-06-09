@@ -26,8 +26,6 @@ public class GroupBoardDto {
     private String productUrl;
     private List<String> images;
     private List<BoardParticipantDto> participants;
-    private GroupProductDto groupProduct;
-    private List<BoardParticipantDto> participants;
 }
 
 
