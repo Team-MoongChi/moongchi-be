@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,6 +52,11 @@ public class ChatRoomService {
                     String imgUrl = (product != null && product.getImages() != null && !product.getImages().isEmpty())
                             ? product.getImages().get(0)
                             : null;
+                    Optional<ChatMessage> lastMessageOpt =
+                            chatMessageRepository.findFirstByChatRoomIdOrderBySendAtDesc(chatRoom.getId().toString());
+                    String lastMessage = lastMessageOpt.map(ChatMessage::getMessage).orElse(null);
+                    LocalDateTime lastMessageTime = lastMessageOpt.map(ChatMessage::getSendAt).orElse(null);
+
 
                     return ChatRoomResponseDto.builder()
                             .id(chatRoom.getId())
@@ -58,8 +64,8 @@ public class ChatRoomService {
                             .status(chatRoom.getStatus().getKorean())
                             .imgUrl(imgUrl)
                             .participantCount(participantRepository.countByGroupBoardId(board.getId()))
-                            .lastMessage(null)
-                            .lastMessageTime(null)
+                            .lastMessage(lastMessage)
+                            .lastMessageTime(lastMessageTime)
                             .unreadCount(0)
                             .build();
                 })
