@@ -4,7 +4,7 @@ import com.moongchi.moongchi_be.common.category.entity.Category;
 import com.moongchi.moongchi_be.common.category.repository.CategoryRepository;
 import com.moongchi.moongchi_be.common.exception.custom.CustomException;
 import com.moongchi.moongchi_be.common.exception.errorcode.ErrorCode;
-import com.moongchi.moongchi_be.domain.chat.dto.ParticipantDto;
+import com.moongchi.moongchi_be.domain.chat.dto.BoardParticipantDto;
 import com.moongchi.moongchi_be.domain.chat.entity.ChatRoom;
 import com.moongchi.moongchi_be.domain.chat.entity.Role;
 import com.moongchi.moongchi_be.domain.chat.service.ChatRoomService;
@@ -194,14 +194,16 @@ public class GroupBoardService {
         GroupProduct groupProduct = board.getGroupProduct();
         Product product = groupProduct.getProduct();
 
-        List<ParticipantDto> participants = new ArrayList<>();
+        List<BoardParticipantDto> participants = new ArrayList<>();
         ChatRoom chatRoom = board.getChatRoom();
-        if (chatRoom != null && chatRoom.getParticipants() != null) {
-            participants = chatRoom.getParticipants().stream()
+        if (chatRoom != null && chatRoom.getGroupBoard().getParticipants() != null) {
+            participants = chatRoom.getGroupBoard().getParticipants().stream()
                     .map(p -> {
                         User user = p.getUser();
-                        return ParticipantDto.builder()
+                        return BoardParticipantDto.builder()
+                                .id(p.getId())
                                 .userId(user.getId())
+                                .nickname(user.getNickname())
                                 .profileUrl(user.getProfileUrl())
                                 .build();
                     }).collect(Collectors.toList());
@@ -254,7 +256,7 @@ public class GroupBoardService {
                 .price(groupProduct.getPrice())
                 .content(board.getContent())
                 .location(board.getLocation())
-                .boardStatus(board.getBoardStatus())
+                .boardStatus(board.getBoardStatus().toString())
                 .deadline(board.getDeadline())
                 .totalUsers(board.getTotalUsers())
                 .currentUsers(participants.size())

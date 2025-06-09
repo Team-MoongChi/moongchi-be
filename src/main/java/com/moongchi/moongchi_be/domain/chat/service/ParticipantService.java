@@ -1,14 +1,19 @@
 package com.moongchi.moongchi_be.domain.chat.service;
 
-import com.moongchi.moongchi_be.domain.chat.entity.*;
+import com.moongchi.moongchi_be.common.exception.custom.CustomException;
+import com.moongchi.moongchi_be.common.exception.errorcode.ErrorCode;
+import com.moongchi.moongchi_be.domain.chat.entity.ChatRoom;
+import com.moongchi.moongchi_be.domain.chat.entity.Participant;
+import com.moongchi.moongchi_be.domain.chat.entity.PaymentStatus;
+import com.moongchi.moongchi_be.domain.chat.entity.Role;
 import com.moongchi.moongchi_be.domain.chat.repository.ChatRoomRepository;
 import com.moongchi.moongchi_be.domain.chat.repository.ParticipantRepository;
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupBoard;
-import com.moongchi.moongchi_be.domain.user.entity.User;
-import com.moongchi.moongchi_be.domain.user.service.UserService;
+import com.moongchi.moongchi_be.domain.group_boards.enums.BoardStatus;
+import com.moongchi.moongchi_be.domain.group_boards.repository.GroupBoardRepository;
+import com.moongchi.moongchi_be.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,101 +22,105 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ParticipantService {
 
+    private final UserRepository userRepository;
     private final ParticipantRepository participantRepository;
     private final ChatRoomRepository chatRoomRepository;
+    private final GroupBoardRepository groupBoardRepository;
     private final ChatRoomService chatRoomService;
-    private final UserService userService;
 
-    @Transactional
-    public void joinChatRoom(Long chatRoomId, Long userId) {
-        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
-        GroupBoard groupBoard = chatRoom.getGroupBoard();
+    public void joinGroupBoard(Long userId, Long groupBoardId) {
+        GroupBoard board = groupBoardRepository.findById(groupBoardId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
-        // 이미 참여한 유저인지 체크
-        boolean alreadyJoined = participantRepository.existsByChatRoomIdAndUserId(chatRoomId, userId);
-        if (alreadyJoined) {
-            throw new IllegalStateException("이미 참여한 채팅방입니다.");
+        if (participantRepository.existsByUserIdAndGroupBoardId(userId, groupBoardId)) {
+            throw new CustomException(ErrorCode.CONFLICT);
         }
 
-        User user = userService.findById(userId).get();
+        int currentCount = participantRepository.countByGroupBoardId(groupBoardId);
+        if (currentCount >= board.getTotalUsers()) {
+            throw new CustomException(ErrorCode.CONFLICT);
+        }
+
+        if(currentCount -1 == participantRepository.countByChatRoomId(groupBoardId)) {
+            board.setBoardStatus(BoardStatus.CLOSING_SOON);
+            groupBoardRepository.save(board);
+        }
 
         Participant participant = new Participant();
-        participant.setChatRoom(chatRoom);
-        participant.setGroupBoard(groupBoard);
-        participant.setUser(user);
-        participant.setRole(Role.MEMBER);  // 일반 참여자 역할
-        participant.setJoinedAt(LocalDateTime.now());
+        participant.setUser(userRepository.findById(userId).orElseThrow());
+        participant.setGroupBoard(board);
         participant.setPaymentStatus(PaymentStatus.UNPAID);
-
+        participant.setTradeCompleted(false);
+        participant.setRole(Role.MEMBER);
+        participant.setJoinedAt(LocalDateTime.now());
         participantRepository.save(participant);
 
-        int currentParticipants = participantRepository.countByChatRoomId(chatRoomId);
-        int maxCount = groupBoard.getTotalUsers();
+        if (participantRepository.countByGroupBoardId(groupBoardId) == board.getTotalUsers()) {
+            board.setBoardStatus(BoardStatus.CLOSED);
+            groupBoardRepository.save(board);
 
-        if (currentParticipants >= maxCount) {
-            chatRoom.setStatus(ChatRoomStatus.PAYING);
-            chatRoomRepository.save(chatRoom);  // 상태 저장
+            ChatRoom chatRoom = chatRoomRepository.findByGroupBoard(board)
+                    .orElseThrow();
+            chatRoomService.updateChatRoomStatus(chatRoom.getId());
+
         }
     }
 
-    @Transactional
-    public void pay(Long chatRoomId, Long userId) {
-        Participant participant = participantRepository.findByChatRoomIdAndUserId(chatRoomId, userId)
-                .orElseThrow(() -> new IllegalArgumentException("참여 정보를 찾을 수 없습니다."));
+    public void pay(Long participantId) {
+        Participant p = participantRepository.findById(participantId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
-        if (participant.getPaymentStatus() == PaymentStatus.PAID) {
-            throw new IllegalStateException("이미 결제한 사용자입니다.");
-        }
+        p.setPaymentStatus(PaymentStatus.PAID);
+        participantRepository.save(p);
 
-        // 결제 상태 변경
-        participant.setPaymentStatus(PaymentStatus.PAID);
-        participantRepository.save(participant);
+        ChatRoom chatRoom = chatRoomRepository
+                .findByGroupBoard(p.getGroupBoard())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
-        // 모든 참가자가 결제했는지 확인
-        List<Participant> participants = participantRepository.findAllByChatRoomId(chatRoomId);
-
-        boolean allPaid = participants.stream()
-                .allMatch(p -> p.getPaymentStatus() == PaymentStatus.PAID);
-
-        if (allPaid) {
-            // 채팅방 상태 직접 변경 (메시지 발송 없이)
-            ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
-            chatRoom.setStatus(ChatRoomStatus.PURCHASED);
-            chatRoomRepository.save(chatRoom);
-            }
-        }
-
-    @Transactional
-    public void completeTrade(Long chatRoomId, Long userId) {
-        Participant participant = participantRepository.findByChatRoomIdAndUserId(chatRoomId, userId)
-                .orElseThrow(() -> new IllegalArgumentException("참여자 정보를 찾을 수 없습니다."));
-
-        if (participant.getRole() == Role.LEADER) {
-            throw new IllegalStateException("리더는 거래완료 버튼을 누를 수 없습니다.");
-        }
-
-        if (participant.isTradeCompleted()) {
-            throw new IllegalStateException("이미 거래완료 처리된 사용자입니다.");
-        }
-
-        participant.setTradeCompleted(true);
-        participantRepository.save(participant);
-
-        // 리더 제외 모든 멤버가 거래완료 눌렀는지 확인
-        List<Participant> participants = participantRepository.findAllByChatRoomId(chatRoomId);
-
-        boolean allCompleted = participants.stream()
-                .filter(p -> p.getRole() != Role.LEADER)
-                .allMatch(Participant::isTradeCompleted);
-
-        if (allCompleted) {
-            ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-                    .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다."));
-            chatRoom.setStatus(ChatRoomStatus.COMPLETED);
-            chatRoomRepository.save(chatRoom);
-        }
+        chatRoomService.updateChatRoomStatus(chatRoom.getId());
     }
+
+    public void tradeComplete(Long participantId) {
+        Participant p = participantRepository.findById(participantId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        p.setTradeCompleted(true);
+        participantRepository.save(p);
+
+        ChatRoom chatRoom = chatRoomRepository
+                .findByGroupBoard(p.getGroupBoard())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        chatRoomService.updateChatRoomStatus(chatRoom.getId());
+
+        GroupBoard board = p.getGroupBoard();
+        List<Participant> list = participantRepository.findAllByChatRoomId(board.getId());
+        boolean allTraded = list.stream().allMatch(Participant::isTradeCompleted);
+        if (allTraded) {
+            board.setBoardStatus(BoardStatus.COMPLETED);
+            groupBoardRepository.save(board);
+        }
+
+    }
+
+    //TODO: 리뷰작성
+//    public Review review(Long participantId, ReviewDto dto) {
+//        Review r = new Review();
+//        r.setParticipant(participantRepository.findById(participantId).orElseThrow());
+//        r.setContent(dto.getContent());
+//        r.setRating(dto.getRating());
+//        reviewRepository.save(r);
+//
+//        Long groupBoardId = r.getParticipant().getChatRoom().getGroupBoard().getId();
+//        GroupBoard board = groupBoardRepository.findById(groupBoardId)
+//                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+//        board.setBoardStatus(BoardStatus.SUCCESS);
+//        groupBoardRepository.save(board);
+//
+//        Long chatRoomId = r.getParticipant().getChatRoom().getId();
+//        chatRoomService.updateChatRoomStatus(chatRoomId);
+//
+//        return r;
+//    }
 
 }

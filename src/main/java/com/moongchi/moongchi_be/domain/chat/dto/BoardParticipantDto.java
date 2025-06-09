@@ -8,13 +8,12 @@ import lombok.Setter;
 @Setter @Getter
 @AllArgsConstructor
 @Builder
-public class ParticipantDto {
-    private Long participantId;
+public class BoardParticipantDto {
+    private Long id;
     private Long userId;
     private String nickname;
     private String profileUrl;
     private String role;
-    private String payStatement;
-    private boolean tradeCompleted;
-    private int perPersonPrice;
+    private Double mannerLeader;
+
 }

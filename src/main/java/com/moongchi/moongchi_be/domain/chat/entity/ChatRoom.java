@@ -7,8 +7,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "chat_rooms")
@@ -23,16 +21,13 @@ public class ChatRoom {
     @Column(name = "chat_room_id")
     private Long id;
 
-    @Builder.Default
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ChatRoomStatus status = ChatRoomStatus.RECRUITING;
-
     @Column(name = "title", length = 20, nullable = false)
     private String title;
 
-    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL)
-    private List<Participant> participants;
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, name = "status")
+    private ChatRoomStatus status = ChatRoomStatus.RECRUITING;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -42,9 +37,11 @@ public class ChatRoom {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "send_at")
+    private LocalDateTime sendAt;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_board_id")
     private GroupBoard groupBoard;
-
 
 }
