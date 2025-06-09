@@ -1,34 +1,32 @@
 package com.moongchi.moongchi_be.domain.product.controller;
 
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardDto;
-import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardListDto;
 import com.moongchi.moongchi_be.domain.group_boards.service.GroupBoardService;
 import com.moongchi.moongchi_be.domain.product.dto.ProductResponseDto;
+import com.moongchi.moongchi_be.domain.product.entity.Product;
 import com.moongchi.moongchi_be.domain.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/products")
 public class ProductController {
 
-    private final ProductService service;
+    private final ProductService productService;
     private final GroupBoardService groupBoardService;
     @GetMapping
     public List<ProductResponseDto> getAll() {
-        return service.getAllProducts();
+        return productService.getAllProducts();
     }
 
     @GetMapping("/{productId}")
     public ResponseEntity<ProductResponseDto> getProduct(@PathVariable Long productId) {
-        ProductResponseDto product = service.getProductById(productId);
+        ProductResponseDto product = productService.getProductById(productId);
         return ResponseEntity.ok(product);
     }
 
@@ -38,5 +36,13 @@ public class ProductController {
         return ResponseEntity.ok(groupBoardListDto);
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<ProductResponseDto>> searchProducts(@RequestParam String keyword) {
+        List<Product> products = productService.searchProducts(keyword);
+        List<ProductResponseDto> dtos = products.stream()
+                .map(ProductResponseDto::from)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
+    }
 
 }
