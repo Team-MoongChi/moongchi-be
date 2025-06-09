@@ -41,6 +41,11 @@ public class ParticipantService {
             throw new CustomException(ErrorCode.CONFLICT);
         }
 
+        if(currentCount -1 == participantRepository.countByChatRoomId(groupBoardId)) {
+            board.setBoardStatus(BoardStatus.CLOSING_SOON);
+            groupBoardRepository.save(board);
+        }
+
         Participant participant = new Participant();
         participant.setUser(userRepository.findById(userId).orElseThrow());
         participant.setGroupBoard(board);
@@ -58,13 +63,6 @@ public class ParticipantService {
                     .orElseThrow();
             chatRoomService.updateChatRoomStatus(chatRoom.getId());
 
-            // TODO: 상태가 RECRUITED가 됐을 때만 시스템 메시지 전송
-//            if (chatRoom.getStatus() == ChatRoomStatus.RECRUITED) {
-//                chatMessageService.sendSystemMessage(
-//                        chatRoom.getId(),
-//                        "모든 인원이 모였습니다. 결제를 진행해주세요."
-//                );
-//            }
         }
     }
 

@@ -207,7 +207,7 @@ public class GroupBoardService {
                 .title(board.getTitle())
                 .content(board.getContent())
                 .location(board.getLocation())
-                .boardStatus(board.getBoardStatus())
+                .boardStatus(board.getBoardStatus().toString())
                 .deadline(board.getDeadline())
                 .totalUsers(board.getTotalUsers())
                 .currentUsers(participants.size())
