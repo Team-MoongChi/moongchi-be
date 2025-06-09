@@ -122,6 +122,7 @@ public class ChatRoomService {
                 chatRoom.getStatus().getKorean(),
                 imgUrl,
                 price,
+                chatRoom.getGroupBoard().getDeadline(),
                 participants,
                 messages
         );
