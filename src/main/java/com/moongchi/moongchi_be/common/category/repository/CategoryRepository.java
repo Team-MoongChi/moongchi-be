@@ -9,5 +9,5 @@ import java.util.Optional;
 
 public interface CategoryRepository extends JpaRepository<Category,Long> {
     List<Category> findByLevel(CategoryLevel level);
-    Optional<Category> findByName(String name);
+    Optional<Category> findByNameAndLevel(String name, CategoryLevel level);
 }
