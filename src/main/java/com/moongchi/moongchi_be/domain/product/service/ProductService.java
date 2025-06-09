@@ -36,24 +36,20 @@ public class ProductService {
         return ProductResponseDto.from(product);
     }
     public List<Product> searchProducts(String keyword) {
-        // 1. 대분류 찾기
         Category large = categoryRepository.findByNameAndLevel(keyword, CategoryLevel.LARGE).orElse(null);
         if (large != null) {
             List<Long> ids = categoryService.getAllSubCategoryIds(large.getId());
             return productRepository.findByCategoryIdIn(ids);
         }
-        // 2. 중분류 찾기
         Category medium = categoryRepository.findByNameAndLevel(keyword, CategoryLevel.MEDIUM).orElse(null);
         if (medium != null) {
             List<Long> ids = categoryService.getAllSubCategoryIds(medium.getId());
             return productRepository.findByCategoryIdIn(ids);
         }
-        // 3. 소분류 찾기
         Category small = categoryRepository.findByNameAndLevel(keyword, CategoryLevel.SMALL).orElse(null);
         if (small != null) {
             return productRepository.findByCategory(small);
         }
-        // 4. 상품명 fallback
         return productRepository.findByNameContainingIgnoreCase(keyword);
     }
 
