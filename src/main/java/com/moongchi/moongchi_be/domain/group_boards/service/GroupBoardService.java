@@ -173,7 +173,7 @@ public class GroupBoardService {
                         return BoardParticipantDto.builder()
                                 .userId(user.getId())
                                 .profileUrl(user.getProfileUrl())
-                                .mannerLeader(p.getRole() == Role.LEADER ? user.getMannerLeader() : null)
+                                .mannerLeader(p.getRole() == Role.LEADER ? user.getMannerPercent().getLeaderPercent() : null)
                                 .role(p.getRole().toString())
                                 .build();
                     }).collect(Collectors.toList());
@@ -242,7 +242,7 @@ public class GroupBoardService {
                                 .userId(user.getId())
                                 .nickname(user.getNickname())
                                 .profileUrl(user.getProfileUrl())
-                                .mannerLeader(p.getRole() == Role.LEADER ? user.getMannerLeader() : null)
+                                .mannerLeader(p.getRole() == Role.LEADER ? user.getMannerPercent().getLeaderPercent() : null)
                                 .role(p.getRole().toString())
                                 .build();
                     }).collect(Collectors.toList());

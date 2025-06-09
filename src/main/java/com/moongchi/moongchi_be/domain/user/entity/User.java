@@ -69,17 +69,14 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
 
-    @Column(name = "manner_leader")
-    private double mannerLeader;
-
-    @Column(name = "manner_participant")
-    private double mannerParticipant;
-
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GroupBoard> groupBoards;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Participant> participants;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private MannerPercent mannerPercent;
 
     @CreationTimestamp
     @Column(name = "create_at")
@@ -119,6 +116,12 @@ public class User {
 
     public User setName(String name) {
         this.name = name;
+        return this;
+    }
+
+    public User editUser(String nickname, String profileUrl){
+        this.nickname = nickname;
+        this.profileUrl = profileUrl;
         return this;
     }
 
