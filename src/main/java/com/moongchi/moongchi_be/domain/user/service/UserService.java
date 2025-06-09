@@ -12,8 +12,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -82,8 +80,10 @@ public class UserService {
         this.userRepository.save(newUser);
     }
 
-    public Optional<User> findById(Long id) {
-        return userRepository.findById(id);
+    public void updateUser(UserDto userDto, HttpServletRequest request){
+        User user = getUser(request);
+        User updateUser = user.editUser(userDto.getNickname(), userDto.getProfileUrl());
+        this.userRepository.save(updateUser);
     }
     
 }
