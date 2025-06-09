@@ -20,20 +20,6 @@ public class ChatMessageService {
     private final ChatRoomRepository roomRepo;
     private final ChatMessageRepository messageRepo;
 
-
-//    private ChatMessageRepository chatMessageRepository;
-//
-//    public void sendSystemMessage(String chatRoomId, String message) {
-//        ChatMessage chatMessage = new ChatMessage();
-//        chatMessage.setChatRoomId(chatRoomId);
-//        chatMessage.setMessageType(MessageType.TEXT);
-//        chatMessage.setSendAt(LocalDateTime.now());
-//        chatMessage.setUserId("SYSTEM");
-//        chatMessage.setMessage(message);
-//
-//        chatMessageRepository.save(chatMessage);
-//    }
-
     /** 메시지 전송 및 저장 */
     public MessageDto sendMessage(Long chatRoomId, ChatMessageRequestDto req) {
         roomRepo.findById(chatRoomId)
