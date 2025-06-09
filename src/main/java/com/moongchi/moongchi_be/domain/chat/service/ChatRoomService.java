@@ -46,7 +46,7 @@ public class ChatRoomService {
                     GroupProduct product = board.getGroupProduct();
 
                     String title = (product != null)
-                            ? product.getName() + product.getQuantity() + "공구방"
+                            ? product.getName() + " " +  product.getQuantity() + " 공구방"
                             : "상품 정보 없음 공구방";
 
                     String imgUrl = (product != null && product.getImages() != null && !product.getImages().isEmpty())
