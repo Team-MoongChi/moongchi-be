@@ -1,5 +1,8 @@
 package com.moongchi.moongchi_be.domain.product.controller;
 
+import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardDto;
+import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardListDto;
+import com.moongchi.moongchi_be.domain.group_boards.service.GroupBoardService;
 import com.moongchi.moongchi_be.domain.product.dto.ProductResponseDto;
 import com.moongchi.moongchi_be.domain.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +20,7 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService service;
-
+    private final GroupBoardService groupBoardService;
     @GetMapping
     public List<ProductResponseDto> getAll() {
         return service.getAllProducts();
@@ -27,6 +30,12 @@ public class ProductController {
     public ResponseEntity<ProductResponseDto> getProduct(@PathVariable Long productId) {
         ProductResponseDto product = service.getProductById(productId);
         return ResponseEntity.ok(product);
+    }
+
+    @GetMapping("/{productId}/group-boards")
+    public ResponseEntity<List<GroupBoardDto>> getProductGroupBoardList(@PathVariable Long productId){
+        List<GroupBoardDto> groupBoardListDto = groupBoardService.getProductGroupBoardList(productId);
+        return ResponseEntity.ok(groupBoardListDto);
     }
 
 

@@ -18,4 +18,7 @@ public interface GroupBoardRepository extends JpaRepository<GroupBoard, Long> {
 
     @Query("SELECT gb FROM GroupBoard gb WHERE gb.groupProduct.category.id = :categoryId")
     List<GroupBoard> findByCategoryId(@Param("categoryId") Long categoryId);
+
+    @Query("SELECT gb FROM GroupBoard gb WHERE gb.groupProduct.product.id = :productId")
+    List<GroupBoard> findByProductId(@Param("productId") Long productId);
 }
