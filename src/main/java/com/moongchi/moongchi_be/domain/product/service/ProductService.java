@@ -1,5 +1,9 @@
 package com.moongchi.moongchi_be.domain.product.service;
 
+import com.moongchi.moongchi_be.common.category.entity.Category;
+import com.moongchi.moongchi_be.common.category.entity.CategoryLevel;
+import com.moongchi.moongchi_be.common.category.repository.CategoryRepository;
+import com.moongchi.moongchi_be.common.category.service.CategoryService;
 import com.moongchi.moongchi_be.common.exception.custom.CustomException;
 import com.moongchi.moongchi_be.common.exception.errorcode.ErrorCode;
 import com.moongchi.moongchi_be.domain.product.dto.ProductResponseDto;
@@ -16,6 +20,8 @@ import java.util.stream.Collectors;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
+    private final CategoryService categoryService;
 
     public List<ProductResponseDto> getAllProducts() {
         List<Product> products = productRepository.findAll();
@@ -29,5 +35,22 @@ public class ProductService {
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
         return ProductResponseDto.from(product);
     }
+    public List<Product> searchProducts(String keyword) {
+        Category large = categoryRepository.findByNameAndLevel(keyword, CategoryLevel.LARGE).orElse(null);
+        if (large != null) {
+            List<Long> ids = categoryService.getAllSubCategoryIds(large.getId());
+            return productRepository.findByCategoryIdIn(ids);
+        }
+        Category medium = categoryRepository.findByNameAndLevel(keyword, CategoryLevel.MEDIUM).orElse(null);
+        if (medium != null) {
+            List<Long> ids = categoryService.getAllSubCategoryIds(medium.getId());
+            return productRepository.findByCategoryIdIn(ids);
+        }
+        Category small = categoryRepository.findByNameAndLevel(keyword, CategoryLevel.SMALL).orElse(null);
+        if (small != null) {
+            return productRepository.findByCategory(small);
+        }
+        return productRepository.findByNameContainingIgnoreCase(keyword);
+    }
 
-}
+    }

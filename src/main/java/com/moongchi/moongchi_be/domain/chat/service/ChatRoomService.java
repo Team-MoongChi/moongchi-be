@@ -12,6 +12,8 @@ import com.moongchi.moongchi_be.domain.chat.repository.ChatRoomRepository;
 import com.moongchi.moongchi_be.domain.chat.repository.ParticipantRepository;
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupBoard;
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupProduct;
+import com.moongchi.moongchi_be.domain.group_boards.enums.BoardStatus;
+import com.moongchi.moongchi_be.domain.group_boards.repository.GroupBoardRepository;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,6 +32,7 @@ public class ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
     private final ParticipantRepository participantRepository;
     private final ChatMessageRepository chatMessageRepository;
+    private final GroupBoardRepository groupBoardRepository;
     private final ChatMessageService chatMessageService;
 
     //채팅방 조회
@@ -45,12 +49,16 @@ public class ChatRoomService {
                     GroupProduct product = board.getGroupProduct();
 
                     String title = (product != null)
-                            ? product.getName() + product.getQuantity() + "공구방"
+                            ? product.getName() + " " + product.getQuantity() + " 공구방"
                             : "상품 정보 없음 공구방";
 
                     String imgUrl = (product != null && product.getImages() != null && !product.getImages().isEmpty())
                             ? product.getImages().get(0)
                             : null;
+                    Optional<ChatMessage> lastMessageOpt =
+                            chatMessageRepository.findFirstByChatRoomIdOrderBySendAtDesc(chatRoom.getId());
+                    String lastMessage = lastMessageOpt.map(ChatMessage::getMessage).orElse(null);
+                    LocalDateTime lastMessageTime = lastMessageOpt.map(ChatMessage::getSendAt).orElse(null);
 
                     return ChatRoomResponseDto.builder()
                             .id(chatRoom.getId())
@@ -58,8 +66,8 @@ public class ChatRoomService {
                             .status(chatRoom.getStatus().getKorean())
                             .imgUrl(imgUrl)
                             .participantCount(participantRepository.countByGroupBoardId(board.getId()))
-                            .lastMessage(null)
-                            .lastMessageTime(null)
+                            .lastMessage(lastMessage)
+                            .lastMessageTime(lastMessageTime)
                             .unreadCount(0)
                             .build();
                 })
@@ -69,7 +77,7 @@ public class ChatRoomService {
 
     //채팅방 상세조회
     @Transactional(readOnly = true)
-    public ChatRoomDetailDto getChatRoomDetail(Long chatRoomId) {
+    public ChatRoomDetailDto getChatRoomDetail(Long chatRoomId,Long userId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
         GroupProduct product = chatRoom.getGroupBoard().getGroupProduct();
@@ -99,7 +107,7 @@ public class ChatRoomService {
                 )).collect(Collectors.toList());
 
         List<MessageDto> messages = chatMessageRepository
-                .findByChatRoomIdOrderBySendAtAsc(chatRoomId.toString())
+                .findByChatRoomIdOrderBySendAtAsc(chatRoomId)
                 .stream()
                 .map(m -> new MessageDto(
                         m.getId(),
@@ -116,6 +124,7 @@ public class ChatRoomService {
                 chatRoom.getStatus().getKorean(),
                 imgUrl,
                 price,
+                chatRoom.getGroupBoard().getDeadline(),
                 participants,
                 messages
         );
@@ -126,7 +135,7 @@ public class ChatRoomService {
     @Transactional
     public ChatRoom createChatRoomWithParticipant(GroupBoard groupBoard, User creator) {
         ChatRoom chatRoom = new ChatRoom();
-        chatRoom.setTitle(groupBoard.getGroupProduct().getName() + " " + groupBoard.getGroupProduct().getQuantity() + " 공구방" );
+        chatRoom.setTitle(groupBoard.getGroupProduct().getName() + groupBoard.getGroupProduct().getQuantity() + " 공구방" );
         chatRoom.setStatus(ChatRoomStatus.RECRUITING);
         chatRoom.setGroupBoard(groupBoard);
         chatRoom.setCreatedAt(LocalDateTime.now());
@@ -143,6 +152,11 @@ public class ChatRoomService {
                 .paymentStatus(PaymentStatus.PAID)
                 .build();
         participantRepository.save(participant);
+        String welcomeMsg = "안녕하세요! 공구 완료 시점까지 여러분과 함께 할 뭉치예요. 뭉치면 산다! 공구 인원이 모두 모이면 알려줄게요.";
+        sendSystemMessage(savedChatRoom.getId(), welcomeMsg);
+
+        savedChatRoom.setSendAt(LocalDateTime.now());
+        chatRoomRepository.save(savedChatRoom);
 
         return savedChatRoom;
     }
@@ -212,16 +226,75 @@ public class ChatRoomService {
         }
         return next;
 
+
     }
 
     public void sendSystemMessage(Long chatRoomId, String message) {
         ChatMessage systemMsg = ChatMessage.builder()
-                .chatRoomId(chatRoomId.toString())
+                .chatRoomId(chatRoomId)
                 .participantId(null)
                 .message(message)
                 .messageType(MessageType.SYSTEM)
                 .build();
         chatMessageRepository.save(systemMsg);
     }
+
+    public void pay(Long chatRoomId, Long userId) {
+        Participant participant = participantRepository
+                .findByChatRoomIdAndUserId(chatRoomId,userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        participant.setPaymentStatus(PaymentStatus.PAID);
+        participantRepository.save(participant);
+
+        ChatRoom chatRoom = chatRoomRepository
+                .findByGroupBoard(participant.getGroupBoard())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        updateChatRoomStatus(chatRoom.getId());
+    }
+
+    public void tradeComplete(Long chatRoomId, Long userId) {
+        Participant participant = participantRepository
+                .findByChatRoomIdAndUserId(chatRoomId,userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        participant.setTradeCompleted(true);
+        participantRepository.save(participant);
+
+        ChatRoom chatRoom = chatRoomRepository
+                .findByGroupBoard(participant.getGroupBoard())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        updateChatRoomStatus(chatRoom.getId());
+
+        List<Participant> list = participantRepository.findAllByChatRoomId(participant.getGroupBoard().getId());
+        boolean allTraded = list.stream().allMatch(Participant::isTradeCompleted);
+        if (allTraded) {
+            participant.getGroupBoard().setBoardStatus(BoardStatus.COMPLETED);
+            groupBoardRepository.save(participant.getGroupBoard());
+        }
+
+    }
+
+    //TODO: 리뷰작성
+//    public Review review(Long participantId, ReviewDto dto) {
+//        Review r = new Review();
+//        r.setParticipant(participantRepository.findById(participantId).orElseThrow());
+//        r.setContent(dto.getContent());
+//        r.setRating(dto.getRating());
+//        reviewRepository.save(r);
+//
+//        Long groupBoardId = r.getParticipant().getChatRoom().getGroupBoard().getId();
+//        GroupBoard board = groupBoardRepository.findById(groupBoardId)
+//                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+//        board.setBoardStatus(BoardStatus.SUCCESS);
+//        groupBoardRepository.save(board);
+//
+//        Long chatRoomId = r.getParticipant().getChatRoom().getId();
+//        chatRoomService.updateChatRoomStatus(chatRoomId);
+//
+//        return r;
+//    }
 
 }

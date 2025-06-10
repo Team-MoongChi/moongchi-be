@@ -6,7 +6,11 @@ import com.moongchi.moongchi_be.common.exception.custom.CustomException;
 import com.moongchi.moongchi_be.common.exception.errorcode.ErrorCode;
 import com.moongchi.moongchi_be.domain.chat.dto.BoardParticipantDto;
 import com.moongchi.moongchi_be.domain.chat.entity.ChatRoom;
+import com.moongchi.moongchi_be.domain.chat.entity.Participant;
+import com.moongchi.moongchi_be.domain.chat.entity.PaymentStatus;
 import com.moongchi.moongchi_be.domain.chat.entity.Role;
+import com.moongchi.moongchi_be.domain.chat.repository.ChatRoomRepository;
+import com.moongchi.moongchi_be.domain.chat.repository.ParticipantRepository;
 import com.moongchi.moongchi_be.domain.chat.service.ChatRoomService;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardDto;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardListDto;
@@ -19,12 +23,14 @@ import com.moongchi.moongchi_be.domain.group_boards.repository.GroupProductRepos
 import com.moongchi.moongchi_be.domain.product.entity.Product;
 import com.moongchi.moongchi_be.domain.product.repository.ProductRepository;
 import com.moongchi.moongchi_be.domain.user.entity.User;
+import com.moongchi.moongchi_be.domain.user.repository.UserRepository;
 import com.moongchi.moongchi_be.domain.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,6 +43,9 @@ public class GroupBoardService {
     private final GroupProductRepository groupProductRepository;
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
+    private final ParticipantRepository participantRepository;
+    private final UserRepository userRepository;
+    private final ChatRoomRepository chatRoomRepository;
     private final UserService userService;
     private final KakaoMapService kakaoMapService;
     private final ChatRoomService chatRoomService;
@@ -120,7 +129,44 @@ public class GroupBoardService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
+    public void joinGroupBoard(Long userId, Long groupBoardId) {
+        GroupBoard board = groupBoardRepository.findById(groupBoardId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        if (participantRepository.existsByUserIdAndGroupBoardId(userId, groupBoardId)) {
+            throw new CustomException(ErrorCode.CONFLICT);
+        }
+
+        int currentCount = participantRepository.countByGroupBoardId(groupBoardId);
+        if (currentCount >= board.getTotalUsers()) {
+            throw new CustomException(ErrorCode.CONFLICT);
+        }
+
+        if(currentCount -1 == participantRepository.countByGroupBoardId(groupBoardId)) {
+            board.setBoardStatus(BoardStatus.CLOSING_SOON);
+            groupBoardRepository.save(board);
+        }
+
+        Participant participant = new Participant();
+        participant.setUser(userRepository.findById(userId).orElseThrow());
+        participant.setGroupBoard(board);
+        participant.setPaymentStatus(PaymentStatus.UNPAID);
+        participant.setTradeCompleted(false);
+        participant.setRole(Role.MEMBER);
+        participant.setJoinedAt(LocalDateTime.now());
+        participantRepository.save(participant);
+
+        if (participantRepository.countByGroupBoardId(groupBoardId) == board.getTotalUsers()) {
+            board.setBoardStatus(BoardStatus.CLOSED);
+            groupBoardRepository.save(board);
+
+            ChatRoom chatRoom = chatRoomRepository.findByGroupBoard(board)
+                    .orElseThrow();
+            chatRoomService.updateChatRoomStatus(chatRoom.getId());
+
+        }
+    }
+
     public GroupBoardDto getGroupBoard(Long groupBoardId) {
         GroupBoard groupBoard = groupBoardRepository.findById(groupBoardId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
@@ -173,7 +219,7 @@ public class GroupBoardService {
                         return BoardParticipantDto.builder()
                                 .userId(user.getId())
                                 .profileUrl(user.getProfileUrl())
-                                .mannerLeader(p.getRole() == Role.LEADER ? user.getMannerPercent().getLeaderPercent() : null)
+                                .nickname(p.getRole() == Role.LEADER ? user.getNickname():null)
                                 .role(p.getRole().toString())
                                 .build();
                     }).collect(Collectors.toList());
@@ -182,7 +228,7 @@ public class GroupBoardService {
 
         return GroupBoardDto.builder()
                 .id(board.getId())
-                .totalUsers(board.getTotalUsers())
+                .totalUser(board.getTotalUsers())
                 .currentUsers(participants.size())
                 .participants(participants)
                 .deadline(board.getDeadline())
@@ -256,7 +302,7 @@ public class GroupBoardService {
                 .location(board.getLocation())
                 .boardStatus(board.getBoardStatus().toString())
                 .deadline(board.getDeadline())
-                .totalUsers(board.getTotalUsers())
+                .totalUser(board.getTotalUsers())
                 .currentUsers(participants.size())
                 .productUrl(product != null ? product.getProductUrl() : null)
                 .images(product != null ? Collections.singletonList(product.getImgUrl()) : groupProduct.getImages())

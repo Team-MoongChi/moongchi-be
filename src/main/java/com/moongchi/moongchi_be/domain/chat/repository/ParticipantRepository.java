@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ParticipantRepository extends JpaRepository<Participant, Long> {
 
@@ -26,5 +27,8 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
 
     // 이미 참여했는지 확인 (중복 방지용)
     boolean existsByUserIdAndGroupBoardId(Long userId, Long groupBoardId);
+
+    @Query("SELECT p FROM Participant p WHERE p.groupBoard.chatRoom.id = :chatRoomId AND p.user.id = :userId")
+    Optional<Participant> findByChatRoomIdAndUserId(@Param("chatRoomId") Long chatRoomId, @Param("userId") Long userId);
 
 }

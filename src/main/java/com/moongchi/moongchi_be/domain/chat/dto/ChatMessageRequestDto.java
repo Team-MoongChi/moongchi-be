@@ -11,8 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChatMessageRequestDto {
-    @NotBlank(message = "participantId를 입력해주세요.")
-    private String participantId;
     @NotBlank(message = "메시지를 입력해주세요.")
     private String message;
 }
