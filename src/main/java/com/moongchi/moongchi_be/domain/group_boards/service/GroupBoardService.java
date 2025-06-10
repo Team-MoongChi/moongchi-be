@@ -121,10 +121,11 @@ public class GroupBoardService {
     }
 
     @Transactional(readOnly = true)
-    public GroupBoardDto getGroupBoard(Long groupBoardId) {
+    public GroupBoardDto getGroupBoard(Long groupBoardId, HttpServletRequest request) {
         GroupBoard groupBoard = groupBoardRepository.findById(groupBoardId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
-        return convertToDto(groupBoard);
+        Long currentUserId = userService.getUser(request).getId();
+        return convertToDto(groupBoard, currentUserId);
     }
 
     @Transactional(readOnly = true)
@@ -138,8 +139,9 @@ public class GroupBoardService {
     }
 
     @Transactional(readOnly = true)
-    public List<GroupBoardListDto> getGroupBoardCategory(Long categoryId) {
-        List<GroupBoard> groupBoards = groupBoardRepository.findByCategoryId(categoryId);
+    public List<GroupBoardListDto> getGroupBoardCategory(Long categoryId, HttpServletRequest request) {
+        User currentUser = userService.getUser(request);
+        List<GroupBoard> groupBoards = groupBoardRepository.findCategoryIdWithNearbyPosts(categoryId,currentUser.getLatitude(), currentUser.getLongitude());
 
         return groupBoards.stream()
                 .map(this::convertToListDto)
@@ -192,10 +194,12 @@ public class GroupBoardService {
     }
 
 
-    private GroupBoardDto convertToDto(GroupBoard board) {
+    private GroupBoardDto convertToDto(GroupBoard board, Long currentUserId) {
 
         GroupProduct groupProduct = board.getGroupProduct();
         Product product = groupProduct.getProduct();
+
+
 
         List<ParticipantDto> participants = new ArrayList<>();
         ChatRoom chatRoom = board.getChatRoom();
@@ -213,6 +217,8 @@ public class GroupBoardService {
                     }).collect(Collectors.toList());
         }
 
+        boolean editable = board.getUser().getId().equals(currentUserId);
+
         return GroupBoardDto.builder()
                 .id(board.getId())
                 .title(board.getTitle())
@@ -224,6 +230,8 @@ public class GroupBoardService {
                 .totalUsers(board.getTotalUsers())
                 .currentUsers(participants.size())
                 .productUrl(product != null ? product.getProductUrl() : null)
+                .chatRoomId(board.getChatRoom().getId())
+                .editable(editable)
                 .images(product != null ? Collections.singletonList(product.getImgUrl()) : groupProduct.getImages())
                 .participants(participants)
                 .build();
