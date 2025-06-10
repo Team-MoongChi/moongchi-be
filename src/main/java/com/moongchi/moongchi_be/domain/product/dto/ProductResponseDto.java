@@ -18,6 +18,7 @@ public class ProductResponseDto {
     private String productUrl;
     private Double rating;
 
+    private Long categoryId;
     private String largeCategory;
     private String mediumCategory;
     private String smallCategory;
@@ -41,6 +42,7 @@ public class ProductResponseDto {
                 product.getImgUrl(),
                 product.getProductUrl(),
                 product.getRating(),
+                product.getCategory().getId(),
                 getCategoryNameByLevel(product.getCategory(), "LARGE"),
                 getCategoryNameByLevel(product.getCategory(), "MEDIUM"),
                 getCategoryNameByLevel(product.getCategory(), "SMALL")

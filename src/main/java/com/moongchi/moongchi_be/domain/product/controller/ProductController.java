@@ -1,5 +1,6 @@
 package com.moongchi.moongchi_be.domain.product.controller;
 
+import com.moongchi.moongchi_be.common.log.LogEvent;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardDto;
 import com.moongchi.moongchi_be.domain.group_boards.service.GroupBoardService;
 import com.moongchi.moongchi_be.domain.product.dto.ProductResponseDto;
@@ -25,6 +26,7 @@ public class ProductController {
     }
 
     @GetMapping("/{productId}")
+    @LogEvent("click")
     public ResponseEntity<ProductResponseDto> getProduct(@PathVariable Long productId) {
         ProductResponseDto product = productService.getProductById(productId);
         return ResponseEntity.ok(product);
@@ -37,6 +39,7 @@ public class ProductController {
     }
 
     @GetMapping("/search")
+    @LogEvent("search")
     public ResponseEntity<List<ProductResponseDto>> searchProducts(@RequestParam String keyword) {
         List<Product> products = productService.searchProducts(keyword);
         List<ProductResponseDto> dtos = products.stream()

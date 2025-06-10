@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+
+    <!-- JSON 로그 저장용 encoder 설정 -->
+    <appender name="JSON_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+<!--        <file>logs/activity-log.json</file>-->
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/activity-log.%d{yyyy-MM-dd}.json</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <!-- JSON 인코더 -->
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp>
+                    <fieldName>timestamp</fieldName>
+                </timestamp>
+
+                <logLevel>
+                    <fieldName>level</fieldName>
+                </logLevel>
+
+                <threadName>
+                    <fieldName>thread</fieldName>
+                </threadName>
+
+                <loggerName>
+                    <fieldName>logger</fieldName>
+                </loggerName>
+
+                <mdc>
+                    <includeMdcKeyName>method</includeMdcKeyName>
+                </mdc>
+
+                <mdc>
+                    <includeMdcKeyName>uri</includeMdcKeyName>
+                </mdc>
+
+                <message>
+                    <fieldName>message</fieldName>
+                </message>
+
+                <stackTrace>
+                    <fieldName>stack_trace</fieldName>
+                </stackTrace>
+            </providers>
+        </encoder>
+    </appender>
+    <logger name="com.moongchi.moongchi_be.common.log.UserActivityLogger" level="INFO" additivity="false">
+        <appender-ref ref="JSON_FILE"/>
+    </logger>
+</configuration>
