@@ -15,7 +15,7 @@ public interface GroupBoardRepository extends JpaRepository<GroupBoard, Long> {
     List<GroupBoard> findNearbyPosts(@Param("userLat") double userLat, @Param("userLng") double userLng);
 
     @Query(value = "SELECT g.* FROM group_boards g " +
-            "JOIN group_products gp ON g.group_product_id = gp.product_id " +
+            "JOIN group_products gp ON g.group_product_id = gp.group_product_id " +
             "WHERE gp.category_id = :categoryId AND " +
             "(6371 * acos(cos(radians(:userLat)) * cos(radians(g.latitude)) * " +
             "cos(radians(g.longitude) - radians(:userLng)) + " +
