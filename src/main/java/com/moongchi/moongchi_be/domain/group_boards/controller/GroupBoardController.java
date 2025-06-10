@@ -1,6 +1,5 @@
 package com.moongchi.moongchi_be.domain.group_boards.controller;
 
-import com.moongchi.moongchi_be.domain.chat.service.ParticipantService;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardDto;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardRequestDto;
 import com.moongchi.moongchi_be.domain.group_boards.service.GroupBoardService;
@@ -21,7 +20,6 @@ public class GroupBoardController {
 
     private final GroupBoardService groupBoardService;
     private final UserService userService;
-    private final ParticipantService participantService;
 
     @PostMapping
     @Operation(summary = "공동구매 게시글")
@@ -60,11 +58,10 @@ public class GroupBoardController {
             HttpServletRequest request) {
 
         User currentUser = userService.getUser(request);
-        participantService.joinGroupBoard(currentUser.getId(), groupBoardId);
+        groupBoardService.joinGroupBoard(currentUser.getId(), groupBoardId);
 
         return ResponseEntity.ok().build();
     }
-
 
     @GetMapping("/me")
     public ResponseEntity<List<GroupBoardDto>> getMyGroupBoard(HttpServletRequest request){
