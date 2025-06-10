@@ -6,7 +6,6 @@ import com.moongchi.moongchi_be.domain.chat.dto.ChatRoomStatusResponse;
 import com.moongchi.moongchi_be.domain.chat.entity.ChatRoom;
 import com.moongchi.moongchi_be.domain.chat.entity.ChatRoomStatus;
 import com.moongchi.moongchi_be.domain.chat.service.ChatRoomService;
-import com.moongchi.moongchi_be.domain.chat.service.ParticipantService;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import com.moongchi.moongchi_be.domain.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,7 +21,6 @@ import java.util.List;
 public class ChatRoomController {
 
     private final ChatRoomService chatRoomService;
-    private final ParticipantService participantService;
     private final UserService userService;
 
     //채팅 목록 조회
@@ -57,5 +55,30 @@ public class ChatRoomController {
 
         return ResponseEntity.ok(response);
     }
+
+    //채팅방 참여자 공구 거래
+    @PostMapping("/{chatRoomId}/pay")
+    public ResponseEntity<Void> pay (@PathVariable Long chatRoomId,HttpServletRequest request){
+        User user = userService.getUser(request);
+        chatRoomService.pay(chatRoomId,user.getId());
+        return ResponseEntity.ok().build();
+    }
+
+    //참여 멤버 거래 완료
+    @PostMapping("/{chatRoomId}/trade-complete")
+    public ResponseEntity<Void> tradeComplete(@PathVariable Long chatRoomId, HttpServletRequest request) {
+        User user = userService.getUser(request);
+        chatRoomService.tradeComplete(chatRoomId,user.getId());
+        return ResponseEntity.ok().build();
+    }
+
+    //TODO: 리뷰작성
+//    @PostMapping("/{participantId}/review")
+//    public ResponseEntity<Review> review(
+//            @PathVariable Long participantId,
+//            @RequestBody ReviewDto dto) {
+//        Review saved = participantService.review(participantId, dto);
+//        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+//    }
 
 }

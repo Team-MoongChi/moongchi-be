@@ -12,6 +12,8 @@ import com.moongchi.moongchi_be.domain.chat.repository.ChatRoomRepository;
 import com.moongchi.moongchi_be.domain.chat.repository.ParticipantRepository;
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupBoard;
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupProduct;
+import com.moongchi.moongchi_be.domain.group_boards.enums.BoardStatus;
+import com.moongchi.moongchi_be.domain.group_boards.repository.GroupBoardRepository;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,7 @@ public class ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
     private final ParticipantRepository participantRepository;
     private final ChatMessageRepository chatMessageRepository;
+    private final GroupBoardRepository groupBoardRepository;
     private final ChatMessageService chatMessageService;
 
     //채팅방 조회
@@ -56,7 +59,6 @@ public class ChatRoomService {
                             chatMessageRepository.findFirstByChatRoomIdOrderBySendAtDesc(chatRoom.getId());
                     String lastMessage = lastMessageOpt.map(ChatMessage::getMessage).orElse(null);
                     LocalDateTime lastMessageTime = lastMessageOpt.map(ChatMessage::getSendAt).orElse(null);
-
 
                     return ChatRoomResponseDto.builder()
                             .id(chatRoom.getId())
@@ -224,6 +226,7 @@ public class ChatRoomService {
         }
         return next;
 
+
     }
 
     public void sendSystemMessage(Long chatRoomId, String message) {
@@ -235,5 +238,63 @@ public class ChatRoomService {
                 .build();
         chatMessageRepository.save(systemMsg);
     }
+
+    public void pay(Long chatRoomId, Long userId) {
+        Participant participant = participantRepository
+                .findByChatRoomIdAndUserId(chatRoomId,userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        participant.setPaymentStatus(PaymentStatus.PAID);
+        participantRepository.save(participant);
+
+        ChatRoom chatRoom = chatRoomRepository
+                .findByGroupBoard(participant.getGroupBoard())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        updateChatRoomStatus(chatRoom.getId());
+    }
+
+    public void tradeComplete(Long chatRoomId, Long userId) {
+        Participant participant = participantRepository
+                .findByChatRoomIdAndUserId(chatRoomId,userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        participant.setTradeCompleted(true);
+        participantRepository.save(participant);
+
+        ChatRoom chatRoom = chatRoomRepository
+                .findByGroupBoard(participant.getGroupBoard())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        updateChatRoomStatus(chatRoom.getId());
+
+        List<Participant> list = participantRepository.findAllByChatRoomId(participant.getGroupBoard().getId());
+        boolean allTraded = list.stream().allMatch(Participant::isTradeCompleted);
+        if (allTraded) {
+            participant.getGroupBoard().setBoardStatus(BoardStatus.COMPLETED);
+            groupBoardRepository.save(participant.getGroupBoard());
+        }
+
+    }
+
+    //TODO: 리뷰작성
+//    public Review review(Long participantId, ReviewDto dto) {
+//        Review r = new Review();
+//        r.setParticipant(participantRepository.findById(participantId).orElseThrow());
+//        r.setContent(dto.getContent());
+//        r.setRating(dto.getRating());
+//        reviewRepository.save(r);
+//
+//        Long groupBoardId = r.getParticipant().getChatRoom().getGroupBoard().getId();
+//        GroupBoard board = groupBoardRepository.findById(groupBoardId)
+//                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+//        board.setBoardStatus(BoardStatus.SUCCESS);
+//        groupBoardRepository.save(board);
+//
+//        Long chatRoomId = r.getParticipant().getChatRoom().getId();
+//        chatRoomService.updateChatRoomStatus(chatRoomId);
+//
+//        return r;
+//    }
 
 }
