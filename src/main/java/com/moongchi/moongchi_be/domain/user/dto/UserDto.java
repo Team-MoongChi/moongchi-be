@@ -40,7 +40,7 @@ public class UserDto {
         this.address = user.getAddress();
         this.latitude = user.getLatitude();
         this.longitude = user.getLongitude();
-        this.mannerLeader = user.getMannerLeader();
-        this.mannerParticipant = user.getMannerParticipant();
+        this.mannerLeader = user.getMannerPercent().getLeaderPercent();
+        this.mannerParticipant = user.getMannerPercent().getParticipantPercent();
     }
 }

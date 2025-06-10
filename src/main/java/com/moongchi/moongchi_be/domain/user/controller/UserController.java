@@ -33,13 +33,13 @@ public class UserController {
     @PostMapping("/location")
     public ResponseEntity<?> addLocation(@RequestBody UserDto userDto, HttpServletRequest request) {
         userService.addLocation(userDto, request);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("위치 설정이 완료되었습니다.");
     }
 
     @PostMapping("/interest-category")
     public ResponseEntity<?> addInterestCategory(@RequestBody UserDto userDto, HttpServletRequest request){
         userService.addInterestCategory(userDto, request);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("관심 카테고리가 추가되었습니다.");
     }
 
     @GetMapping("/basic")
@@ -47,4 +47,11 @@ public class UserController {
         UserBasicDto userBasicDto = userService.getUserBasic(request);
         return ResponseEntity.ok(userBasicDto);
     }
+
+    @PutMapping
+    public ResponseEntity<?> updateUser(@RequestBody UserDto userDto, HttpServletRequest request){
+        userService.updateUser(userDto, request);
+        return ResponseEntity.ok("회원정보 수정이 완료되었습니다.");
+    }
+
 }
