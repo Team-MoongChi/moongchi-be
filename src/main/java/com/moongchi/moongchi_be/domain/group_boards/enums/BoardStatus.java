@@ -9,9 +9,19 @@ public enum BoardStatus {
     CLOSED("모집마감"),
     COMPLETED("공구성공");
 
-    private String value;
+    private final String korean;
 
-    BoardStatus(String value) {
-        this.value = value;
+
+    BoardStatus(String korean) {
+        this.korean = korean;
     }
+    public String getKorean() {
+        return korean;
+    }
+
+    @Override
+    public String toString() {
+        return  korean ;
+    }
+
 }

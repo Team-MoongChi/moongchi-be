@@ -20,24 +20,9 @@ public class Participant {
     @Column(name = "participant_id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chat_room_id" , nullable = false)
-    private ChatRoom chatRoom;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "group_board_id" , nullable = false)
-    private GroupBoard groupBoard;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id",nullable = false)
-    private User user;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
     private Role role;
-
-    @Column(name = "join_at")
-    private LocalDateTime joinedAt;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status")
@@ -46,5 +31,16 @@ public class Participant {
     @Builder.Default
     @Column(nullable = false, name = "trade_completed")
     private boolean tradeCompleted = false;
+
+    @Column(name = "join_at")
+    private LocalDateTime joinedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id",nullable = false)
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_board_id" , nullable = false)
+    private GroupBoard groupBoard;
 
 }

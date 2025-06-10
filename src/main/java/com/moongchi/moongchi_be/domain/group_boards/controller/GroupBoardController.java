@@ -4,6 +4,8 @@ import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardDto;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardListDto;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardRequestDto;
 import com.moongchi.moongchi_be.domain.group_boards.service.GroupBoardService;
+import com.moongchi.moongchi_be.domain.user.entity.User;
+import com.moongchi.moongchi_be.domain.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ import java.util.List;
 public class GroupBoardController {
 
     private final GroupBoardService groupBoardService;
+    private final UserService userService;
 
     @PostMapping
     @Operation(summary = "공동구매 게시글")
@@ -48,6 +51,17 @@ public class GroupBoardController {
     public ResponseEntity<GroupBoardDto> getGroupBoard(@PathVariable("group_board_id") Long groupBoardId, HttpServletRequest request){
         GroupBoardDto groupBoardDto = groupBoardService.getGroupBoard(groupBoardId, request);
         return ResponseEntity.ok(groupBoardDto);
+    }
+
+    @PostMapping("/{group_board_id}/join")
+    public ResponseEntity<Void> joinGroupBoard(
+            @PathVariable("group_board_id") Long groupBoardId,
+            HttpServletRequest request) {
+
+        User currentUser = userService.getUser(request);
+        groupBoardService.joinGroupBoard(currentUser.getId(), groupBoardId);
+
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/me")
