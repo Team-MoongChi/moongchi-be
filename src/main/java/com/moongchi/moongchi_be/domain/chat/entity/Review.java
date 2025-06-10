@@ -2,7 +2,9 @@ package com.moongchi.moongchi_be.domain.chat.entity;
 
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupBoard;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
@@ -10,6 +12,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "reviews")
 @Getter @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Review {
 
     @Id

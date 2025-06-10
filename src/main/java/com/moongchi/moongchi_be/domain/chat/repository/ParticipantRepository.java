@@ -31,4 +31,7 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
     @Query("SELECT p FROM Participant p WHERE p.groupBoard.chatRoom.id = :chatRoomId AND p.user.id = :userId")
     Optional<Participant> findByChatRoomIdAndUserId(@Param("chatRoomId") Long chatRoomId, @Param("userId") Long userId);
 
+    Optional<Participant> findByGroupBoardIdAndUserId(Long groupBoardId, Long userId);
+
+
 }
