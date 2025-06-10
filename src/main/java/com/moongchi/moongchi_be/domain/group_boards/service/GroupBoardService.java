@@ -182,7 +182,7 @@ public class GroupBoardService {
 
         return GroupBoardDto.builder()
                 .id(board.getId())
-                .totalUsers(board.getTotalUsers())
+                .totalUser(board.getTotalUsers())
                 .currentUsers(participants.size())
                 .participants(participants)
                 .deadline(board.getDeadline())
@@ -256,7 +256,7 @@ public class GroupBoardService {
                 .location(board.getLocation())
                 .boardStatus(board.getBoardStatus().toString())
                 .deadline(board.getDeadline())
-                .totalUsers(board.getTotalUsers())
+                .totalUser(board.getTotalUsers())
                 .currentUsers(participants.size())
                 .productUrl(product != null ? product.getProductUrl() : null)
                 .images(product != null ? Collections.singletonList(product.getImgUrl()) : groupProduct.getImages())
