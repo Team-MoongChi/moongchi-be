@@ -173,7 +173,7 @@ public class GroupBoardService {
                         return BoardParticipantDto.builder()
                                 .userId(user.getId())
                                 .profileUrl(user.getProfileUrl())
-                                .mannerLeader(p.getRole() == Role.LEADER ? user.getMannerLeader() : null)
+                                .nickname(p.getRole() == Role.LEADER ? user.getNickname():null)
                                 .role(p.getRole().toString())
                                 .build();
                     }).collect(Collectors.toList());
