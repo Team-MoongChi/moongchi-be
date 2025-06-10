@@ -7,6 +7,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ChatMessageRepository extends MongoRepository<ChatMessage,String> {
-    List<ChatMessage> findByChatRoomIdOrderBySendAtAsc(String chatRoomId);
-    Optional<ChatMessage> findFirstByChatRoomIdOrderBySendAtDesc(String chatRoomId);
+    List<ChatMessage> findByChatRoomIdOrderBySendAtAsc(Long chatRoomId);
+    Optional<ChatMessage> findFirstByChatRoomIdOrderBySendAtDesc(Long chatRoomId);
 }

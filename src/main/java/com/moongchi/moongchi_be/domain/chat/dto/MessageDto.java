@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class MessageDto {
     private String id;
-    private String participantId;
+    private Long participantId;
     private String message;
     private String messageType;
     private LocalDateTime sendAt;

@@ -35,8 +35,9 @@ public class ChatRoomController {
 
     //채팅방 상세 조회
     @GetMapping("/{chatRoomId}")
-    public ResponseEntity<ChatRoomDetailDto> getChatRoomDetail(@PathVariable Long chatRoomId) {
-        ChatRoomDetailDto dto = chatRoomService.getChatRoomDetail(chatRoomId);
+    public ResponseEntity<ChatRoomDetailDto> getChatRoomDetail(@PathVariable Long chatRoomId, HttpServletRequest request) {
+        User currentUser = userService.getUser(request);
+        ChatRoomDetailDto dto = chatRoomService.getChatRoomDetail(chatRoomId,currentUser.getId());
         return ResponseEntity.ok(dto);
     }
     

@@ -53,7 +53,7 @@ public class ChatRoomService {
                             ? product.getImages().get(0)
                             : null;
                     Optional<ChatMessage> lastMessageOpt =
-                            chatMessageRepository.findFirstByChatRoomIdOrderBySendAtDesc(chatRoom.getId().toString());
+                            chatMessageRepository.findFirstByChatRoomIdOrderBySendAtDesc(chatRoom.getId());
                     String lastMessage = lastMessageOpt.map(ChatMessage::getMessage).orElse(null);
                     LocalDateTime lastMessageTime = lastMessageOpt.map(ChatMessage::getSendAt).orElse(null);
 
@@ -75,7 +75,7 @@ public class ChatRoomService {
 
     //채팅방 상세조회
     @Transactional(readOnly = true)
-    public ChatRoomDetailDto getChatRoomDetail(Long chatRoomId) {
+    public ChatRoomDetailDto getChatRoomDetail(Long chatRoomId,Long userId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
         GroupProduct product = chatRoom.getGroupBoard().getGroupProduct();
@@ -105,7 +105,7 @@ public class ChatRoomService {
                 )).collect(Collectors.toList());
 
         List<MessageDto> messages = chatMessageRepository
-                .findByChatRoomIdOrderBySendAtAsc(chatRoomId.toString())
+                .findByChatRoomIdOrderBySendAtAsc(chatRoomId)
                 .stream()
                 .map(m -> new MessageDto(
                         m.getId(),
@@ -133,7 +133,7 @@ public class ChatRoomService {
     @Transactional
     public ChatRoom createChatRoomWithParticipant(GroupBoard groupBoard, User creator) {
         ChatRoom chatRoom = new ChatRoom();
-        chatRoom.setTitle(groupBoard.getGroupProduct().getName() + " " + groupBoard.getGroupProduct().getQuantity() + " 공구방" );
+        chatRoom.setTitle(groupBoard.getGroupProduct().getName() + groupBoard.getGroupProduct().getQuantity() + " 공구방" );
         chatRoom.setStatus(ChatRoomStatus.RECRUITING);
         chatRoom.setGroupBoard(groupBoard);
         chatRoom.setCreatedAt(LocalDateTime.now());
@@ -150,6 +150,11 @@ public class ChatRoomService {
                 .paymentStatus(PaymentStatus.PAID)
                 .build();
         participantRepository.save(participant);
+        String welcomeMsg = "안녕하세요! 공구 완료 시점까지 여러분과 함께 할 뭉치예요. 뭉치면 산다! 공구 인원이 모두 모이면 알려줄게요.";
+        sendSystemMessage(savedChatRoom.getId(), welcomeMsg);
+
+        savedChatRoom.setSendAt(LocalDateTime.now());
+        chatRoomRepository.save(savedChatRoom);
 
         return savedChatRoom;
     }
@@ -223,7 +228,7 @@ public class ChatRoomService {
 
     public void sendSystemMessage(Long chatRoomId, String message) {
         ChatMessage systemMsg = ChatMessage.builder()
-                .chatRoomId(chatRoomId.toString())
+                .chatRoomId(chatRoomId)
                 .participantId(null)
                 .message(message)
                 .messageType(MessageType.SYSTEM)
