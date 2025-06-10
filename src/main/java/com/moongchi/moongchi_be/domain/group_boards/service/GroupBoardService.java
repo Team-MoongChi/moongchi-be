@@ -224,6 +224,7 @@ public class GroupBoardService {
                                 .profileUrl(user.getProfileUrl())
                                 .nickname(p.getRole() == Role.LEADER ? user.getNickname():null)
                                 .role(p.getRole().toString())
+                                .mannerLeader(p.getRole() == Role.LEADER ? user.getMannerPercent().getLeaderPercent() : null)
                                 .build();
                     }).collect(Collectors.toList());
 
