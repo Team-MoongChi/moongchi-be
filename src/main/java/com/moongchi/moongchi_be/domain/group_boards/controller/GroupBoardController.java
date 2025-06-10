@@ -48,8 +48,8 @@ public class GroupBoardController {
     }
 
     @GetMapping("/{group_board_id}")
-    public ResponseEntity<GroupBoardDto> getGroupBoard(@PathVariable("group_board_id") Long groupBoardId){
-        GroupBoardDto groupBoardDto = groupBoardService.getGroupBoard(groupBoardId);
+    public ResponseEntity<GroupBoardDto> getGroupBoard(@PathVariable("group_board_id") Long groupBoardId, HttpServletRequest request){
+        GroupBoardDto groupBoardDto = groupBoardService.getGroupBoard(groupBoardId, request);
         return ResponseEntity.ok(groupBoardDto);
     }
 
@@ -71,8 +71,8 @@ public class GroupBoardController {
     }
 
     @GetMapping("categories/{category_id}")
-    public ResponseEntity<List<GroupBoardListDto>> getGroupBoardCategory(@PathVariable("category_id") Long categoryId){
-        List<GroupBoardListDto> groupBoards = groupBoardService.getGroupBoardCategory(categoryId);
+    public ResponseEntity<List<GroupBoardListDto>> getGroupBoardCategory(@PathVariable("category_id") Long categoryId, HttpServletRequest request){
+        List<GroupBoardListDto> groupBoards = groupBoardService.getGroupBoardCategory(categoryId, request);
         return ResponseEntity.ok(groupBoards);
     }
 

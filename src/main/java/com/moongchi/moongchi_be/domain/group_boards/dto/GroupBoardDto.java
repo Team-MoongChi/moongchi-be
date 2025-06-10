@@ -24,6 +24,8 @@ public class GroupBoardDto {
     private Integer totalUser;
     private Integer currentUsers;
     private String productUrl;
+    private boolean editable;
+    private Long chatRoomId;
     private List<String> images;
     private List<BoardParticipantDto> participants;
 }
