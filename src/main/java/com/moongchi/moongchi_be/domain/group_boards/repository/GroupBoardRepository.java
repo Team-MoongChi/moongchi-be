@@ -21,11 +21,9 @@ public interface GroupBoardRepository extends JpaRepository<GroupBoard, Long> {
             "cos(radians(g.longitude) - radians(:userLng)) + " +
             "sin(radians(:userLat)) * sin(radians(g.latitude)))) < 0.75",
             nativeQuery = true)
+    List<GroupBoard> findCategoryIdWithNearbyPosts(@Param("categoryId") Long categoryId,
                                                     @Param("userLat") double userLat,
                                                     @Param("userLng") double userLng);
 
     List<GroupBoard> findByUserId(Long userId);
-
-//    @Query("SELECT gb FROM GroupBoard gb WHERE gb.groupProduct.category.id = :categoryId")
-//    List<GroupBoard> findByCategoryId(@Param("categoryId") Long categoryId);
 }
