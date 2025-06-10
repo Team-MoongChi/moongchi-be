@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -17,6 +18,7 @@ public class ChatRoomDetailDto {
     private String status;
     private String imgUrl;
     private int price;
+    private LocalDate deadline;
     private List<ParticipantDto> participants;
     private List<MessageDto> messages;
 }
