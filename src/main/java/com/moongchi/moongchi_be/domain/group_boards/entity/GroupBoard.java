@@ -61,6 +61,9 @@ public class GroupBoard {
     @OneToOne(mappedBy = "groupBoard",cascade = CascadeType.ALL, orphanRemoval = true)
     private ChatRoom chatRoom;
 
+    @OneToMany(mappedBy = "groupBoard", cascade = CascadeType.ALL)
+    private List<FavoriteProduct> favoriteProducts;
+
     @OneToMany(mappedBy = "groupBoard",cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Participant> participants;
 
