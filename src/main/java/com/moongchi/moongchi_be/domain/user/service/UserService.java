@@ -18,9 +18,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -104,16 +102,14 @@ public class UserService {
 
         List<Review> reviews = reviewRepository.findTop4ByParticipantIdInOrderByIdDesc(participantIds);
 
+        // keywords는 이제 이미 List<String>임!
         List<String> keywords = reviews.stream()
-                .flatMap(r -> Arrays.stream(
-                        Optional.ofNullable(r.getKeywords()).orElse("").split(",")))
-                .map(String::trim)                // 혹시 공백 제거
-                .filter(kw -> !kw.isBlank())      // 빈 값 제거
+                .flatMap(r -> r.getKeywords().stream())
+                .map(String::trim)
+                .filter(kw -> !kw.isBlank())
                 .limit(4)
                 .toList();
 
-
         return new ReviewKeywordDto(userId, keywords);
     }
-
 }

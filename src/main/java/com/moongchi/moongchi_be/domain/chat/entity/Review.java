@@ -1,6 +1,6 @@
 package com.moongchi.moongchi_be.domain.chat.entity;
 
-import com.moongchi.moongchi_be.domain.group_boards.entity.GroupBoard;
+import com.moongchi.moongchi_be.common.converter.StringListConverter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "reviews")
@@ -24,8 +25,9 @@ public class Review {
     @Column(name = "star", nullable = false)
     private Double star;
 
+    @Convert(converter = StringListConverter.class)
     @Column(name = "keywords", nullable = false, columnDefinition = "TEXT")
-    private String keywords;
+    private List<String> keywords;
 
     @Column(name = "review", nullable = false, columnDefinition = "TEXT")
     private String review;
@@ -36,9 +38,5 @@ public class Review {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "participant_id", nullable = false)
     private Participant participant;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "group_board_id", nullable = false)
-    private GroupBoard groupBoard;
 
 }
