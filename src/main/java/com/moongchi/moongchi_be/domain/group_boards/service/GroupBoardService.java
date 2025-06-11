@@ -4,9 +4,13 @@ import com.moongchi.moongchi_be.common.category.entity.Category;
 import com.moongchi.moongchi_be.common.category.repository.CategoryRepository;
 import com.moongchi.moongchi_be.common.exception.custom.CustomException;
 import com.moongchi.moongchi_be.common.exception.errorcode.ErrorCode;
-import com.moongchi.moongchi_be.domain.chat.dto.ParticipantDto;
+import com.moongchi.moongchi_be.domain.chat.dto.BoardParticipantDto;
 import com.moongchi.moongchi_be.domain.chat.entity.ChatRoom;
+import com.moongchi.moongchi_be.domain.chat.entity.Participant;
+import com.moongchi.moongchi_be.domain.chat.entity.PaymentStatus;
 import com.moongchi.moongchi_be.domain.chat.entity.Role;
+import com.moongchi.moongchi_be.domain.chat.repository.ChatRoomRepository;
+import com.moongchi.moongchi_be.domain.chat.repository.ParticipantRepository;
 import com.moongchi.moongchi_be.domain.chat.service.ChatRoomService;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardDto;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardListDto;
@@ -19,12 +23,14 @@ import com.moongchi.moongchi_be.domain.group_boards.repository.GroupProductRepos
 import com.moongchi.moongchi_be.domain.product.entity.Product;
 import com.moongchi.moongchi_be.domain.product.repository.ProductRepository;
 import com.moongchi.moongchi_be.domain.user.entity.User;
+import com.moongchi.moongchi_be.domain.user.repository.UserRepository;
 import com.moongchi.moongchi_be.domain.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,6 +43,9 @@ public class GroupBoardService {
     private final GroupProductRepository groupProductRepository;
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
+    private final ParticipantRepository participantRepository;
+    private final UserRepository userRepository;
+    private final ChatRoomRepository chatRoomRepository;
     private final UserService userService;
     private final KakaoMapService kakaoMapService;
     private final ChatRoomService chatRoomService;
@@ -80,7 +89,7 @@ public class GroupBoardService {
                 .quantity(dto.getQuantity())
                 .category(category)
                 .product(product)
-                .images(dto.getImages())
+                .images(dto.getImages() == null ? Collections.singletonList(product.getImgUrl()): dto.getImages())
                 .build();
 
         groupBoard.updateGroupProduct(groupProduct);
@@ -120,11 +129,50 @@ public class GroupBoardService {
                 .collect(Collectors.toList());
     }
 
+    public void joinGroupBoard(Long userId, Long groupBoardId) {
+        GroupBoard board = groupBoardRepository.findById(groupBoardId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        if (participantRepository.existsByUserIdAndGroupBoardId(userId, groupBoardId)) {
+            throw new CustomException(ErrorCode.CONFLICT);
+        }
+
+        int currentCount = participantRepository.countByGroupBoardId(groupBoardId);
+        if (currentCount >= board.getTotalUsers()) {
+            throw new CustomException(ErrorCode.CONFLICT);
+        }
+
+        if(currentCount -1 == participantRepository.countByGroupBoardId(groupBoardId)) {
+            board.setBoardStatus(BoardStatus.CLOSING_SOON);
+            groupBoardRepository.save(board);
+        }
+
+        Participant participant = new Participant();
+        participant.setUser(userRepository.findById(userId).orElseThrow());
+        participant.setGroupBoard(board);
+        participant.setPaymentStatus(PaymentStatus.UNPAID);
+        participant.setTradeCompleted(false);
+        participant.setRole(Role.MEMBER);
+        participant.setJoinedAt(LocalDateTime.now());
+        participantRepository.save(participant);
+
+        if (participantRepository.countByGroupBoardId(groupBoardId) == board.getTotalUsers()) {
+            board.setBoardStatus(BoardStatus.CLOSED);
+            groupBoardRepository.save(board);
+
+            ChatRoom chatRoom = chatRoomRepository.findByGroupBoard(board)
+                    .orElseThrow();
+            chatRoomService.updateChatRoomStatus(chatRoom.getId());
+
+        }
+    }
+
     @Transactional(readOnly = true)
-    public GroupBoardDto getGroupBoard(Long groupBoardId) {
+    public GroupBoardDto getGroupBoard(Long groupBoardId, HttpServletRequest request) {
         GroupBoard groupBoard = groupBoardRepository.findById(groupBoardId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
-        return convertToDto(groupBoard);
+        Long currentUserId = userService.getUser(request).getId();
+        return convertToDto(groupBoard, currentUserId);
     }
 
     @Transactional(readOnly = true)
@@ -138,8 +186,9 @@ public class GroupBoardService {
     }
 
     @Transactional(readOnly = true)
-    public List<GroupBoardListDto> getGroupBoardCategory(Long categoryId) {
-        List<GroupBoard> groupBoards = groupBoardRepository.findByCategoryId(categoryId);
+    public List<GroupBoardListDto> getGroupBoardCategory(Long categoryId, HttpServletRequest request) {
+        User currentUser = userService.getUser(request);
+        List<GroupBoard> groupBoards = groupBoardRepository.findCategoryIdWithNearbyPosts(categoryId,currentUser.getLatitude(), currentUser.getLongitude());
 
         return groupBoards.stream()
                 .map(this::convertToListDto)
@@ -155,18 +204,54 @@ public class GroupBoardService {
                 .collect(Collectors.toList());
     }
 
-    public GroupBoardListDto convertToListDto(GroupBoard board){
+    @Transactional(readOnly = true)
+    public List<GroupBoardDto> getProductGroupBoardList(Long productId) {
+        List<GroupBoard> groupBoards = groupBoardRepository.findByProductId(productId);
+
+        return groupBoards.stream()
+                .map(this::convertToParticipanDto)
+                .collect(Collectors.toList());
+    }
+
+    private GroupBoardDto convertToParticipanDto(GroupBoard board) {
+        List<BoardParticipantDto> participants = new ArrayList<>();
+        if (board.getParticipants() != null) {
+            participants = board.getParticipants().stream()
+                    .map(p -> {
+                        User user = p.getUser();
+                        return BoardParticipantDto.builder()
+                                .userId(user.getId())
+                                .profileUrl(user.getProfileUrl())
+                                .nickname(p.getRole() == Role.LEADER ? user.getNickname():null)
+                                .role(p.getRole().toString())
+                                .mannerLeader(p.getRole() == Role.LEADER ? user.getMannerPercent().getLeaderPercent() : null)
+                                .build();
+                    }).collect(Collectors.toList());
+
+        }
+
+        return GroupBoardDto.builder()
+                .id(board.getId())
+                .totalUser(board.getTotalUsers())
+                .currentUsers(participants.size())
+                .participants(participants)
+                .deadline(board.getDeadline())
+                .build();
+    }
+
+    public GroupBoardListDto convertToListDto(GroupBoard board) {
         GroupProduct groupProduct = board.getGroupProduct();
         Product product = groupProduct.getProduct();
 
-        List<ParticipantDto> participants = new ArrayList<>();
-        ChatRoom chatRoom = board.getChatRoom();
-        if (chatRoom != null && chatRoom.getParticipants() != null) {
-            participants = chatRoom.getParticipants().stream()
+        List<BoardParticipantDto> participants = new ArrayList<>();
+        if (board.getParticipants() != null) {
+            participants = board.getParticipants().stream()
                     .map(p -> {
                         User user = p.getUser();
-                        return ParticipantDto.builder()
+                        return BoardParticipantDto.builder()
+                                .id(p.getId())
                                 .userId(user.getId())
+                                .nickname(user.getNickname())
                                 .profileUrl(user.getProfileUrl())
                                 .build();
                     }).collect(Collectors.toList());
@@ -192,26 +277,27 @@ public class GroupBoardService {
     }
 
 
-    private GroupBoardDto convertToDto(GroupBoard board) {
+    private GroupBoardDto convertToDto(GroupBoard board, Long currentUserId) {
 
         GroupProduct groupProduct = board.getGroupProduct();
         Product product = groupProduct.getProduct();
 
-        List<ParticipantDto> participants = new ArrayList<>();
-        ChatRoom chatRoom = board.getChatRoom();
-        if (chatRoom != null && chatRoom.getParticipants() != null) {
-            participants = chatRoom.getParticipants().stream()
+        List<BoardParticipantDto> participants = new ArrayList<>();
+        if (board.getParticipants() != null) {
+            participants = board.getParticipants().stream()
                     .map(p -> {
                         User user = p.getUser();
-                        return ParticipantDto.builder()
+                        return BoardParticipantDto.builder()
                                 .userId(user.getId())
                                 .nickname(user.getNickname())
                                 .profileUrl(user.getProfileUrl())
-                                .mannerLeader(p.getRole() == Role.LEADER ? user.getMannerLeader() : null)
+                                .mannerLeader(p.getRole() == Role.LEADER ? user.getMannerPercent().getLeaderPercent() : null)
                                 .role(p.getRole().toString())
                                 .build();
                     }).collect(Collectors.toList());
         }
+
+        boolean editable = board.getUser().getId().equals(currentUserId);
 
         return GroupBoardDto.builder()
                 .id(board.getId())
@@ -219,16 +305,16 @@ public class GroupBoardService {
                 .price(groupProduct.getPrice())
                 .content(board.getContent())
                 .location(board.getLocation())
-                .boardStatus(board.getBoardStatus())
+                .boardStatus(board.getBoardStatus().toString())
                 .deadline(board.getDeadline())
-                .totalUsers(board.getTotalUsers())
+                .totalUser(board.getTotalUsers())
                 .currentUsers(participants.size())
                 .productUrl(product != null ? product.getProductUrl() : null)
+                .chatRoomId(board.getChatRoom().getId())
+                .editable(editable)
                 .images(product != null ? Collections.singletonList(product.getImgUrl()) : groupProduct.getImages())
                 .participants(participants)
                 .build();
     }
-
-
 
 }

@@ -1,13 +1,11 @@
 package com.moongchi.moongchi_be.domain.group_boards.entity;
 
 import com.moongchi.moongchi_be.domain.chat.entity.ChatRoom;
+import com.moongchi.moongchi_be.domain.chat.entity.Participant;
 import com.moongchi.moongchi_be.domain.group_boards.enums.BoardStatus;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -17,7 +15,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "group_boards")
-@Getter
+@Getter @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -66,6 +64,9 @@ public class GroupBoard {
     @OneToMany(mappedBy = "groupBoard", cascade = CascadeType.ALL)
     private List<FavoriteProduct> favoriteProducts;
 
+    @OneToMany(mappedBy = "groupBoard",cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Participant> participants;
+
     @Column(name = "create_at")
     @CreationTimestamp
     private LocalDateTime createAt;
@@ -74,6 +75,7 @@ public class GroupBoard {
     @UpdateTimestamp
     private LocalDateTime updateAt;
 
+    //== 비즈니스 로직 ==//
     public void updateGroupProduct(GroupProduct groupProduct) {
         this.groupProduct = groupProduct;
         groupProduct.updateGroupBoard(this);

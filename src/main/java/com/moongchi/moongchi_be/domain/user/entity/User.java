@@ -1,6 +1,8 @@
 package com.moongchi.moongchi_be.domain.user.entity;
 
+
 import com.moongchi.moongchi_be.domain.group_boards.entity.FavoriteProduct;
+import com.moongchi.moongchi_be.domain.chat.entity.Participant;
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupBoard;
 import com.moongchi.moongchi_be.domain.user.enums.Gender;
 import com.moongchi.moongchi_be.domain.user.enums.UserRole;
@@ -69,17 +71,16 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
 
-    @Column(name = "manner_leader")
-    private double mannerLeader;
-
-    @Column(name = "manner_participant")
-    private double mannerParticipant;
-
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GroupBoard> groupBoards;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<FavoriteProduct> favoriteProducts;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Participant> participants;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private MannerPercent mannerPercent;
 
     @CreationTimestamp
     @Column(name = "create_at")
@@ -114,6 +115,17 @@ public class User {
 
     public User updateInterest(String interestCategory) {
         this.interestCategory = interestCategory;
+        return this;
+    }
+
+    public User setName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    public User editUser(String nickname, String profileUrl){
+        this.nickname = nickname;
+        this.profileUrl = profileUrl;
         return this;
     }
 
