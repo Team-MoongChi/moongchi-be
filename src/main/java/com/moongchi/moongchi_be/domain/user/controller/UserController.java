@@ -55,7 +55,7 @@ public class UserController {
         return ResponseEntity.ok("회원정보 수정이 완료되었습니다.");
     }
 
-    @GetMapping("/review-keywords")
+    @GetMapping("/reviews")
     public ResponseEntity<ReviewKeywordDto> getReviewKeywords(HttpServletRequest request) {
         ReviewKeywordDto dto = userService.getUserLatestReviewKeywords(request);
         return ResponseEntity.ok(dto);
