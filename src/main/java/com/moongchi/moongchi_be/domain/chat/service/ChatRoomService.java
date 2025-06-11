@@ -308,7 +308,7 @@ public class ChatRoomService {
 
         Review review = new Review();
         review.setStar(dto.getStar());
-        review.setKeyword(dto.getKeyword().stream().toList().toString());
+        review.setKeyword(dto.getKeywords().stream().toList().toString());
         review.setReview(dto.getReview());
         review.setCreatedAt(LocalDateTime.now());
         review.setParticipant(targetParticipant);

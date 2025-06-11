@@ -17,7 +17,7 @@ public class ReviewRequestDto {
     private Double star;
 
     @NotBlank
-    private List<String> keyword;
+    private List<String> keywords;
 
     private String review;
 }
