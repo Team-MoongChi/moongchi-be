@@ -305,7 +305,7 @@ public class GroupBoardService {
                 .price(groupProduct.getPrice())
                 .content(board.getContent())
                 .location(board.getLocation())
-                .boardStatus(board.getBoardStatus().toString())
+                .boardStatus(board.getBoardStatus())
                 .deadline(board.getDeadline())
                 .totalUser(board.getTotalUsers())
                 .currentUsers(participants.size())

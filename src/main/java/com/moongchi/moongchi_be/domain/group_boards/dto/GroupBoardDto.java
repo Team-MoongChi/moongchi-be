@@ -1,6 +1,7 @@
 package com.moongchi.moongchi_be.domain.group_boards.dto;
 
 import com.moongchi.moongchi_be.domain.chat.dto.BoardParticipantDto;
+import com.moongchi.moongchi_be.domain.group_boards.enums.BoardStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,7 +18,7 @@ public class GroupBoardDto {
     private Integer price;
     private String content;
     private String location;
-    private String boardStatus;
+    private BoardStatus boardStatus;
     private LocalDate deadline;
     private Integer totalUser;
     private Integer currentUsers;
