@@ -99,7 +99,7 @@ public class ChatRoomService {
                             boolean isMe = p.getUser().getId().equals(userId);
                             boolean reviewed = false;
                             if(!isMe) {
-                                reviewed = reviewRepository.existsByParticipantIdAndGroupBoardId(p.getId(), p.getGroupBoard().getId());
+                                reviewed = reviewRepository.existsByParticipantIdAndParticipantGroupBoardId(p.getId(), p.getGroupBoard().getId());
                             }
 
                           return new ParticipantDto(
@@ -308,21 +308,21 @@ public class ChatRoomService {
 
         Review review = new Review();
         review.setStar(dto.getStar());
-        review.setKeyword(dto.getKeywords().stream().toList().toString());
+        review.setKeywords(dto.getKeywords());
         review.setReview(dto.getReview());
         review.setCreatedAt(LocalDateTime.now());
         review.setParticipant(targetParticipant);
-        review.setGroupBoard(targetParticipant.getGroupBoard());
+        review.getParticipant().setGroupBoard(targetParticipant.getGroupBoard());
 
         reviewRepository.save(review);
 
         return new ReviewResponseDto(
                 review.getId(),
                 review.getStar(),
-                review.getKeyword(),
+                review.getKeywords(),
                 review.getReview(),
                 review.getParticipant().getId(),
-                review.getGroupBoard().getId(),
+                review.getParticipant().getGroupBoard().getId(),
                 review.getCreatedAt()
         );
     }
