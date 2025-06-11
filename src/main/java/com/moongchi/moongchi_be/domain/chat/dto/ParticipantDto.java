@@ -17,4 +17,7 @@ public class ParticipantDto {
     private String payStatement;
     private boolean tradeCompleted;
     private int perPersonPrice;
+    private boolean isMe;
+    private boolean reviewed;
+
 }
