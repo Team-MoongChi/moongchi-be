@@ -282,7 +282,7 @@ public class ChatRoomService {
         List<Participant> list = participantRepository.findAllByChatRoomId(participant.getGroupBoard().getId());
         boolean allTraded = list.stream().allMatch(Participant::isTradeCompleted);
         if (allTraded) {
-            participant.getGroupBoard().setBoardStatus(BoardStatus.COMPLETED);
+            participant.getGroupBoard().updateStatus(BoardStatus.COMPLETED);
             groupBoardRepository.save(participant.getGroupBoard());
         }
 

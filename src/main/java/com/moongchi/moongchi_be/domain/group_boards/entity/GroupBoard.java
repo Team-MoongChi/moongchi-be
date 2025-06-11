@@ -15,7 +15,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "group_boards")
-@Getter @Setter
+@Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
