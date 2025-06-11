@@ -15,9 +15,11 @@ import com.moongchi.moongchi_be.domain.chat.service.ChatRoomService;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardDto;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardListDto;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardRequestDto;
+import com.moongchi.moongchi_be.domain.group_boards.entity.FavoriteProduct;
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupBoard;
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupProduct;
 import com.moongchi.moongchi_be.domain.group_boards.enums.BoardStatus;
+import com.moongchi.moongchi_be.domain.group_boards.repository.FavoriteProductRepository;
 import com.moongchi.moongchi_be.domain.group_boards.repository.GroupBoardRepository;
 import com.moongchi.moongchi_be.domain.group_boards.repository.GroupProductRepository;
 import com.moongchi.moongchi_be.domain.product.entity.Product;
@@ -46,6 +48,7 @@ public class GroupBoardService {
     private final ParticipantRepository participantRepository;
     private final UserRepository userRepository;
     private final ChatRoomRepository chatRoomRepository;
+    private final FavoriteProductRepository favoriteProductRepository;
     private final UserService userService;
     private final KakaoMapService kakaoMapService;
     private final ChatRoomService chatRoomService;
@@ -213,6 +216,15 @@ public class GroupBoardService {
                 .collect(Collectors.toList());
     }
 
+    public int getLikeCount(Long groupBoardId){
+        GroupBoard groupBoard = groupBoardRepository.findById(groupBoardId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+        List<FavoriteProduct> favoriteProducts = favoriteProductRepository.findByGroupBoard(groupBoard);
+
+        return favoriteProducts.size();
+
+    }
+
     private GroupBoardDto convertToParticipanDto(GroupBoard board) {
         List<BoardParticipantDto> participants = new ArrayList<>();
         if (board.getParticipants() != null) {
@@ -298,7 +310,7 @@ public class GroupBoardService {
         }
 
         boolean editable = board.getUser().getId().equals(currentUserId);
-
+        int likeCount = getLikeCount(board.getId());
         return GroupBoardDto.builder()
                 .id(board.getId())
                 .title(board.getTitle())
@@ -311,6 +323,7 @@ public class GroupBoardService {
                 .currentUsers(participants.size())
                 .productUrl(product != null ? product.getProductUrl() : null)
                 .chatRoomId(board.getChatRoom().getId())
+                .likeCount(likeCount)
                 .editable(editable)
                 .images(product != null ? Collections.singletonList(product.getImgUrl()) : groupProduct.getImages())
                 .participants(participants)

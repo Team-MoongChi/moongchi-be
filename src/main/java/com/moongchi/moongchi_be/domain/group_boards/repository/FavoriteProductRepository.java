@@ -14,4 +14,5 @@ public interface FavoriteProductRepository extends JpaRepository<FavoriteProduct
     Optional<FavoriteProduct> findByUser(User user);
 
     List<FavoriteProduct> findAllByUser(User user);
+    List<FavoriteProduct> findByGroupBoard(GroupBoard groupBoard);
 }

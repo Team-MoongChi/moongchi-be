@@ -23,6 +23,7 @@ public class GroupBoardDto {
     private Integer totalUser;
     private Integer currentUsers;
     private String productUrl;
+    private int likeCount;
     private boolean editable;
     private Long chatRoomId;
     private List<String> images;
