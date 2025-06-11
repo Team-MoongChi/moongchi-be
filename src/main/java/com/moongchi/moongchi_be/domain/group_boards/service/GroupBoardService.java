@@ -142,8 +142,8 @@ public class GroupBoardService {
             throw new CustomException(ErrorCode.CONFLICT);
         }
 
-        if(currentCount -1 == participantRepository.countByGroupBoardId(groupBoardId)) {
-            board.setBoardStatus(BoardStatus.CLOSING_SOON);
+        if(board.getTotalUsers() - (participantRepository.countByGroupBoardId(groupBoardId) + 1) == 1) {
+            board.updateStatus(BoardStatus.CLOSING_SOON);
             groupBoardRepository.save(board);
         }
 
@@ -157,7 +157,7 @@ public class GroupBoardService {
         participantRepository.save(participant);
 
         if (participantRepository.countByGroupBoardId(groupBoardId) == board.getTotalUsers()) {
-            board.setBoardStatus(BoardStatus.CLOSED);
+            board.updateStatus(BoardStatus.CLOSED);
             groupBoardRepository.save(board);
 
             ChatRoom chatRoom = chatRoomRepository.findByGroupBoard(board)
@@ -239,7 +239,7 @@ public class GroupBoardService {
                 .build();
     }
 
-    private GroupBoardListDto convertToListDto(GroupBoard board) {
+    public GroupBoardListDto convertToListDto(GroupBoard board) {
         GroupProduct groupProduct = board.getGroupProduct();
         Product product = groupProduct.getProduct();
 
@@ -305,7 +305,7 @@ public class GroupBoardService {
                 .price(groupProduct.getPrice())
                 .content(board.getContent())
                 .location(board.getLocation())
-                .boardStatus(board.getBoardStatus().toString())
+                .boardStatus(board.getBoardStatus())
                 .deadline(board.getDeadline())
                 .totalUser(board.getTotalUsers())
                 .currentUsers(participants.size())
