@@ -17,13 +17,13 @@ public class FavoriteProductController {
     private final FavoriteProductService favoriteProductService;
 
     @PostMapping("/group-boards/{group_board_id}/like")
-    public ResponseEntity<?> addlike(@RequestParam("group_board_id") Long groupBoardId, HttpServletRequest request){
+    public ResponseEntity<?> addLike(@PathVariable("group_board_id") Long groupBoardId, HttpServletRequest request){
         favoriteProductService.addLike(groupBoardId, request);
         return ResponseEntity.ok("찜 추가 완료");
     }
 
     @DeleteMapping("/group-boards/{group_board_id}/like")
-    public ResponseEntity<?> removeLike(@RequestParam("group_board_id") Long groupBoardId, HttpServletRequest request){
+    public ResponseEntity<?> removeLike(@PathVariable("group_board_id") Long groupBoardId, HttpServletRequest request){
         favoriteProductService.removeLike(groupBoardId, request);
         return ResponseEntity.ok("찜 삭제 완료");
     }
