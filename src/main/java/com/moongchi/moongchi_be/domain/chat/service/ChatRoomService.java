@@ -135,7 +135,7 @@ public class ChatRoomService {
     @Transactional
     public ChatRoom createChatRoomWithParticipant(GroupBoard groupBoard, User creator) {
         ChatRoom chatRoom = new ChatRoom();
-        chatRoom.setTitle(groupBoard.getGroupProduct().getName() + groupBoard.getGroupProduct().getQuantity() + " 공구방" );
+        chatRoom.setTitle(groupBoard.getGroupProduct().getName() + " " + groupBoard.getGroupProduct().getQuantity() + " 공구방" );
         chatRoom.setStatus(ChatRoomStatus.RECRUITING);
         chatRoom.setGroupBoard(groupBoard);
         chatRoom.setCreatedAt(LocalDateTime.now());
