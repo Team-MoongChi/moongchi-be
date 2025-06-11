@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface ReviewRepository extends JpaRepository<Review,Long> {
     @Query("SELECT COUNT(r) > 0 FROM Review r " +
             "JOIN r.participant p " +
@@ -21,5 +23,8 @@ public interface ReviewRepository extends JpaRepository<Review,Long> {
     );
 
     boolean existsByParticipantIdAndGroupBoardId(Long participantId, Long groupBoardId);
+
+    List<Review> findTop4ByParticipantIdInOrderByIdDesc(List<Long> participantIds);
+
 
 }

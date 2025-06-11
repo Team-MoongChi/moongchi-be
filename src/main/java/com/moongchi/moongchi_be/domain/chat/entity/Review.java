@@ -24,8 +24,8 @@ public class Review {
     @Column(name = "star", nullable = false)
     private Double star;
 
-    @Column(name = "keyword", nullable = false, columnDefinition = "TEXT")
-    private String keyword;
+    @Column(name = "keywords", nullable = false, columnDefinition = "TEXT")
+    private String keywords;
 
     @Column(name = "review", nullable = false, columnDefinition = "TEXT")
     private String review;

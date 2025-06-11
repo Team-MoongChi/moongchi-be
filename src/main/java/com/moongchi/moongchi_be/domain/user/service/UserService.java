@@ -3,6 +3,11 @@ package com.moongchi.moongchi_be.domain.user.service;
 import com.moongchi.moongchi_be.common.auth.jwt.JwtTokenProvider;
 import com.moongchi.moongchi_be.common.exception.custom.CustomException;
 import com.moongchi.moongchi_be.common.exception.errorcode.ErrorCode;
+import com.moongchi.moongchi_be.domain.chat.entity.Participant;
+import com.moongchi.moongchi_be.domain.chat.entity.Review;
+import com.moongchi.moongchi_be.domain.chat.repository.ParticipantRepository;
+import com.moongchi.moongchi_be.domain.chat.repository.ReviewRepository;
+import com.moongchi.moongchi_be.domain.user.dto.ReviewKeywordDto;
 import com.moongchi.moongchi_be.domain.user.dto.TokenResponseDto;
 import com.moongchi.moongchi_be.domain.user.dto.UserBasicDto;
 import com.moongchi.moongchi_be.domain.user.dto.UserDto;
@@ -12,10 +17,17 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final ParticipantRepository participantRepository;
+    private final ReviewRepository reviewRepository;
     private final AuthService authService;
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -85,5 +97,23 @@ public class UserService {
         User updateUser = user.editUser(userDto.getNickname(), userDto.getProfileUrl());
         this.userRepository.save(updateUser);
     }
-    
+
+    public ReviewKeywordDto getUserLatestReviewKeywords(Long userId) {
+        List<Participant> myParticipants = participantRepository.findByUserId(userId);
+        List<Long> participantIds = myParticipants.stream().map(Participant::getId).toList();
+
+        List<Review> reviews = reviewRepository.findTop4ByParticipantIdInOrderByIdDesc(participantIds);
+
+        List<String> keywords = reviews.stream()
+                .flatMap(r -> Arrays.stream(
+                        Optional.ofNullable(r.getKeywords()).orElse("").split(",")))
+                .map(String::trim)                // 혹시 공백 제거
+                .filter(kw -> !kw.isBlank())      // 빈 값 제거
+                .limit(4)
+                .toList();
+
+
+        return new ReviewKeywordDto(userId, keywords);
+    }
+
 }

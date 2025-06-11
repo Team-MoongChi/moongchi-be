@@ -308,7 +308,7 @@ public class ChatRoomService {
 
         Review review = new Review();
         review.setStar(dto.getStar());
-        review.setKeyword(dto.getKeywords().stream().toList().toString());
+        review.setKeywords(dto.getKeywords().stream().toList().toString());
         review.setReview(dto.getReview());
         review.setCreatedAt(LocalDateTime.now());
         review.setParticipant(targetParticipant);
@@ -319,7 +319,7 @@ public class ChatRoomService {
         return new ReviewResponseDto(
                 review.getId(),
                 review.getStar(),
-                review.getKeyword(),
+                review.getKeywords(),
                 review.getReview(),
                 review.getParticipant().getId(),
                 review.getGroupBoard().getId(),
