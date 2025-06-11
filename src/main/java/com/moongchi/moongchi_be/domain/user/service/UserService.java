@@ -96,8 +96,10 @@ public class UserService {
         this.userRepository.save(updateUser);
     }
 
-    public ReviewKeywordDto getUserLatestReviewKeywords(Long userId) {
-        List<Participant> myParticipants = participantRepository.findByUserId(userId);
+    public ReviewKeywordDto getUserLatestReviewKeywords(HttpServletRequest request) {
+        User user = getUser(request);
+
+        List<Participant> myParticipants = participantRepository.findByUserId(user.getId());
         List<Long> participantIds = myParticipants.stream().map(Participant::getId).toList();
 
         List<Review> reviews = reviewRepository.findTop4ByParticipantIdInOrderByIdDesc(participantIds);
@@ -110,6 +112,6 @@ public class UserService {
                 .limit(4)
                 .toList();
 
-        return new ReviewKeywordDto(userId, keywords);
+        return new ReviewKeywordDto(user.getId(), keywords);
     }
 }

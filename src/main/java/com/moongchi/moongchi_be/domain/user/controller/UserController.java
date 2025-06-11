@@ -55,9 +55,9 @@ public class UserController {
         return ResponseEntity.ok("회원정보 수정이 완료되었습니다.");
     }
 
-    @GetMapping("/{userId}/review-keywords")
-    public ResponseEntity<ReviewKeywordDto> getReviewKeywords(@PathVariable Long userId) {
-        ReviewKeywordDto dto = userService.getUserLatestReviewKeywords(userId);
+    @GetMapping("/review-keywords")
+    public ResponseEntity<ReviewKeywordDto> getReviewKeywords(HttpServletRequest request) {
+        ReviewKeywordDto dto = userService.getUserLatestReviewKeywords(request);
         return ResponseEntity.ok(dto);
     }
 
