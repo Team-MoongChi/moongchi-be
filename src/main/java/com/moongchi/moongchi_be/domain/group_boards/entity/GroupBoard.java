@@ -13,6 +13,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "group_boards")
@@ -61,6 +62,9 @@ public class GroupBoard {
 
     @OneToOne(mappedBy = "groupBoard",cascade = CascadeType.ALL, orphanRemoval = true)
     private ChatRoom chatRoom;
+
+    @OneToMany(mappedBy = "groupBoard", cascade = CascadeType.ALL)
+    private List<FavoriteProduct> favoriteProducts;
 
     @Column(name = "create_at")
     @CreationTimestamp
