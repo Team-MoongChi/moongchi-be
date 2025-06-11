@@ -19,5 +19,5 @@ public class ReviewRequestDto {
     @NotBlank
     private List<String> keyword;
 
-    private String content;
+    private String review;
 }

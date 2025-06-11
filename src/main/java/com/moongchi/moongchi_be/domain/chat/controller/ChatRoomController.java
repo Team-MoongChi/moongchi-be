@@ -85,14 +85,4 @@ public class ChatRoomController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{chatRoomId}/reviewable-participants")
-    public ResponseEntity<List<ParticipantDto>> getReviewableParticipants(
-            @PathVariable Long chatRoomId,
-            HttpServletRequest request
-    ) {
-        User currentUser = userService.getUser(request);
-        List<ParticipantDto> list = chatRoomService.getReviewableParticipants(chatRoomId, currentUser.getId());
-        return ResponseEntity.ok(list);
-    }
-
 }

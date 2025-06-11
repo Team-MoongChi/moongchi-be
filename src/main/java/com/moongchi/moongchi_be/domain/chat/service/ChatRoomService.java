@@ -94,16 +94,28 @@ public class ChatRoomService {
                 : 0;
 
         List<ParticipantDto> participants = participantRepository.findAllByChatRoomId(chatRoomId).stream()
-                .map(p -> new ParticipantDto(
-                        p.getId(),
-                        p.getUser().getId(),
-                        p.getUser().getNickname(),
-                        p.getUser().getProfileUrl(),
-                        p.getRole().toString(),
-                        p.getPaymentStatus().toString(),
-                        p.isTradeCompleted(),
-                        perPersonPrice
-                )).collect(Collectors.toList());
+                .map(p -> {
+
+                            boolean isMe = p.getUser().getId().equals(userId);
+                            boolean reviewed = false;
+                            if(!isMe) {
+                                reviewed = reviewRepository.existsByParticipantIdAndGroupBoardId(p.getId(), p.getGroupBoard().getId());
+                            }
+
+                          return new ParticipantDto(
+                                    p.getId(),
+                                    p.getUser().getId(),
+                                    p.getUser().getNickname(),
+                                    p.getUser().getProfileUrl(),
+                                    p.getRole().toString(),
+                                    p.getPaymentStatus().toString(),
+                                    p.isTradeCompleted(),
+                                    perPersonPrice,
+                                    isMe,
+                                    reviewed
+                            );
+                        })
+                .collect(Collectors.toList());
 
         List<MessageDto> messages = chatMessageRepository
                 .findByChatRoomIdOrderBySendAtAsc(chatRoomId)
@@ -294,11 +306,10 @@ public class ChatRoomService {
             throw new CustomException(ErrorCode.CONFLICT);
         }
 
-        String reviews = String.join(",", dto.getKeyword()) + "," + dto.getContent();
-
         Review review = new Review();
         review.setStar(dto.getStar());
-        review.setReview(reviews);
+        review.setKeyword(dto.getKeyword().stream().toList().toString());
+        review.setReview(dto.getReview());
         review.setCreatedAt(LocalDateTime.now());
         review.setParticipant(targetParticipant);
         review.setGroupBoard(targetParticipant.getGroupBoard());
@@ -308,29 +319,12 @@ public class ChatRoomService {
         return new ReviewResponseDto(
                 review.getId(),
                 review.getStar(),
+                review.getKeyword(),
                 review.getReview(),
                 review.getParticipant().getId(),
                 review.getGroupBoard().getId(),
                 review.getCreatedAt()
         );
-    }
-
-    public List<ParticipantDto> getReviewableParticipants(Long chatRoomId, Long userId) {
-        Participant writerParticipant = participantRepository
-                .findByChatRoomIdAndUserId(chatRoomId, userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
-
-        List<Participant> allParticipants = participantRepository.findAllByChatRoomId(chatRoomId);
-
-        List<Long> reviewedIds = reviewRepository.findTargetsByWriter(
-                writerParticipant.getGroupBoard().getId(), userId
-        );
-
-        return allParticipants.stream()
-                .filter(p -> !p.getUser().getId().equals(userId))
-                .filter(p -> !reviewedIds.contains(p.getId()))
-                .map(ParticipantDto::from)
-                .toList();
     }
 
 }

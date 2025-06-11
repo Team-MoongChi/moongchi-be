@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 public class ReviewResponseDto {
     private Long id;
     private Double star;
+    private String keyword;
     private String  review;
     private Long participantId;
     private Long groupBoardId;
