@@ -39,7 +39,7 @@ public class User {
     @Column
     private String phone;
 
-    @Column(unique = true)
+    @Column
     private String email;
 
     @Column(name = "profile_url")
