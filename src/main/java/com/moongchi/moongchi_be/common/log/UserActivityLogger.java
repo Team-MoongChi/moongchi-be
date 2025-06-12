@@ -64,9 +64,6 @@ public class UserActivityLogger {
             message.put("item_category_id", body.get("categoryId"));
             message.put("item_category", category);
             message.put("item_price", body.get("price"));
-//            message.put("review_count",0);
-//            message.put("rank_in_list", "");
-//            message.put("page_type","");
         }
 
 
