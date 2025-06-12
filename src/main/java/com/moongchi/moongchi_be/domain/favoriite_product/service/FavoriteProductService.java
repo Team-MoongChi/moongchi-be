@@ -1,12 +1,13 @@
-package com.moongchi.moongchi_be.domain.group_boards.service;
+package com.moongchi.moongchi_be.domain.favoriite_product.service;
 
 import com.moongchi.moongchi_be.common.exception.custom.CustomException;
 import com.moongchi.moongchi_be.common.exception.errorcode.ErrorCode;
+import com.moongchi.moongchi_be.domain.favoriite_product.entity.FavoriteProduct;
+import com.moongchi.moongchi_be.domain.favoriite_product.repository.FavoriteProductRepository;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardListDto;
-import com.moongchi.moongchi_be.domain.group_boards.entity.FavoriteProduct;
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupBoard;
-import com.moongchi.moongchi_be.domain.group_boards.repository.FavoriteProductRepository;
 import com.moongchi.moongchi_be.domain.group_boards.repository.GroupBoardRepository;
+import com.moongchi.moongchi_be.domain.group_boards.service.GroupBoardService;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import com.moongchi.moongchi_be.domain.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,7 +1,7 @@
-package com.moongchi.moongchi_be.domain.group_boards.controller;
+package com.moongchi.moongchi_be.domain.favoriite_product.controller;
 
+import com.moongchi.moongchi_be.domain.favoriite_product.service.FavoriteProductService;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardListDto;
-import com.moongchi.moongchi_be.domain.group_boards.service.FavoriteProductService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

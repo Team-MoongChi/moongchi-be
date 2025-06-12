@@ -1,7 +1,7 @@
 package com.moongchi.moongchi_be.domain.user.entity;
 
 
-import com.moongchi.moongchi_be.domain.group_boards.entity.FavoriteProduct;
+import com.moongchi.moongchi_be.domain.favoriite_product.entity.FavoriteProduct;
 import com.moongchi.moongchi_be.domain.chat.entity.Participant;
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupBoard;
 import com.moongchi.moongchi_be.domain.user.enums.Gender;
