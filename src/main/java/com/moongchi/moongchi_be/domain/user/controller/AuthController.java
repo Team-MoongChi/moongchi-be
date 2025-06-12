@@ -2,6 +2,7 @@ package com.moongchi.moongchi_be.domain.user.controller;
 
 import com.moongchi.moongchi_be.domain.user.dto.TokenResponseDto;
 import com.moongchi.moongchi_be.domain.user.service.AuthService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "유저", description = "유저 관련 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")

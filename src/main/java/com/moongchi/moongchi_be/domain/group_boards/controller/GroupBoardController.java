@@ -7,6 +7,7 @@ import com.moongchi.moongchi_be.domain.group_boards.service.GroupBoardService;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import com.moongchi.moongchi_be.domain.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "공구상품", description = "공구상품 관련 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/group-boards")

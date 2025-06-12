@@ -1,6 +1,7 @@
 package com.moongchi.moongchi_be.domain.user.controller;
 
 import com.moongchi.moongchi_be.domain.user.service.LogoutService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+@Tag(name = "유저", description = "유저 관련 API")
 @Slf4j
 @RestController
 @RequestMapping("/api/auth/logout")

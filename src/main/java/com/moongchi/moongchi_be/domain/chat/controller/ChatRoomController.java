@@ -6,6 +6,7 @@ import com.moongchi.moongchi_be.domain.chat.entity.ChatRoomStatus;
 import com.moongchi.moongchi_be.domain.chat.service.ChatRoomService;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import com.moongchi.moongchi_be.domain.user.service.UserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "채팅", description = "채팅 관련 API")
 @RestController
 @RequestMapping("/api/chat/rooms")
 @RequiredArgsConstructor

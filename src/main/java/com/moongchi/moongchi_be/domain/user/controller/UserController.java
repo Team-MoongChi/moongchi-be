@@ -6,12 +6,14 @@ import com.moongchi.moongchi_be.domain.user.dto.UserBasicDto;
 import com.moongchi.moongchi_be.domain.user.dto.UserDto;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import com.moongchi.moongchi_be.domain.user.service.UserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "유저", description = "유저 관련 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
