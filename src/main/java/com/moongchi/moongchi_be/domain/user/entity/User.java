@@ -105,6 +105,10 @@ public class User {
         return this;
     }
 
+    public void updateMannerPercent(MannerPercent mannerPercent){
+        this.mannerPercent = mannerPercent;
+    }
+
     public User updateLocation(double latitude, double longitude, String address) {
         this.latitude = latitude;
         this.longitude = longitude;
