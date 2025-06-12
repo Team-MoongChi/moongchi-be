@@ -5,6 +5,7 @@ import com.moongchi.moongchi_be.domain.chat.dto.MessageDto;
 import com.moongchi.moongchi_be.domain.chat.service.ChatMessageService;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import com.moongchi.moongchi_be.domain.user.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -21,6 +22,7 @@ public class ChatMessageController {
     private final ChatMessageService chatMessageService;
     private final UserService userService;
 
+    @Operation(summary = "채팅 메시지 전송", description = "채팅방에 메시지를 보냅니다.")
     @PostMapping
     public ResponseEntity<MessageDto> sendMessage(
             @PathVariable Long chatRoomId,
