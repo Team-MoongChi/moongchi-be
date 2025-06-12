@@ -17,7 +17,7 @@ public class ProductResponseDto {
     private String imgUrl;
     private String productUrl;
     private Double rating;
-
+    private Integer likeCount;
     private String largeCategory;
     private String mediumCategory;
     private String smallCategory;
@@ -32,7 +32,6 @@ public class ProductResponseDto {
         return null;
     }
 
-
     public static ProductResponseDto from(Product product) {
         return new ProductResponseDto(
                 product.getId(),
@@ -41,6 +40,23 @@ public class ProductResponseDto {
                 product.getImgUrl(),
                 product.getProductUrl(),
                 product.getRating(),
+                null,
+                getCategoryNameByLevel(product.getCategory(), "LARGE"),
+                getCategoryNameByLevel(product.getCategory(), "MEDIUM"),
+                getCategoryNameByLevel(product.getCategory(), "SMALL")
+        );
+    }
+
+
+    public static ProductResponseDto from(Product product, int likeCount) {
+        return new ProductResponseDto(
+                product.getId(),
+                product.getName(),
+                product.getPrice(),
+                product.getImgUrl(),
+                product.getProductUrl(),
+                product.getRating(),
+                likeCount,
                 getCategoryNameByLevel(product.getCategory(), "LARGE"),
                 getCategoryNameByLevel(product.getCategory(), "MEDIUM"),
                 getCategoryNameByLevel(product.getCategory(), "SMALL")
