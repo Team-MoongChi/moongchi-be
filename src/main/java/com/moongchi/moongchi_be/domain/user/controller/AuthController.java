@@ -1,5 +1,6 @@
 package com.moongchi.moongchi_be.domain.user.controller;
 
+import com.moongchi.moongchi_be.common.util.CookieUtil;
 import com.moongchi.moongchi_be.domain.user.dto.TokenResponseDto;
 import com.moongchi.moongchi_be.domain.user.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,13 +19,18 @@ public class AuthController {
 
     @PostMapping("/token")
     public ResponseEntity<TokenResponseDto> issueToken(HttpServletRequest request, HttpServletResponse response){
-        TokenResponseDto tokenResponseDto = authService.issueToken(request,response);
+        String refreshToken = CookieUtil.getCookieValue(request,"refresh_token");
+
+        TokenResponseDto tokenResponseDto = authService.issueToken(refreshToken);
+
+        CookieUtil.deleteCookie(response,"access_token");
         return ResponseEntity.ok(tokenResponseDto);
     }
 
     @PostMapping("/reissue")
-    public ResponseEntity<TokenResponseDto> reissueToken(HttpServletRequest request, HttpServletResponse response){
-        TokenResponseDto tokenResponseDto = authService.reissueToken(request, response);
+    public ResponseEntity<TokenResponseDto> reissueToken(HttpServletRequest request){
+        String refreshToken = CookieUtil.getCookieValue(request, "refresh_token");
+        TokenResponseDto tokenResponseDto = authService.reissueToken(refreshToken);
         return ResponseEntity.ok(tokenResponseDto);
     }
 
