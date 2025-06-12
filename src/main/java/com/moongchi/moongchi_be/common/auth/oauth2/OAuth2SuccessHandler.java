@@ -71,13 +71,18 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     }
 
     private User registerNewUser(OAuthAttributes attributes) {
-        User newUser = User.builder()
-                .name(attributes.getName())
-                .email(attributes.getEmail())
-                .provider(attributes.getProvider())
-                .userRole(UserRole.USER)
-                .build();
-        return userRepository.save(newUser);
+        try {
+            User newUser = User.builder()
+                    .name(attributes.getName())
+                    .email(attributes.getEmail())
+                    .provider(attributes.getProvider())
+                    .userRole(UserRole.USER)
+                    .build();
+            return userRepository.save(newUser);
+        } catch (Exception e) {
+            log.error("신규 유저 등록 실패", e);
+            throw new RuntimeException("유저 등록 중 오류가 발생했습니다.");
+        }
     }
 
     private User updateExistingUser(User existingUser, OAuthAttributes attributes) {

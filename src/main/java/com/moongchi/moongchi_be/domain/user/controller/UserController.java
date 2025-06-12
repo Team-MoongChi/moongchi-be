@@ -1,5 +1,8 @@
 package com.moongchi.moongchi_be.domain.user.controller;
 
+
+import com.moongchi.moongchi_be.common.auth.jwt.JwtTokenProvider;
+import com.moongchi.moongchi_be.common.util.CookieUtil;
 import com.moongchi.moongchi_be.domain.user.dto.ReviewKeywordDto;
 import com.moongchi.moongchi_be.domain.user.dto.TokenResponseDto;
 import com.moongchi.moongchi_be.domain.user.dto.UserBasicDto;
@@ -17,10 +20,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/users")
 public class UserController {
     private final UserService userService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @PostMapping
     public ResponseEntity<TokenResponseDto> createUSer(@RequestBody UserDto userDto, HttpServletRequest request, HttpServletResponse response) {
-        TokenResponseDto tokenResponseDto = userService.createUser(userDto, request, response);
+        String refreshToken = CookieUtil.getCookieValue(request, "refresh_token");
+        TokenResponseDto tokenResponseDto = userService.createUser(userDto, refreshToken);
         return ResponseEntity.ok(tokenResponseDto);
     }
 
@@ -33,25 +38,29 @@ public class UserController {
 
     @PostMapping("/location")
     public ResponseEntity<?> addLocation(@RequestBody UserDto userDto, HttpServletRequest request) {
-        userService.addLocation(userDto, request);
+        User user = userService.getUser(request);
+        userService.addLocation(userDto, user);
         return ResponseEntity.ok("위치 설정이 완료되었습니다.");
     }
 
     @PostMapping("/interest-category")
     public ResponseEntity<?> addInterestCategory(@RequestBody UserDto userDto, HttpServletRequest request){
-        userService.addInterestCategory(userDto, request);
+        User user = userService.getUser(request);
+        userService.addInterestCategory(userDto, user);
         return ResponseEntity.ok("관심 카테고리가 추가되었습니다.");
     }
 
     @GetMapping("/basic")
     public ResponseEntity<UserBasicDto> getUserNameEmail(HttpServletRequest request){
-        UserBasicDto userBasicDto = userService.getUserBasic(request);
+        String refreshToken = CookieUtil.getCookieValue(request, "refresh_token");
+        UserBasicDto userBasicDto = userService.getUserBasic(refreshToken);
         return ResponseEntity.ok(userBasicDto);
     }
 
     @PutMapping
     public ResponseEntity<?> updateUser(@RequestBody UserDto userDto, HttpServletRequest request){
-        userService.updateUser(userDto, request);
+        User user = userService.getUser(request);
+        userService.updateUser(userDto, user);
         return ResponseEntity.ok("회원정보 수정이 완료되었습니다.");
     }
 

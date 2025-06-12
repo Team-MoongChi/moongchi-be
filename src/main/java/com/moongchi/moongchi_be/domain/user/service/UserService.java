@@ -15,7 +15,6 @@ import com.moongchi.moongchi_be.domain.user.entity.MannerPercent;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import com.moongchi.moongchi_be.domain.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -29,9 +28,7 @@ public class UserService {
     private final AuthService authService;
     private final JwtTokenProvider jwtTokenProvider;
 
-    public TokenResponseDto createUser(UserDto userDto, HttpServletRequest request, HttpServletResponse response) {
-        String refreshToken = authService.getRefreshToken(request);
-
+    public TokenResponseDto createUser(UserDto userDto, String refreshToken) {
         if (refreshToken == null || !jwtTokenProvider.validateToken(refreshToken)) {
             throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
@@ -48,13 +45,11 @@ public class UserService {
         user.updateUser(userDto.getNickname(), userDto.getPhone(), userDto.getBirth(), userDto.getGender(), userDto.getProfileUrl());
         userRepository.save(user);
 
-        TokenResponseDto tokenResponseDto = authService.issueToken(request, response);
+        TokenResponseDto tokenResponseDto = authService.issueToken(refreshToken);
         return tokenResponseDto;
     }
 
-    public UserBasicDto getUserBasic(HttpServletRequest request) {
-        String refreshToken = authService.getRefreshToken(request);
-
+    public UserBasicDto getUserBasic(String refreshToken) {
         if (refreshToken == null || !jwtTokenProvider.validateToken(refreshToken)) {
             throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
@@ -83,20 +78,17 @@ public class UserService {
     }
 
 
-    public void addLocation(UserDto userDto, HttpServletRequest request) {
-        User user = getUser(request);
+    public void addLocation(UserDto userDto, User user) {
         User newUser = user.updateLocation(userDto.getLatitude(), userDto.getLongitude(), userDto.getAddress());
         this.userRepository.save(newUser);
     }
 
-    public void addInterestCategory(UserDto userDto, HttpServletRequest request) {
-        User user = getUser(request);
+    public void addInterestCategory(UserDto userDto, User user) {
         User newUser = user.updateInterest(userDto.getInterestCategory());
         this.userRepository.save(newUser);
     }
 
-    public void updateUser(UserDto userDto, HttpServletRequest request) {
-        User user = getUser(request);
+    public void updateUser(UserDto userDto,  User user) {
         User updateUser = user.editUser(userDto.getNickname(), userDto.getProfileUrl());
         this.userRepository.save(updateUser);
     }
