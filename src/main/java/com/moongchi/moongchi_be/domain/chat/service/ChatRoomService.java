@@ -2,14 +2,12 @@ package com.moongchi.moongchi_be.domain.chat.service;
 
 import com.moongchi.moongchi_be.common.exception.custom.CustomException;
 import com.moongchi.moongchi_be.common.exception.errorcode.ErrorCode;
-import com.moongchi.moongchi_be.domain.chat.dto.ChatRoomDetailDto;
-import com.moongchi.moongchi_be.domain.chat.dto.ChatRoomResponseDto;
-import com.moongchi.moongchi_be.domain.chat.dto.MessageDto;
-import com.moongchi.moongchi_be.domain.chat.dto.ParticipantDto;
+import com.moongchi.moongchi_be.domain.chat.dto.*;
 import com.moongchi.moongchi_be.domain.chat.entity.*;
 import com.moongchi.moongchi_be.domain.chat.repository.ChatMessageRepository;
 import com.moongchi.moongchi_be.domain.chat.repository.ChatRoomRepository;
 import com.moongchi.moongchi_be.domain.chat.repository.ParticipantRepository;
+import com.moongchi.moongchi_be.domain.chat.repository.ReviewRepository;
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupBoard;
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupProduct;
 import com.moongchi.moongchi_be.domain.group_boards.enums.BoardStatus;
@@ -33,6 +31,7 @@ public class ChatRoomService {
     private final ParticipantRepository participantRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final GroupBoardRepository groupBoardRepository;
+    private final ReviewRepository reviewRepository;
     private final ChatMessageService chatMessageService;
 
     //채팅방 조회
@@ -95,16 +94,28 @@ public class ChatRoomService {
                 : 0;
 
         List<ParticipantDto> participants = participantRepository.findAllByChatRoomId(chatRoomId).stream()
-                .map(p -> new ParticipantDto(
-                        p.getId(),
-                        p.getUser().getId(),
-                        p.getUser().getNickname(),
-                        p.getUser().getProfileUrl(),
-                        p.getRole().toString(),
-                        p.getPaymentStatus().toString(),
-                        p.isTradeCompleted(),
-                        perPersonPrice
-                )).collect(Collectors.toList());
+                .map(p -> {
+
+                            boolean isMe = p.getUser().getId().equals(userId);
+                            boolean reviewed = false;
+                            if(!isMe) {
+                                reviewed = reviewRepository.existsByParticipantIdAndParticipantGroupBoardId(p.getId(), p.getGroupBoard().getId());
+                            }
+
+                          return new ParticipantDto(
+                                    p.getId(),
+                                    p.getUser().getId(),
+                                    p.getUser().getNickname(),
+                                    p.getUser().getProfileUrl(),
+                                    p.getRole().toString(),
+                                    p.getPaymentStatus().toString(),
+                                    p.isTradeCompleted(),
+                                    perPersonPrice,
+                                    isMe,
+                                    reviewed
+                            );
+                        })
+                .collect(Collectors.toList());
 
         List<MessageDto> messages = chatMessageRepository
                 .findByChatRoomIdOrderBySendAtAsc(chatRoomId)
@@ -135,7 +146,7 @@ public class ChatRoomService {
     @Transactional
     public ChatRoom createChatRoomWithParticipant(GroupBoard groupBoard, User creator) {
         ChatRoom chatRoom = new ChatRoom();
-        chatRoom.setTitle(groupBoard.getGroupProduct().getName() + groupBoard.getGroupProduct().getQuantity() + " 공구방" );
+        chatRoom.setTitle(groupBoard.getGroupProduct().getName() + " " + groupBoard.getGroupProduct().getQuantity() + " 공구방" );
         chatRoom.setStatus(ChatRoomStatus.RECRUITING);
         chatRoom.setGroupBoard(groupBoard);
         chatRoom.setCreatedAt(LocalDateTime.now());
@@ -271,30 +282,49 @@ public class ChatRoomService {
         List<Participant> list = participantRepository.findAllByChatRoomId(participant.getGroupBoard().getId());
         boolean allTraded = list.stream().allMatch(Participant::isTradeCompleted);
         if (allTraded) {
-            participant.getGroupBoard().setBoardStatus(BoardStatus.COMPLETED);
+            participant.getGroupBoard().updateStatus(BoardStatus.COMPLETED);
             groupBoardRepository.save(participant.getGroupBoard());
         }
 
     }
 
-    //TODO: 리뷰작성
-//    public Review review(Long participantId, ReviewDto dto) {
-//        Review r = new Review();
-//        r.setParticipant(participantRepository.findById(participantId).orElseThrow());
-//        r.setContent(dto.getContent());
-//        r.setRating(dto.getRating());
-//        reviewRepository.save(r);
-//
-//        Long groupBoardId = r.getParticipant().getChatRoom().getGroupBoard().getId();
-//        GroupBoard board = groupBoardRepository.findById(groupBoardId)
-//                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
-//        board.setBoardStatus(BoardStatus.SUCCESS);
-//        groupBoardRepository.save(board);
-//
-//        Long chatRoomId = r.getParticipant().getChatRoom().getId();
-//        chatRoomService.updateChatRoomStatus(chatRoomId);
-//
-//        return r;
-//    }
+    public ReviewResponseDto writeReviewByChatRoom(Long chatRoomId, Long userId, Long targetParticipantId, ReviewRequestDto dto) {
+        Participant writerParticipant = participantRepository
+                .findByChatRoomIdAndUserId(chatRoomId, userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        Participant targetParticipant = participantRepository
+                .findById(targetParticipantId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        if (userId.equals(targetParticipant.getUser().getId())) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+
+        if (reviewRepository.existsByTargetAndWriter(
+                writerParticipant.getGroupBoard().getId(), targetParticipantId, userId)) {
+            throw new CustomException(ErrorCode.CONFLICT);
+        }
+
+        Review review = new Review();
+        review.setStar(dto.getStar());
+        review.setKeywords(dto.getKeywords());
+        review.setReview(dto.getReview());
+        review.setCreatedAt(LocalDateTime.now());
+        review.setParticipant(targetParticipant);
+        review.getParticipant().setGroupBoard(targetParticipant.getGroupBoard());
+
+        reviewRepository.save(review);
+
+        return new ReviewResponseDto(
+                review.getId(),
+                review.getStar(),
+                review.getKeywords(),
+                review.getReview(),
+                review.getParticipant().getId(),
+                review.getParticipant().getGroupBoard().getId(),
+                review.getCreatedAt()
+        );
+    }
 
 }

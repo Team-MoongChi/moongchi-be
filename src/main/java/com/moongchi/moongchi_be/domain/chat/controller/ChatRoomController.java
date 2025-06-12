@@ -1,8 +1,6 @@
 package com.moongchi.moongchi_be.domain.chat.controller;
 
-import com.moongchi.moongchi_be.domain.chat.dto.ChatRoomDetailDto;
-import com.moongchi.moongchi_be.domain.chat.dto.ChatRoomResponseDto;
-import com.moongchi.moongchi_be.domain.chat.dto.ChatRoomStatusResponse;
+import com.moongchi.moongchi_be.domain.chat.dto.*;
 import com.moongchi.moongchi_be.domain.chat.entity.ChatRoom;
 import com.moongchi.moongchi_be.domain.chat.entity.ChatRoomStatus;
 import com.moongchi.moongchi_be.domain.chat.service.ChatRoomService;
@@ -72,13 +70,19 @@ public class ChatRoomController {
         return ResponseEntity.ok().build();
     }
 
-    //TODO: 리뷰작성
-//    @PostMapping("/{participantId}/review")
-//    public ResponseEntity<Review> review(
-//            @PathVariable Long participantId,
-//            @RequestBody ReviewDto dto) {
-//        Review saved = participantService.review(participantId, dto);
-//        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
-//    }
+    @PostMapping("/{chatRoomId}/reviews/{targetParticipantId}")
+    public ResponseEntity<ReviewResponseDto> writeReview(
+            @PathVariable Long chatRoomId,
+            @PathVariable Long targetParticipantId,
+            @RequestBody ReviewRequestDto dto,
+            HttpServletRequest request
+    ) {
+        User currentUser = userService.getUser(request);
+
+        ReviewResponseDto response = chatRoomService.writeReviewByChatRoom(
+                chatRoomId, currentUser.getId(), targetParticipantId, dto
+        );
+        return ResponseEntity.ok(response);
+    }
 
 }

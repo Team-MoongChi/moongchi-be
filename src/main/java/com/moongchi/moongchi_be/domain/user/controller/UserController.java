@@ -1,7 +1,9 @@
 package com.moongchi.moongchi_be.domain.user.controller;
 
+
 import com.moongchi.moongchi_be.common.auth.jwt.JwtTokenProvider;
 import com.moongchi.moongchi_be.common.util.CookieUtil;
+import com.moongchi.moongchi_be.domain.user.dto.ReviewKeywordDto;
 import com.moongchi.moongchi_be.domain.user.dto.TokenResponseDto;
 import com.moongchi.moongchi_be.domain.user.dto.UserBasicDto;
 import com.moongchi.moongchi_be.domain.user.dto.UserDto;
@@ -60,6 +62,12 @@ public class UserController {
         User user = userService.getUser(request);
         userService.updateUser(userDto, user);
         return ResponseEntity.ok("회원정보 수정이 완료되었습니다.");
+    }
+
+    @GetMapping("/reviews")
+    public ResponseEntity<ReviewKeywordDto> getReviewKeywords(HttpServletRequest request) {
+        ReviewKeywordDto dto = userService.getUserLatestReviewKeywords(request);
+        return ResponseEntity.ok(dto);
     }
 
 }

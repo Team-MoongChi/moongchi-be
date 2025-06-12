@@ -2,6 +2,7 @@ package com.moongchi.moongchi_be.domain.group_boards.entity;
 
 import com.moongchi.moongchi_be.domain.chat.entity.ChatRoom;
 import com.moongchi.moongchi_be.domain.chat.entity.Participant;
+import com.moongchi.moongchi_be.domain.favoriite_product.entity.FavoriteProduct;
 import com.moongchi.moongchi_be.domain.group_boards.enums.BoardStatus;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import jakarta.persistence.*;
@@ -15,7 +16,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "group_boards")
-@Getter @Setter
+@Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -60,6 +61,9 @@ public class GroupBoard {
 
     @OneToOne(mappedBy = "groupBoard",cascade = CascadeType.ALL, orphanRemoval = true)
     private ChatRoom chatRoom;
+
+    @OneToMany(mappedBy = "groupBoard", cascade = CascadeType.ALL)
+    private List<FavoriteProduct> favoriteProducts;
 
     @OneToMany(mappedBy = "groupBoard",cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Participant> participants;

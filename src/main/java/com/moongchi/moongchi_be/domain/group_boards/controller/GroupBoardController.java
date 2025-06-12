@@ -25,7 +25,8 @@ public class GroupBoardController {
     @PostMapping
     @Operation(summary = "공동구매 게시글")
     public ResponseEntity<?> createPost(@RequestBody GroupBoardRequestDto dto, HttpServletRequest request) {
-        groupBoardService.createPost(dto, request);
+        User user = userService.getUser(request);
+        groupBoardService.createPost(dto, user);
         return ResponseEntity.ok("게시글이 추가되었습니다.");
     }
 
@@ -43,13 +44,15 @@ public class GroupBoardController {
 
     @GetMapping
     public ResponseEntity<List<GroupBoardListDto>> getGroupBoardList(HttpServletRequest request){
-        List<GroupBoardListDto> groupBoards = groupBoardService.getGroupBoardList(request);
+        User user = userService.getUser(request);
+        List<GroupBoardListDto> groupBoards = groupBoardService.getGroupBoardList(user);
         return ResponseEntity.ok(groupBoards);
     }
 
     @GetMapping("/{group_board_id}")
-    public ResponseEntity<GroupBoardDto> getGroupBoard(@PathVariable("group_board_id") Long groupBoardId){
-        GroupBoardDto groupBoardDto = groupBoardService.getGroupBoard(groupBoardId);
+    public ResponseEntity<GroupBoardDto> getGroupBoard(@PathVariable("group_board_id") Long groupBoardId, HttpServletRequest request){
+        User user = userService.getUser(request);
+        GroupBoardDto groupBoardDto = groupBoardService.getGroupBoard(groupBoardId, user);
         return ResponseEntity.ok(groupBoardDto);
     }
 
@@ -66,13 +69,15 @@ public class GroupBoardController {
 
     @GetMapping("/me")
     public ResponseEntity<List<GroupBoardListDto>> getMyGroupBoard(HttpServletRequest request){
-        List<GroupBoardListDto> groupBoards = groupBoardService.getMyGroupBoard(request);
+        User user = userService.getUser(request);
+        List<GroupBoardListDto> groupBoards = groupBoardService.getMyGroupBoard(user);
         return ResponseEntity.ok(groupBoards);
     }
 
     @GetMapping("categories/{category_id}")
-    public ResponseEntity<List<GroupBoardListDto>> getGroupBoardCategory(@PathVariable("category_id") Long categoryId){
-        List<GroupBoardListDto> groupBoards = groupBoardService.getGroupBoardCategory(categoryId);
+    public ResponseEntity<List<GroupBoardListDto>> getGroupBoardCategory(@PathVariable("category_id") Long categoryId, HttpServletRequest request){
+        User user = userService.getUser(request);
+        List<GroupBoardListDto> groupBoards = groupBoardService.getGroupBoardCategory(categoryId, user);
         return ResponseEntity.ok(groupBoards);
     }
 
