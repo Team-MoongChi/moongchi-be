@@ -13,31 +13,31 @@ import lombok.NoArgsConstructor;
 @Schema(description = "상품 응답 DTO")
 public class ProductResponseDto {
 
-    @Schema(description = "상품 고유 ID", example = "1")
+    @Schema(description = "상품 고유 ID")
     private Long id;
 
-    @Schema(description = "상품 이름", example = "유기농 사과 2kg")
+    @Schema(description = "상품 이름")
     private String name;
 
-    @Schema(description = "상품 가격", example = "9900")
+    @Schema(description = "상품 가격")
     private int price;
 
-    @Schema(description = "상품 이미지 URL", example = "https://example.com/apple.jpg")
+    @Schema(description = "상품 이미지 URL")
     private String imgUrl;
 
-    @Schema(description = "상품 상세 페이지 URL", example = "https://example.com/product/1")
+    @Schema(description = "상품 상세 페이지 URL")
     private String productUrl;
 
-    @Schema(description = "상품 평점 (0.0~5.0)", example = "4.5")
+    @Schema(description = "상품 평점 (0.0~5.0)")
     private Double rating;
 
-    @Schema(description = "대분류 카테고리", example = "신선식품")
+    @Schema(description = "대분류 카테고리")
     private String largeCategory;
 
-    @Schema(description = "중분류 카테고리", example = "과일")
+    @Schema(description = "중분류 카테고리")
     private String mediumCategory;
 
-    @Schema(description = "소분류 카테고리", example = "사과")
+    @Schema(description = "소분류 카테고리")
     private String smallCategory;
 
 

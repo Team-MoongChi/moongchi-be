@@ -8,8 +8,8 @@ import lombok.Setter;
 @Setter
 @Schema(description = "상품 검색 요청 DTO")
 public class ProductSearchRequest {
-    @Schema(description = "검색 키워드 (상품명 또는 카테고리명)", example = "사과")
+    @Schema(description = "검색 키워드 (상품명 또는 카테고리명)")
     private String keyword;
-    @Schema(description = "요청하는 유저의 ID(선택)", example = "1")
+    @Schema(description = "요청하는 유저의 ID(선택)")
     private Long userId;
 }
