@@ -29,10 +29,6 @@ public class FavoriteProduct {
     @CreationTimestamp
     private LocalDateTime createAt;
 
-    @Column(name = "update_at")
-    @UpdateTimestamp
-    private LocalDateTime updateAt;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
