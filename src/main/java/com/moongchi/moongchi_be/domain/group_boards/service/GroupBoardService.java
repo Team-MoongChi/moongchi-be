@@ -12,7 +12,6 @@ import com.moongchi.moongchi_be.domain.chat.entity.Role;
 import com.moongchi.moongchi_be.domain.chat.repository.ChatRoomRepository;
 import com.moongchi.moongchi_be.domain.chat.repository.ParticipantRepository;
 import com.moongchi.moongchi_be.domain.chat.service.ChatRoomService;
-import com.moongchi.moongchi_be.domain.favoriite_product.entity.FavoriteProduct;
 import com.moongchi.moongchi_be.domain.favoriite_product.repository.FavoriteProductRepository;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardDto;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardListDto;
@@ -212,12 +211,7 @@ public class GroupBoardService {
     }
 
     public int getLikeCount(Long groupBoardId){
-        GroupBoard groupBoard = groupBoardRepository.findById(groupBoardId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
-        List<FavoriteProduct> favoriteProducts = favoriteProductRepository.findByGroupBoard(groupBoard);
-
-        return favoriteProducts.size();
-
+        return favoriteProductRepository.countByGroupBoardId(groupBoardId);
     }
 
     private GroupBoardDto convertToParticipanDto(GroupBoard board) {
