@@ -31,6 +31,9 @@ public class ProductResponseDto {
     @Schema(description = "상품 평점 (0.0~5.0)")
     private Double rating;
 
+    @Schema(description = "추천수")
+    private Integer likeCount;
+
     @Schema(description = "대분류 카테고리")
     private String largeCategory;
 
