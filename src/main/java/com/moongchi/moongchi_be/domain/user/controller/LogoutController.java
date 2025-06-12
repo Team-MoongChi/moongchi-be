@@ -1,7 +1,11 @@
 package com.moongchi.moongchi_be.domain.user.controller;
 
+import com.moongchi.moongchi_be.common.util.CookieUtil;
+import com.moongchi.moongchi_be.domain.user.entity.User;
 import com.moongchi.moongchi_be.domain.user.service.LogoutService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
+import com.moongchi.moongchi_be.domain.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -21,10 +25,13 @@ import java.util.Map;
 public class LogoutController {
 
     private final LogoutService logoutService;
+    private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<Map<String, String>> logout(HttpServletRequest request, HttpServletResponse response){
-        Map<String, String> map = logoutService.logout(request,response);
+    public ResponseEntity<Map<String, String>> logout(HttpServletRequest request, HttpServletResponse response) {
+        User user = userService.getUser(request);
+        CookieUtil.deleteCookie(response, "refresh_token");
+        Map<String, String> map = logoutService.logout(user);
         return ResponseEntity.ok(map);
     }
 }
