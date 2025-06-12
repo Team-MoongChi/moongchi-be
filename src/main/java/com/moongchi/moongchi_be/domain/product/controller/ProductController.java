@@ -1,5 +1,6 @@
 package com.moongchi.moongchi_be.domain.product.controller;
 
+import com.moongchi.moongchi_be.common.category.entity.Category;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardDto;
 import com.moongchi.moongchi_be.domain.group_boards.service.GroupBoardService;
 import com.moongchi.moongchi_be.domain.product.dto.ProductResponseDto;
@@ -45,4 +46,15 @@ public class ProductController {
         return ResponseEntity.ok(dtos);
     }
 
+    @GetMapping("/categories/{categoryId}")
+    public ResponseEntity<List<ProductResponseDto>> categoryProducts(@PathVariable Long categoryId){
+        List<ProductResponseDto> productResponseDtos = productService.getProductCategoryList(categoryId);
+        return ResponseEntity.ok(productResponseDtos);
+    }
+
+    @GetMapping("/main")
+    public ResponseEntity<List<List<ProductResponseDto>>> mainProduct(){
+        List<List<ProductResponseDto>> productResponseDtos = productService.getMainProductList();
+        return ResponseEntity.ok(productResponseDtos);
+    }
 }

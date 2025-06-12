@@ -13,6 +13,7 @@ import com.moongchi.moongchi_be.domain.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,6 +62,31 @@ public class ProductService {
 
     public int getLikeCount(Long productId){
         return favoriteProductRepository.countByProductId(productId);
+    }
+
+    public List<ProductResponseDto> getProductCategoryList(Long categoryId){
+
+        List<Long> ids = categoryService.getAllSubCategoryIds(categoryId);
+        List<Product> products = productRepository.findByCategoryIdIn(ids);
+
+        return products.stream()
+                .map(ProductResponseDto::from)
+                .collect(Collectors.toList());
+    }
+
+    public List<List<ProductResponseDto>> getMainProductList(){
+        List<Category> largeCategories = categoryRepository.findAllLargeCategories();
+        List<List<ProductResponseDto>> result = new ArrayList<>();
+
+        for (Category largeCategory : largeCategories) {
+            List<Long> descendantCategoryIds = categoryService.getAllSubCategoryIds(largeCategory.getId());
+            List<Product> products = productRepository.findRandom8ByCategoryIds(descendantCategoryIds);
+            result.add(products.stream()
+                    .map(ProductResponseDto::from)
+                    .collect(Collectors.toList()));
+        }
+
+        return result;
     }
 
 }
