@@ -2,6 +2,7 @@ package com.moongchi.moongchi_be.domain.group_boards.dto;
 
 import com.moongchi.moongchi_be.domain.chat.dto.BoardParticipantDto;
 import com.moongchi.moongchi_be.domain.group_boards.enums.BoardStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +13,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @Builder
+@Schema(description = "공동구매 게시글 상세 응답 DTO")
 public class GroupBoardDto {
     private Long id;
     private String title;
