@@ -45,17 +45,8 @@ public class ProductResponseDto {
     private String smallCategory;
 
 
-    private static String getCategoryNameByLevel(Category category, String targetLevel) {
-        while (category != null) {
-            if (category.getLevel().name().equalsIgnoreCase(targetLevel)) {
-                return category.getName();
-            }
-            category = category.getParentCategory();
-        }
-        return null;
-    }
-
     public static ProductResponseDto from(Product product) {
+        Category category = product.getCategory();
         return new ProductResponseDto(
                 product.getId(),
                 product.getName(),
@@ -64,14 +55,13 @@ public class ProductResponseDto {
                 product.getProductUrl(),
                 product.getRating(),
                 null,
-                getCategoryNameByLevel(product.getCategory(), "LARGE"),
-                getCategoryNameByLevel(product.getCategory(), "MEDIUM"),
-                getCategoryNameByLevel(product.getCategory(), "SMALL")
+                category != null ? category.getLargeCategory() : null,
+                category != null ? category.getMediumCategory() : null,
+                category != null ? category.getSmallCategory() : null
         );
     }
-
-
     public static ProductResponseDto from(Product product, int likeCount) {
+        Category category = product.getCategory();
         return new ProductResponseDto(
                 product.getId(),
                 product.getName(),
@@ -80,10 +70,9 @@ public class ProductResponseDto {
                 product.getProductUrl(),
                 product.getRating(),
                 likeCount,
-                getCategoryNameByLevel(product.getCategory(), "LARGE"),
-                getCategoryNameByLevel(product.getCategory(), "MEDIUM"),
-                getCategoryNameByLevel(product.getCategory(), "SMALL")
+                category != null ? category.getLargeCategory() : null,
+                category != null ? category.getMediumCategory() : null,
+                category != null ? category.getSmallCategory() : null
         );
     }
-
 }

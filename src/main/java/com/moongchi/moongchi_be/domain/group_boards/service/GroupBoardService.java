@@ -185,7 +185,9 @@ public class GroupBoardService {
 
     @Transactional(readOnly = true)
     public List<GroupBoardListDto> getGroupBoardCategory(Long categoryId,  User user) {
-        List<GroupBoard> groupBoards = groupBoardRepository.findCategoryIdWithNearbyPosts(categoryId,user.getLatitude(), user.getLongitude());
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+        List<GroupBoard> groupBoards = groupBoardRepository.findNearbyPostsByCategory(user.getLatitude(), user.getLongitude(), category.getLargeCategory());
 
         return groupBoards.stream()
                 .map(this::convertToListDto)

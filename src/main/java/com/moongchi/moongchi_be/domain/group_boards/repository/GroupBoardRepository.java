@@ -16,16 +16,16 @@ public interface GroupBoardRepository extends JpaRepository<GroupBoard, Long> {
             nativeQuery = true)
     List<GroupBoard> findNearbyPosts(@Param("userLat") double userLat, @Param("userLng") double userLng);
 
-    @Query(value = "SELECT g.* FROM group_boards g " +
-            "JOIN group_products gp ON g.group_product_id = gp.group_product_id " +
-            "WHERE gp.category_id = :categoryId AND " +
-            "(6371 * acos(cos(radians(:userLat)) * cos(radians(g.latitude)) * " +
-            "cos(radians(g.longitude) - radians(:userLng)) + " +
-            "sin(radians(:userLat)) * sin(radians(g.latitude)))) < 0.75",
+    @Query(value = "SELECT gb.* FROM group_boards gb " +
+            "JOIN group_products gp ON gb.group_product_id = gp.group_product_id " +
+            "JOIN categories c ON gp.category_id = c.category_id " +
+            "WHERE c.large_category = :largeCategory " +
+            "AND (6371 * acos(cos(radians(:userLat)) * cos(radians(gb.latitude)) * " +
+            "cos(radians(gb.longitude) - radians(:userLng)) + sin(radians(:userLat)) * sin(radians(gb.latitude)))) < 0.75",
             nativeQuery = true)
-    List<GroupBoard> findCategoryIdWithNearbyPosts(@Param("categoryId") Long categoryId,
-                                                    @Param("userLat") double userLat,
-                                                    @Param("userLng") double userLng);
+    List<GroupBoard> findNearbyPostsByCategory(@Param("userLat") double userLat,
+                                                    @Param("userLng") double userLng,
+                                                    @Param("largeCategory") String largeCategory);
 
     List<GroupBoard> findByUserId(Long userId);
 
@@ -34,5 +34,4 @@ public interface GroupBoardRepository extends JpaRepository<GroupBoard, Long> {
     List<GroupBoard> findByProductId(@Param("productId") Long productId);
    
     Optional<GroupBoard> findByChatRoomId(Long chatRoomId);
-
 }
