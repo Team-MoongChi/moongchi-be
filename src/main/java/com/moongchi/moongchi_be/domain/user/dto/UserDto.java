@@ -3,6 +3,7 @@ package com.moongchi.moongchi_be.domain.user.dto;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import com.moongchi.moongchi_be.domain.user.enums.Gender;
 import com.moongchi.moongchi_be.domain.user.enums.UserRole;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,7 +15,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-
+@Schema(description = "사용자 DTO")
 public class UserDto {
     private Long id;
     private String name;
@@ -40,7 +41,7 @@ public class UserDto {
         this.address = user.getAddress();
         this.latitude = user.getLatitude();
         this.longitude = user.getLongitude();
-        this.mannerLeader = user.getMannerLeader();
-        this.mannerParticipant = user.getMannerParticipant();
+        this.mannerLeader = user.getMannerPercent().getLeaderPercent();
+        this.mannerParticipant = user.getMannerPercent().getParticipantPercent();
     }
 }

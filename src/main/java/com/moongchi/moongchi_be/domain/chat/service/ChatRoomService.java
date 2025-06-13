@@ -2,16 +2,16 @@ package com.moongchi.moongchi_be.domain.chat.service;
 
 import com.moongchi.moongchi_be.common.exception.custom.CustomException;
 import com.moongchi.moongchi_be.common.exception.errorcode.ErrorCode;
-import com.moongchi.moongchi_be.domain.chat.dto.ChatRoomDetailDto;
-import com.moongchi.moongchi_be.domain.chat.dto.ChatRoomResponseDto;
-import com.moongchi.moongchi_be.domain.chat.dto.MessageDto;
-import com.moongchi.moongchi_be.domain.chat.dto.ParticipantDto;
+import com.moongchi.moongchi_be.domain.chat.dto.*;
 import com.moongchi.moongchi_be.domain.chat.entity.*;
 import com.moongchi.moongchi_be.domain.chat.repository.ChatMessageRepository;
 import com.moongchi.moongchi_be.domain.chat.repository.ChatRoomRepository;
 import com.moongchi.moongchi_be.domain.chat.repository.ParticipantRepository;
+import com.moongchi.moongchi_be.domain.chat.repository.ReviewRepository;
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupBoard;
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupProduct;
+import com.moongchi.moongchi_be.domain.group_boards.enums.BoardStatus;
+import com.moongchi.moongchi_be.domain.group_boards.repository.GroupBoardRepository;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,6 +30,8 @@ public class ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
     private final ParticipantRepository participantRepository;
     private final ChatMessageRepository chatMessageRepository;
+    private final GroupBoardRepository groupBoardRepository;
+    private final ReviewRepository reviewRepository;
     private final ChatMessageService chatMessageService;
 
     //채팅방 조회
@@ -53,10 +55,9 @@ public class ChatRoomService {
                             ? product.getImages().get(0)
                             : null;
                     Optional<ChatMessage> lastMessageOpt =
-                            chatMessageRepository.findFirstByChatRoomIdOrderBySendAtDesc(chatRoom.getId().toString());
+                            chatMessageRepository.findFirstByChatRoomIdOrderBySendAtDesc(chatRoom.getId());
                     String lastMessage = lastMessageOpt.map(ChatMessage::getMessage).orElse(null);
                     LocalDateTime lastMessageTime = lastMessageOpt.map(ChatMessage::getSendAt).orElse(null);
-
 
                     return ChatRoomResponseDto.builder()
                             .id(chatRoom.getId())
@@ -75,7 +76,7 @@ public class ChatRoomService {
 
     //채팅방 상세조회
     @Transactional(readOnly = true)
-    public ChatRoomDetailDto getChatRoomDetail(Long chatRoomId) {
+    public ChatRoomDetailDto getChatRoomDetail(Long chatRoomId,Long userId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
         GroupProduct product = chatRoom.getGroupBoard().getGroupProduct();
@@ -93,19 +94,31 @@ public class ChatRoomService {
                 : 0;
 
         List<ParticipantDto> participants = participantRepository.findAllByChatRoomId(chatRoomId).stream()
-                .map(p -> new ParticipantDto(
-                        p.getId(),
-                        p.getUser().getId(),
-                        p.getUser().getNickname(),
-                        p.getUser().getProfileUrl(),
-                        p.getRole().toString(),
-                        p.getPaymentStatus().toString(),
-                        p.isTradeCompleted(),
-                        perPersonPrice
-                )).collect(Collectors.toList());
+                .map(p -> {
+
+                            boolean isMe = p.getUser().getId().equals(userId);
+                            boolean reviewed = false;
+                            if(!isMe) {
+                                reviewed = reviewRepository.existsByParticipantIdAndParticipantGroupBoardId(p.getId(), p.getGroupBoard().getId());
+                            }
+
+                          return new ParticipantDto(
+                                    p.getId(),
+                                    p.getUser().getId(),
+                                    p.getUser().getNickname(),
+                                    p.getUser().getProfileUrl(),
+                                    p.getRole().toString(),
+                                    p.getPaymentStatus().toString(),
+                                    p.isTradeCompleted(),
+                                    perPersonPrice,
+                                    isMe,
+                                    reviewed
+                            );
+                        })
+                .collect(Collectors.toList());
 
         List<MessageDto> messages = chatMessageRepository
-                .findByChatRoomIdOrderBySendAtAsc(chatRoomId.toString())
+                .findByChatRoomIdOrderBySendAtAsc(chatRoomId)
                 .stream()
                 .map(m -> new MessageDto(
                         m.getId(),
@@ -122,6 +135,7 @@ public class ChatRoomService {
                 chatRoom.getStatus().getKorean(),
                 imgUrl,
                 price,
+                chatRoom.getGroupBoard().getDeadline(),
                 participants,
                 messages
         );
@@ -149,6 +163,11 @@ public class ChatRoomService {
                 .paymentStatus(PaymentStatus.PAID)
                 .build();
         participantRepository.save(participant);
+        String welcomeMsg = "안녕하세요! 공구 완료 시점까지 여러분과 함께 할 뭉치예요. 뭉치면 산다! 공구 인원이 모두 모이면 알려줄게요.";
+        sendSystemMessage(savedChatRoom.getId(), welcomeMsg);
+
+        savedChatRoom.setSendAt(LocalDateTime.now());
+        chatRoomRepository.save(savedChatRoom);
 
         return savedChatRoom;
     }
@@ -218,16 +237,94 @@ public class ChatRoomService {
         }
         return next;
 
+
     }
 
     public void sendSystemMessage(Long chatRoomId, String message) {
         ChatMessage systemMsg = ChatMessage.builder()
-                .chatRoomId(chatRoomId.toString())
+                .chatRoomId(chatRoomId)
                 .participantId(null)
                 .message(message)
                 .messageType(MessageType.SYSTEM)
                 .build();
         chatMessageRepository.save(systemMsg);
+    }
+
+    public void pay(Long chatRoomId, Long userId) {
+        Participant participant = participantRepository
+                .findByChatRoomIdAndUserId(chatRoomId,userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        participant.setPaymentStatus(PaymentStatus.PAID);
+        participantRepository.save(participant);
+
+        ChatRoom chatRoom = chatRoomRepository
+                .findByGroupBoard(participant.getGroupBoard())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        updateChatRoomStatus(chatRoom.getId());
+    }
+
+    public void tradeComplete(Long chatRoomId, Long userId) {
+        Participant participant = participantRepository
+                .findByChatRoomIdAndUserId(chatRoomId,userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        participant.setTradeCompleted(true);
+        participantRepository.save(participant);
+
+        ChatRoom chatRoom = chatRoomRepository
+                .findByGroupBoard(participant.getGroupBoard())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        updateChatRoomStatus(chatRoom.getId());
+
+        List<Participant> list = participantRepository.findAllByChatRoomId(participant.getGroupBoard().getId());
+        boolean allTraded = list.stream().allMatch(Participant::isTradeCompleted);
+        if (allTraded) {
+            participant.getGroupBoard().updateStatus(BoardStatus.COMPLETED);
+            groupBoardRepository.save(participant.getGroupBoard());
+        }
+
+    }
+
+    public ReviewResponseDto writeReviewByChatRoom(Long chatRoomId, Long userId, Long targetParticipantId, ReviewRequestDto dto) {
+        Participant writerParticipant = participantRepository
+                .findByChatRoomIdAndUserId(chatRoomId, userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        Participant targetParticipant = participantRepository
+                .findById(targetParticipantId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        if (userId.equals(targetParticipant.getUser().getId())) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+
+        if (reviewRepository.existsByTargetAndWriter(
+                writerParticipant.getGroupBoard().getId(), targetParticipantId, userId)) {
+            throw new CustomException(ErrorCode.CONFLICT);
+        }
+
+        Review review = new Review();
+        review.setStar(dto.getStar());
+        review.setKeywords(dto.getKeywords());
+        review.setReview(dto.getReview());
+        review.setCreatedAt(LocalDateTime.now());
+        review.setParticipant(targetParticipant);
+        review.getParticipant().setGroupBoard(targetParticipant.getGroupBoard());
+
+        reviewRepository.save(review);
+
+        return new ReviewResponseDto(
+                review.getId(),
+                review.getStar(),
+                review.getKeywords(),
+                review.getReview(),
+                review.getParticipant().getId(),
+                review.getParticipant().getGroupBoard().getId(),
+                review.getCreatedAt()
+        );
     }
 
 }

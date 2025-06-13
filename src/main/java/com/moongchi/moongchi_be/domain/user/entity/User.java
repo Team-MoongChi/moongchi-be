@@ -1,5 +1,7 @@
 package com.moongchi.moongchi_be.domain.user.entity;
 
+
+import com.moongchi.moongchi_be.domain.favoriite_product.entity.FavoriteProduct;
 import com.moongchi.moongchi_be.domain.chat.entity.Participant;
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupBoard;
 import com.moongchi.moongchi_be.domain.user.enums.Gender;
@@ -37,7 +39,7 @@ public class User {
     @Column
     private String phone;
 
-    @Column(unique = true)
+    @Column
     private String email;
 
     @Column(name = "profile_url")
@@ -69,17 +71,16 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
 
-    @Column(name = "manner_leader")
-    private double mannerLeader;
-
-    @Column(name = "manner_participant")
-    private double mannerParticipant;
-
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GroupBoard> groupBoards;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<FavoriteProduct> favoriteProducts;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Participant> participants;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private MannerPercent mannerPercent;
 
     @CreationTimestamp
     @Column(name = "create_at")
@@ -104,6 +105,10 @@ public class User {
         return this;
     }
 
+    public void updateMannerPercent(MannerPercent mannerPercent){
+        this.mannerPercent = mannerPercent;
+    }
+
     public User updateLocation(double latitude, double longitude, String address) {
         this.latitude = latitude;
         this.longitude = longitude;
@@ -119,6 +124,12 @@ public class User {
 
     public User setName(String name) {
         this.name = name;
+        return this;
+    }
+
+    public User editUser(String nickname, String profileUrl){
+        this.nickname = nickname;
+        this.profileUrl = profileUrl;
         return this;
     }
 
