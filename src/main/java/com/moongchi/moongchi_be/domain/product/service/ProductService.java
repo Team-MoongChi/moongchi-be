@@ -1,7 +1,6 @@
 package com.moongchi.moongchi_be.domain.product.service;
 
 import com.moongchi.moongchi_be.common.category.entity.Category;
-import com.moongchi.moongchi_be.common.category.entity.CategoryLevel;
 import com.moongchi.moongchi_be.common.category.repository.CategoryRepository;
 import com.moongchi.moongchi_be.common.category.service.CategoryService;
 import com.moongchi.moongchi_be.common.exception.custom.CustomException;
@@ -43,50 +42,51 @@ public class ProductService {
     }
 
     public List<Product> searchProducts(String keyword) {
-        Category large = categoryRepository.findByNameAndLevel(keyword, CategoryLevel.LARGE).orElse(null);
-        if (large != null) {
-            List<Long> ids = categoryService.getAllSubCategoryIds(large.getId());
-            return productRepository.findByCategoryIdIn(ids);
+        // 1. 카테고리로 찾기
+        List<Category> categories = categoryRepository.findAll().stream()
+                .filter(c ->
+                        keyword.equalsIgnoreCase(c.getLargeCategory()) ||
+                                (c.getMediumCategory() != null && keyword.equalsIgnoreCase(c.getMediumCategory())) ||
+                                (c.getSmallCategory() != null && keyword.equalsIgnoreCase(c.getSmallCategory()))
+                )
+                .toList();
+
+        if (!categories.isEmpty()) {
+            List<Long> categoryIds = categories.stream().map(Category::getId).toList();
+            return productRepository.findByCategoryIdIn(categoryIds);
         }
-        Category medium = categoryRepository.findByNameAndLevel(keyword, CategoryLevel.MEDIUM).orElse(null);
-        if (medium != null) {
-            List<Long> ids = categoryService.getAllSubCategoryIds(medium.getId());
-            return productRepository.findByCategoryIdIn(ids);
-        }
-        Category small = categoryRepository.findByNameAndLevel(keyword, CategoryLevel.SMALL).orElse(null);
-        if (small != null) {
-            return productRepository.findByCategory(small);
-        }
+
+        // 2. 상품명으로 찾기
         return productRepository.findByNameContainingIgnoreCase(keyword);
     }
+
 
     public int getLikeCount(Long productId){
         return favoriteProductRepository.countByProductId(productId);
     }
 
-    public List<ProductResponseDto> getProductCategoryList(Long categoryId){
-
-        List<Long> ids = categoryService.getAllSubCategoryIds(categoryId);
-        List<Product> products = productRepository.findByCategoryIdIn(ids);
+    public List<ProductResponseDto> getProductCategoryList(Long categoryId) {
+        List<Product> products = productRepository.findByCategoryId(categoryId);
 
         return products.stream()
                 .map(ProductResponseDto::from)
-                .collect(Collectors.toList());
+                .toList();
     }
 
-    public List<List<ProductResponseDto>> getMainProductList(){
-        List<Category> largeCategories = categoryRepository.findAllLargeCategories();
+
+    public List<List<ProductResponseDto>> getMainProductList() {
+        List<String> largeCategories = categoryRepository.findAllLargeCategories();
         List<List<ProductResponseDto>> result = new ArrayList<>();
 
-        for (Category largeCategory : largeCategories) {
-            List<Long> descendantCategoryIds = categoryService.getAllSubCategoryIds(largeCategory.getId());
-            List<Product> products = productRepository.findRandom8ByCategoryIds(descendantCategoryIds);
-            result.add(products.stream()
-                    .map(ProductResponseDto::from)
-                    .collect(Collectors.toList()));
+        for (String largeCategory : largeCategories) {
+            // 대분류 카테고리 id 들 찾기
+            List<Category> categories = categoryRepository.findByLargeCategory(largeCategory);
+            List<Long> categoryIds = categories.stream().map(Category::getId).toList();
+            List<Product> products = productRepository.findRandom8ByCategoryIds(categoryIds);
+            result.add(products.stream().map(ProductResponseDto::from).toList());
         }
-
         return result;
     }
+
 
 }
