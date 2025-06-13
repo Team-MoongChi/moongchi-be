@@ -16,9 +16,9 @@ public interface GroupBoardRepository extends JpaRepository<GroupBoard, Long> {
             nativeQuery = true)
     List<GroupBoard> findNearbyPosts(@Param("userLat") double userLat, @Param("userLng") double userLng);
 
-    @Query(value = "SELECT gb.* FROM group_board gb " +
-            "JOIN group_product gp ON gb.group_product_id = gp.group_product_id " +
-            "JOIN category c ON gp.category_id = c.category_id " +
+    @Query(value = "SELECT gb.* FROM group_boards gb " +
+            "JOIN group_products gp ON gb.group_product_id = gp.group_product_id " +
+            "JOIN categories c ON gp.category_id = c.category_id " +
             "WHERE c.large_category = :largeCategory " +
             "AND (6371 * acos(cos(radians(:userLat)) * cos(radians(gb.latitude)) * " +
             "cos(radians(gb.longitude) - radians(:userLng)) + sin(radians(:userLat)) * sin(radians(gb.latitude)))) < 0.75",
@@ -27,7 +27,6 @@ public interface GroupBoardRepository extends JpaRepository<GroupBoard, Long> {
                                                     @Param("userLng") double userLng,
                                                     @Param("largeCategory") String largeCategory);
 
-
     List<GroupBoard> findByUserId(Long userId);
 
     List<GroupBoard> findByTitleContaining(String keyword);
@@ -35,5 +34,4 @@ public interface GroupBoardRepository extends JpaRepository<GroupBoard, Long> {
     List<GroupBoard> findByProductId(@Param("productId") Long productId);
    
     Optional<GroupBoard> findByChatRoomId(Long chatRoomId);
-
 }
