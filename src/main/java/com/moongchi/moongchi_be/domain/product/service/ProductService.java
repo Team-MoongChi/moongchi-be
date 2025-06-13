@@ -42,7 +42,6 @@ public class ProductService {
     }
 
     public List<Product> searchProducts(String keyword) {
-        // 1. 카테고리로 찾기
         List<Category> categories = categoryRepository.findAll().stream()
                 .filter(c ->
                         keyword.equalsIgnoreCase(c.getLargeCategory()) ||
@@ -56,7 +55,6 @@ public class ProductService {
             return productRepository.findByCategoryIdIn(categoryIds);
         }
 
-        // 2. 상품명으로 찾기
         return productRepository.findByNameContainingIgnoreCase(keyword);
     }
 
@@ -66,11 +64,25 @@ public class ProductService {
     }
 
     public List<ProductResponseDto> getProductCategoryList(Long categoryId) {
-        List<Product> products = productRepository.findByCategoryId(categoryId);
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
-        return products.stream()
-                .map(ProductResponseDto::from)
-                .toList();
+        List<Product> products;
+        if (category.getMediumCategory() == null && category.getSmallCategory() == null) {
+            List<Long> allIds = categoryRepository.findByLargeCategory(category.getLargeCategory())
+                    .stream()
+                    .map(Category::getId)
+                    .toList();
+            products = productRepository.findByCategoryIdIn(allIds);
+        } else if (category.getSmallCategory() == null) {
+            List<Long> allIds = categoryRepository.findByLargeCategoryAndMediumCategory(
+                    category.getLargeCategory(), category.getMediumCategory()
+            ).stream().map(Category::getId).toList();
+            products = productRepository.findByCategoryIdIn(allIds);
+        } else {
+            products = productRepository.findByCategoryId(categoryId);
+        }
+        return products.stream().map(ProductResponseDto::from).toList();
     }
 
 
@@ -79,7 +91,6 @@ public class ProductService {
         List<List<ProductResponseDto>> result = new ArrayList<>();
 
         for (String largeCategory : largeCategories) {
-            // 대분류 카테고리 id 들 찾기
             List<Category> categories = categoryRepository.findByLargeCategory(largeCategory);
             List<Long> categoryIds = categories.stream().map(Category::getId).toList();
             List<Product> products = productRepository.findRandom8ByCategoryIds(categoryIds);
