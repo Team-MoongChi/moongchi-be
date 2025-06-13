@@ -1,6 +1,5 @@
 package com.moongchi.moongchi_be.domain.product.controller;
 
-import com.moongchi.moongchi_be.common.category.entity.Category;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardDto;
 import com.moongchi.moongchi_be.domain.group_boards.service.GroupBoardService;
 import com.moongchi.moongchi_be.domain.product.dto.ProductResponseDto;
@@ -83,12 +82,22 @@ public class ProductController {
         return ResponseEntity.ok(dtos);
     }
 
+    @Operation(summary = "카테고리 별 상품 조회", description = "카테고리 별로 상품을 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "조회 성공",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductResponseDto.class))))
+    })
     @GetMapping("/categories/{categoryId}")
     public ResponseEntity<List<ProductResponseDto>> categoryProducts(@PathVariable Long categoryId){
         List<ProductResponseDto> productResponseDtos = productService.getProductCategoryList(categoryId);
         return ResponseEntity.ok(productResponseDtos);
     }
 
+    @Operation(summary = "쇼핑몰 메인화면", description = "카테고리(대뷴류) 별로 8개씩 랜덤 상품 조회")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "검색 성공",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductResponseDto.class))))
+    })
     @GetMapping("/main")
     public ResponseEntity<List<List<ProductResponseDto>>> mainProduct(){
         List<List<ProductResponseDto>> productResponseDtos = productService.getMainProductList();
