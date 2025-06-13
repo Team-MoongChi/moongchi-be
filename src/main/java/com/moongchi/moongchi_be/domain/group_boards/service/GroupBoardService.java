@@ -272,7 +272,7 @@ public class GroupBoardService {
                 .location(board.getLocation())
                 .boardStatus(board.getBoardStatus())
                 .image(imageUrl)
-                .createAt(board.getCreateAt())
+                .createAt(board.getCreatedAt())
                 .totalUsers(board.getTotalUsers())
                 .currentUsers(participants.size())
                 .participants(participants)

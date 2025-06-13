@@ -68,13 +68,13 @@ public class GroupBoard {
     @OneToMany(mappedBy = "groupBoard",cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Participant> participants;
 
-    @Column(name = "create_at")
+    @Column(name = "created_at")
     @CreationTimestamp
-    private LocalDateTime createAt;
+    private LocalDateTime createdAt;
 
-    @Column(name = "update_at")
+    @Column(name = "updated_at")
     @UpdateTimestamp
-    private LocalDateTime updateAt;
+    private LocalDateTime updatedAt;
 
     //== 비즈니스 로직 ==//
     public void updateGroupProduct(GroupProduct groupProduct) {
