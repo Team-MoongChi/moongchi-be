@@ -92,6 +92,7 @@ public class ProductController {
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductResponseDto.class))))
     })
     @GetMapping("/categories/{categoryId}")
+    @LogEvent("click")
     public ResponseEntity<List<ProductResponseDto>> categoryProducts(@PathVariable Long categoryId){
         List<ProductResponseDto> productResponseDtos = productService.getProductCategoryList(categoryId);
         return ResponseEntity.ok(productResponseDtos);
