@@ -25,9 +25,7 @@ public class ChatMessageService {
     private final ChatMessageRepository messageRepo;
     private final SimpMessagingTemplate messagingTemplate;
 
-    /** 일반 메시지 저장 및 전송 */
     public MessageDto sendMessage(Long chatRoomId, Long participantId, ChatMessageRequestDto req) {
-        // participant 조회 및 검증
         Participant participant = partRepo.findById(participantId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
@@ -46,12 +44,10 @@ public class ChatMessageService {
         return dto;
     }
 
-
-    /** 시스템 메시지 전송용 */
     public void sendSystemMessage(Long chatRoomId, String message) {
         ChatMessage systemMsg = ChatMessage.builder()
                 .chatRoomId(chatRoomId)
-                .participantId(null) // 시스템 메시지는 참여자 없음
+                .participantId(null)
                 .message(message)
                 .messageType(MessageType.SYSTEM)
                 .sendAt(LocalDateTime.now())
