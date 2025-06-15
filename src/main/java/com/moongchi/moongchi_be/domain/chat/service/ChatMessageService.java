@@ -11,6 +11,7 @@ import com.moongchi.moongchi_be.domain.chat.repository.ChatMessageRepository;
 import com.moongchi.moongchi_be.domain.chat.repository.ChatRoomRepository;
 import com.moongchi.moongchi_be.domain.chat.repository.ParticipantRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,49 +23,44 @@ public class ChatMessageService {
     private final ChatRoomRepository roomRepo;
     private final ParticipantRepository partRepo;
     private final ChatMessageRepository messageRepo;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    /** 메시지 전송 및 저장 */
-    public MessageDto sendMessage(Long chatRoomId, Long userId, ChatMessageRequestDto req) {
-        roomRepo.findById(chatRoomId)
+    /** 일반 메시지 저장 및 전송 */
+    public MessageDto sendMessage(Long chatRoomId, Long participantId, ChatMessageRequestDto req) {
+        // participant 조회 및 검증
+        Participant participant = partRepo.findById(participantId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
-        Participant participant = partRepo.findByChatRoomIdAndUserId(chatRoomId,userId)
-                .orElseThrow(()-> new CustomException(ErrorCode.NOT_FOUND));
 
         ChatMessage saved = messageRepo.save(
                 ChatMessage.builder()
                         .chatRoomId(chatRoomId)
-                        .participantId(participant.getId())
+                        .participantId(participantId)
                         .message(req.getMessage())
+                        .messageType(MessageType.TEXT)
+                        .sendAt(LocalDateTime.now())
                         .build()
         );
 
-        return new MessageDto(
-                saved.getId(),
-                saved.getParticipantId(),
-                saved.getMessage(),
-                saved.getMessageType().name(),
-                saved.getSendAt()
-        );
+        MessageDto dto = MessageDto.from(saved);
+        messagingTemplate.convertAndSend("/topic/chatroom." + chatRoomId, dto);
+        return dto;
     }
 
-    public ChatMessage save(Long chatRoomId, Long participantId, String message, String messageType) {
-        ChatMessage chatMessage = new ChatMessage();
-        chatMessage.setChatRoomId(chatRoomId);
-        chatMessage.setParticipantId(participantId);
-        chatMessage.setMessage(message);
-        chatMessage.setMessageType(MessageType.TEXT);
-        chatMessage.setSendAt(LocalDateTime.now());
-        return messageRepo.save(chatMessage);
-    }
 
-    public MessageDto toDto(ChatMessage msg) {
-        return new MessageDto(
-                msg.getId(),
-                msg.getParticipantId(),
-                msg.getMessage(),
-                msg.getMessageType().toString(),
-                msg.getSendAt()
-        );
+    /** 시스템 메시지 전송용 */
+    public void sendSystemMessage(Long chatRoomId, String message) {
+        ChatMessage systemMsg = ChatMessage.builder()
+                .chatRoomId(chatRoomId)
+                .participantId(null) // 시스템 메시지는 참여자 없음
+                .message(message)
+                .messageType(MessageType.SYSTEM)
+                .sendAt(LocalDateTime.now())
+                .build();
+
+        messageRepo.save(systemMsg);
+
+        MessageDto dto = MessageDto.from(systemMsg);
+        messagingTemplate.convertAndSend("/topic/chatroom." + chatRoomId, dto);
     }
 
 }
