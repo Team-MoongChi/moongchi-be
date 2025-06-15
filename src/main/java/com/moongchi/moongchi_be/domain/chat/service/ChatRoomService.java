@@ -35,7 +35,6 @@ public class ChatRoomService {
     private final ChatMessageService chatMessageService;
 
     //채팅방 조회
-    @Transactional(readOnly = true)
     public List<ChatRoomResponseDto> getUserChatRooms(Long userId) {
         List<Participant> participants = participantRepository.findByUserId(userId);
 
@@ -75,10 +74,10 @@ public class ChatRoomService {
     }
 
     //채팅방 상세조회
-    @Transactional(readOnly = true)
     public ChatRoomDetailDto getChatRoomDetail(Long chatRoomId,Long userId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
         GroupProduct product = chatRoom.getGroupBoard().getGroupProduct();
         String imgUrl = null;
         int price = 0;
