@@ -6,6 +6,8 @@ import com.moongchi.moongchi_be.domain.chat.entity.ChatRoomStatus;
 import com.moongchi.moongchi_be.domain.chat.service.ChatRoomService;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import com.moongchi.moongchi_be.domain.user.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "채팅", description = "채팅 관련 API")
 @RestController
 @RequestMapping("/api/chat/rooms")
 @RequiredArgsConstructor
@@ -21,7 +24,7 @@ public class ChatRoomController {
     private final ChatRoomService chatRoomService;
     private final UserService userService;
 
-    //채팅 목록 조회
+    @Operation(summary = "내 채팅방 목록 조회", description = "내가 참여한 모든 채팅방(공구) 목록을 반환합니다.")
     @GetMapping
     public ResponseEntity<List<ChatRoomResponseDto>> getUserChatRooms(HttpServletRequest request) {
         User currentUser = userService.getUser(request);
@@ -29,7 +32,7 @@ public class ChatRoomController {
         return ResponseEntity.ok(chatRooms);
     }
 
-    //채팅방 상세 조회
+    @Operation(summary = "채팅방 상세 조회", description = "채팅방의 상세 정보, 참여자, 메시지 목록을 반환합니다.")
     @GetMapping("/{chatRoomId}")
     public ResponseEntity<ChatRoomDetailDto> getChatRoomDetail(@PathVariable Long chatRoomId, HttpServletRequest request) {
         User currentUser = userService.getUser(request);
@@ -54,7 +57,7 @@ public class ChatRoomController {
         return ResponseEntity.ok(response);
     }
 
-    //채팅방 참여자 공구 거래
+    @Operation(summary = "공구 결제 완료", description = "채팅방에서 내 결제 상태를 '완료(PAID)'로 변경합니다.")
     @PostMapping("/{chatRoomId}/pay")
     public ResponseEntity<Void> pay (@PathVariable Long chatRoomId,HttpServletRequest request){
         User user = userService.getUser(request);
@@ -62,7 +65,7 @@ public class ChatRoomController {
         return ResponseEntity.ok().build();
     }
 
-    //참여 멤버 거래 완료
+    @Operation(summary = "거래 완료 처리", description = "현재 채팅방에서 내 참여자 거래 상태를 '완료(TRUE)'로 변경합니다.")
     @PostMapping("/{chatRoomId}/trade-complete")
     public ResponseEntity<Void> tradeComplete(@PathVariable Long chatRoomId, HttpServletRequest request) {
         User user = userService.getUser(request);
@@ -70,6 +73,7 @@ public class ChatRoomController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "리뷰 작성", description = "특정 참가자에게 리뷰를 작성합니다.")
     @PostMapping("/{chatRoomId}/reviews/{targetParticipantId}")
     public ResponseEntity<ReviewResponseDto> writeReview(
             @PathVariable Long chatRoomId,

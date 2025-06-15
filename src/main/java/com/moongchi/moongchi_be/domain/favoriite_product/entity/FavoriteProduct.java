@@ -1,5 +1,7 @@
-package com.moongchi.moongchi_be.domain.group_boards.entity;
+package com.moongchi.moongchi_be.domain.favoriite_product.entity;
 
+import com.moongchi.moongchi_be.domain.group_boards.entity.GroupBoard;
+import com.moongchi.moongchi_be.domain.product.entity.Product;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -27,16 +29,15 @@ public class FavoriteProduct {
     @CreationTimestamp
     private LocalDateTime createAt;
 
-    @Column(name = "update_at")
-    @UpdateTimestamp
-    private LocalDateTime updateAt;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_board_id")
     private GroupBoard groupBoard;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    private Product product;
 }

@@ -12,14 +12,13 @@ import com.moongchi.moongchi_be.domain.chat.entity.Role;
 import com.moongchi.moongchi_be.domain.chat.repository.ChatRoomRepository;
 import com.moongchi.moongchi_be.domain.chat.repository.ParticipantRepository;
 import com.moongchi.moongchi_be.domain.chat.service.ChatRoomService;
+import com.moongchi.moongchi_be.domain.favoriite_product.repository.FavoriteProductRepository;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardDto;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardListDto;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardRequestDto;
-import com.moongchi.moongchi_be.domain.group_boards.entity.FavoriteProduct;
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupBoard;
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupProduct;
 import com.moongchi.moongchi_be.domain.group_boards.enums.BoardStatus;
-import com.moongchi.moongchi_be.domain.group_boards.repository.FavoriteProductRepository;
 import com.moongchi.moongchi_be.domain.group_boards.repository.GroupBoardRepository;
 import com.moongchi.moongchi_be.domain.group_boards.repository.GroupProductRepository;
 import com.moongchi.moongchi_be.domain.product.entity.Product;
@@ -27,7 +26,6 @@ import com.moongchi.moongchi_be.domain.product.repository.ProductRepository;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import com.moongchi.moongchi_be.domain.user.repository.UserRepository;
 import com.moongchi.moongchi_be.domain.user.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,8 +52,7 @@ public class GroupBoardService {
     private final ChatRoomService chatRoomService;
 
     @Transactional
-    public void createPost(GroupBoardRequestDto dto, HttpServletRequest request) {
-        User currentUser = userService.getUser(request);
+    public void createPost(GroupBoardRequestDto dto, User user) {
         Coordinate coordinate = kakaoMapService.getCoordinateFromAddress(dto.getLocation());
 
         GroupBoard groupBoard = GroupBoard.builder()
@@ -67,7 +64,7 @@ public class GroupBoardService {
                 .boardStatus(BoardStatus.OPEN)
                 .deadline(dto.getDeadLine())
                 .totalUsers(dto.getTotalUsers())
-                .user(currentUser)
+                .user(user)
                 .build();
 
         Category category = null;
@@ -97,7 +94,7 @@ public class GroupBoardService {
 
         groupBoard.updateGroupProduct(groupProduct);
         groupBoardRepository.save(groupBoard);
-        chatRoomService.createChatRoomWithParticipant(groupBoard, currentUser);
+        chatRoomService.createChatRoomWithParticipant(groupBoard, user);
     }
 
     @Transactional
@@ -123,9 +120,8 @@ public class GroupBoardService {
     }
 
     @Transactional(readOnly = true)
-    public List<GroupBoardListDto> getGroupBoardList(HttpServletRequest request) {
-        User currentUser = userService.getUser(request);
-        List<GroupBoard> groupBoards = groupBoardRepository.findNearbyPosts(currentUser.getLatitude(), currentUser.getLongitude());
+    public List<GroupBoardListDto> getGroupBoardList( User user) {
+        List<GroupBoard> groupBoards = groupBoardRepository.findNearbyPosts(user.getLatitude(), user.getLongitude());
 
         return groupBoards.stream()
                 .map(this::convertToListDto)
@@ -171,17 +167,16 @@ public class GroupBoardService {
     }
 
     @Transactional(readOnly = true)
-    public GroupBoardDto getGroupBoard(Long groupBoardId, HttpServletRequest request) {
+    public GroupBoardDto getGroupBoard(Long groupBoardId,  User user) {
         GroupBoard groupBoard = groupBoardRepository.findById(groupBoardId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
-        Long currentUserId = userService.getUser(request).getId();
+        Long currentUserId = user.getId();
         return convertToDto(groupBoard, currentUserId);
     }
 
     @Transactional(readOnly = true)
-    public List<GroupBoardListDto> getMyGroupBoard(HttpServletRequest request) {
-        User currentUser = userService.getUser(request);
-        List<GroupBoard> groupBoards = groupBoardRepository.findByUserId(currentUser.getId());
+    public List<GroupBoardListDto> getMyGroupBoard( User user) {
+        List<GroupBoard> groupBoards = groupBoardRepository.findByUserId(user.getId());
 
         return groupBoards.stream()
                 .map(this::convertToListDto)
@@ -189,9 +184,10 @@ public class GroupBoardService {
     }
 
     @Transactional(readOnly = true)
-    public List<GroupBoardListDto> getGroupBoardCategory(Long categoryId, HttpServletRequest request) {
-        User currentUser = userService.getUser(request);
-        List<GroupBoard> groupBoards = groupBoardRepository.findCategoryIdWithNearbyPosts(categoryId,currentUser.getLatitude(), currentUser.getLongitude());
+    public List<GroupBoardListDto> getGroupBoardCategory(Long categoryId,  User user) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+        List<GroupBoard> groupBoards = groupBoardRepository.findNearbyPostsByCategory(user.getLatitude(), user.getLongitude(), category.getLargeCategory());
 
         return groupBoards.stream()
                 .map(this::convertToListDto)
@@ -217,12 +213,7 @@ public class GroupBoardService {
     }
 
     public int getLikeCount(Long groupBoardId){
-        GroupBoard groupBoard = groupBoardRepository.findById(groupBoardId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
-        List<FavoriteProduct> favoriteProducts = favoriteProductRepository.findByGroupBoard(groupBoard);
-
-        return favoriteProducts.size();
-
+        return favoriteProductRepository.countByGroupBoardId(groupBoardId);
     }
 
     private GroupBoardDto convertToParticipanDto(GroupBoard board) {
@@ -281,7 +272,7 @@ public class GroupBoardService {
                 .location(board.getLocation())
                 .boardStatus(board.getBoardStatus())
                 .image(imageUrl)
-                .createAt(board.getCreateAt())
+                .createAt(board.getCreatedAt())
                 .totalUsers(board.getTotalUsers())
                 .currentUsers(participants.size())
                 .participants(participants)

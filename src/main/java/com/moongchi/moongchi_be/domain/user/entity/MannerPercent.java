@@ -25,6 +25,10 @@ public class MannerPercent {
     private Double participantPercent;
 
     @OneToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    public void updateUser(User user) {
+        this.user = user;
+    }
 }

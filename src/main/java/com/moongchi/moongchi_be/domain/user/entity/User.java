@@ -1,7 +1,7 @@
 package com.moongchi.moongchi_be.domain.user.entity;
 
 
-import com.moongchi.moongchi_be.domain.group_boards.entity.FavoriteProduct;
+import com.moongchi.moongchi_be.domain.favoriite_product.entity.FavoriteProduct;
 import com.moongchi.moongchi_be.domain.chat.entity.Participant;
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupBoard;
 import com.moongchi.moongchi_be.domain.user.enums.Gender;
@@ -39,7 +39,7 @@ public class User {
     @Column
     private String phone;
 
-    @Column(unique = true)
+    @Column
     private String email;
 
     @Column(name = "profile_url")
@@ -83,12 +83,12 @@ public class User {
     private MannerPercent mannerPercent;
 
     @CreationTimestamp
-    @Column(name = "create_at")
-    private LocalDateTime createAt;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "update_at")
-    private LocalDateTime updateAt;
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     public User update(String name) {
         this.name = name;
@@ -103,6 +103,10 @@ public class User {
         this.profileUrl = profileUrl;
 
         return this;
+    }
+
+    public void updateMannerPercent(MannerPercent mannerPercent){
+        this.mannerPercent = mannerPercent;
     }
 
     public User updateLocation(double latitude, double longitude, String address) {
