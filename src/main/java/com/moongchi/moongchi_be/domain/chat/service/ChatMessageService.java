@@ -5,12 +5,15 @@ import com.moongchi.moongchi_be.common.exception.errorcode.ErrorCode;
 import com.moongchi.moongchi_be.domain.chat.dto.ChatMessageRequestDto;
 import com.moongchi.moongchi_be.domain.chat.dto.MessageDto;
 import com.moongchi.moongchi_be.domain.chat.entity.ChatMessage;
+import com.moongchi.moongchi_be.domain.chat.entity.MessageType;
 import com.moongchi.moongchi_be.domain.chat.entity.Participant;
 import com.moongchi.moongchi_be.domain.chat.repository.ChatMessageRepository;
 import com.moongchi.moongchi_be.domain.chat.repository.ChatRoomRepository;
 import com.moongchi.moongchi_be.domain.chat.repository.ParticipantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +44,26 @@ public class ChatMessageService {
                 saved.getMessage(),
                 saved.getMessageType().name(),
                 saved.getSendAt()
+        );
+    }
+
+    public ChatMessage save(Long chatRoomId, Long participantId, String message, String messageType) {
+        ChatMessage chatMessage = new ChatMessage();
+        chatMessage.setChatRoomId(chatRoomId);
+        chatMessage.setParticipantId(participantId);
+        chatMessage.setMessage(message);
+        chatMessage.setMessageType(MessageType.TEXT);
+        chatMessage.setSendAt(LocalDateTime.now());
+        return messageRepo.save(chatMessage);
+    }
+
+    public MessageDto toDto(ChatMessage msg) {
+        return new MessageDto(
+                msg.getId(),
+                msg.getParticipantId(),
+                msg.getMessage(),
+                msg.getMessageType().toString(),
+                msg.getSendAt()
         );
     }
 
