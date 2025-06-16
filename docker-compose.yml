@@ -9,8 +9,6 @@ services:
     restart: always
     env_file:
       - .env
-    environment:
-      - KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID}
   nginx:
     image: nginx:latest
     container_name: nginx-proxy

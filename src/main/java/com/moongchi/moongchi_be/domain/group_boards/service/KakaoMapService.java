@@ -14,9 +14,8 @@ import org.springframework.web.client.RestTemplate;
 public class KakaoMapService {
     private final String kakaoClientId;
 
-    public KakaoMapService() {
-        Dotenv dotenv = Dotenv.load();
-        this.kakaoClientId = dotenv.get("KAKAO_CLIENT_ID");
+    public KakaoMapService(@Value("${kakao.client.id}") String kakaoClientId) {
+        this.kakaoClientId = kakaoClientId;
     }
 
 
