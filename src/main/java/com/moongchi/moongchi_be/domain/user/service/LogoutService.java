@@ -4,7 +4,7 @@ import com.moongchi.moongchi_be.domain.user.dto.LogoutResponseDto;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Value;
+import io.github.cdimascio.dotenv.Dotenv;
 
 @Service
 @RequiredArgsConstructor
