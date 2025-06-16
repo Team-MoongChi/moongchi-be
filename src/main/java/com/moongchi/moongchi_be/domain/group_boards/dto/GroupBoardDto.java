@@ -24,6 +24,8 @@ public class GroupBoardDto {
     private LocalDate deadline;
     private Integer totalUser;
     private Integer currentUsers;
+    private String productName;
+    private Integer productPrice;
     private String productUrl;
     private int likeCount;
     private boolean editable;
