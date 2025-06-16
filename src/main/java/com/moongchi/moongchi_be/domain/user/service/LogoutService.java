@@ -2,7 +2,6 @@ package com.moongchi.moongchi_be.domain.user.service;
 
 import com.moongchi.moongchi_be.domain.user.dto.LogoutResponseDto;
 import com.moongchi.moongchi_be.domain.user.entity.User;
-import io.github.cdimascio.dotenv.Dotenv;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
