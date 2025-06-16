@@ -1,6 +1,8 @@
 package com.moongchi.moongchi_be.domain.chat.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.moongchi.moongchi_be.domain.chat.entity.ChatMessage;
+import com.moongchi.moongchi_be.domain.chat.entity.ChatRoomStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,16 +26,26 @@ public class MessageDto {
     private String messageType;
     @Schema(description = "전송시각")
     private LocalDateTime sendAt;
-
-    public static MessageDto from(ChatMessage msg) {
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Schema(description = "(시스템메세지) 채팅 상태")
+    private String status;
+    public static MessageDto from(ChatMessage message) {
         return MessageDto.builder()
-                .id(String.valueOf(msg.getId()))
-                .participantId(msg.getParticipantId())
-                .message(msg.getMessage())
-                .messageType(msg.getMessageType().name())
-                .sendAt(msg.getSendAt())
+                .id(message.getId())
+                .participantId(message.getParticipantId())
+                .message(message.getMessage())
+                .messageType(message.getMessageType().name())
+                .sendAt(message.getSendAt())
                 .build();
     }
-
-
+    public static MessageDto from(ChatMessage message, ChatRoomStatus status) {
+        return MessageDto.builder()
+                .id(message.getId())
+                .participantId(message.getParticipantId())
+                .message(message.getMessage())
+                .messageType(message.getMessageType().name())
+                .sendAt(message.getSendAt())
+                .status(status != null ? status.getKorean() : null)
+                .build();
+    }
 }

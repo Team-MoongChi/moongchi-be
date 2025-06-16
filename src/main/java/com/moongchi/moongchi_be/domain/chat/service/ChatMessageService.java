@@ -3,6 +3,7 @@ package com.moongchi.moongchi_be.domain.chat.service;
 import com.moongchi.moongchi_be.domain.chat.dto.ChatMessageRequestDto;
 import com.moongchi.moongchi_be.domain.chat.dto.MessageDto;
 import com.moongchi.moongchi_be.domain.chat.entity.ChatMessage;
+import com.moongchi.moongchi_be.domain.chat.entity.ChatRoomStatus;
 import com.moongchi.moongchi_be.domain.chat.entity.MessageType;
 import com.moongchi.moongchi_be.domain.chat.entity.Participant;
 import com.moongchi.moongchi_be.domain.chat.repository.ChatMessageRepository;
@@ -41,7 +42,7 @@ public class ChatMessageService {
         return dto;
     }
 
-    public void sendSystemMessage(Long chatRoomId, String message) {
+    public void sendSystemMessage(Long chatRoomId, String message, ChatRoomStatus status) {
         ChatMessage systemMsg = ChatMessage.builder()
                 .chatRoomId(chatRoomId)
                 .participantId(null)
@@ -52,7 +53,7 @@ public class ChatMessageService {
 
         messageRepo.save(systemMsg);
 
-        MessageDto dto = MessageDto.from(systemMsg);
+        MessageDto dto = MessageDto.from(systemMsg,status);
         messagingTemplate.convertAndSend("/topic/chatroom." + chatRoomId, dto);
     }
 

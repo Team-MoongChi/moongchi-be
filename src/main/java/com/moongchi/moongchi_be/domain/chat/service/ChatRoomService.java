@@ -122,13 +122,14 @@ public class ChatRoomService {
         List<MessageDto> messages = chatMessageRepository
                 .findByChatRoomIdOrderBySendAtAsc(chatRoomId)
                 .stream()
-                .map(m -> new MessageDto(
-                        m.getId(),
-                        m.getParticipantId(),
-                        m.getMessage(),
-                        m.getMessageType().name(),
-                        m.getSendAt()
-                ))
+                .map(m -> MessageDto.builder()
+                        .id(m.getId())
+                        .participantId(m.getParticipantId())
+                        .message(m.getMessage())
+                        .messageType(m.getMessageType().name())
+                        .sendAt(m.getSendAt())
+                        .build()
+                )
                 .collect(Collectors.toList());
 
         return new ChatRoomDetailDto(
@@ -166,7 +167,7 @@ public class ChatRoomService {
                 .build();
         participantRepository.save(participant);
         String welcomeMsg = "안녕하세요! 공구 완료 시점까지 여러분과 함께 할 뭉치예요. 뭉치면 산다! 공구 인원이 모두 모이면 알려줄게요.";
-        chatMessageService.sendSystemMessage(savedChatRoom.getId(), welcomeMsg);
+        chatMessageService.sendSystemMessage(savedChatRoom.getId(), welcomeMsg,ChatRoomStatus.RECRUITING);
 
         savedChatRoom.setSendAt(LocalDateTime.now());
         chatRoomRepository.save(savedChatRoom);
@@ -235,7 +236,7 @@ public class ChatRoomService {
                 case COMPLETED -> "거래가 모두 완료되었습니다. 리뷰를 작성해 보세요!";
                 default -> "채팅방 상태가 " + next.name() + "로 변경되었습니다.";
             };
-            chatMessageService.sendSystemMessage(chatRoomId, msg);
+            chatMessageService.sendSystemMessage(chatRoomId, msg,next);
         }
         return next;
     }
