@@ -1,7 +1,5 @@
 package com.moongchi.moongchi_be.domain.chat.service;
 
-import com.moongchi.moongchi_be.common.exception.custom.CustomException;
-import com.moongchi.moongchi_be.common.exception.errorcode.ErrorCode;
 import com.moongchi.moongchi_be.domain.chat.dto.ChatMessageRequestDto;
 import com.moongchi.moongchi_be.domain.chat.dto.MessageDto;
 import com.moongchi.moongchi_be.domain.chat.entity.ChatMessage;
@@ -25,14 +23,13 @@ public class ChatMessageService {
     private final ChatMessageRepository messageRepo;
     private final SimpMessagingTemplate messagingTemplate;
 
-    public MessageDto sendMessage(Long chatRoomId, Long participantId, ChatMessageRequestDto req) {
-        Participant participant = partRepo.findById(participantId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+    public MessageDto sendMessage(Participant participant, ChatMessageRequestDto req) {
+        Long chatRoomId = participant.getGroupBoard().getChatRoom().getId();
 
         ChatMessage saved = messageRepo.save(
                 ChatMessage.builder()
                         .chatRoomId(chatRoomId)
-                        .participantId(participantId)
+                        .participantId(participant.getId())
                         .message(req.getMessage())
                         .messageType(MessageType.TEXT)
                         .sendAt(LocalDateTime.now())

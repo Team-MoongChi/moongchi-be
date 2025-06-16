@@ -11,12 +11,12 @@ import lombok.*;
 @AllArgsConstructor
 @Schema(description = "채팅 메시지 요청")
 public class ChatMessageRequestDto {
+    @Schema(description = "채팅방 ID")
     private Long chatRoomId;
-    private Long participantId;
     @NotBlank(message = "메시지를 입력해주세요.")
     @Schema(description = "채팅 메시지")
     private String message;
+    @Schema(description = "메세지 타입 (system/text)")
     private String messageType;
-
 }
 
