@@ -1,6 +1,3 @@
-# docker-compose.yml
-version: "3.8"
-
 services:
   moongchi-backend:
     build:
@@ -11,8 +8,9 @@ services:
       - "8080:8080"
     restart: always
     env_file:
-         - .env
-
+      - .env
+    environment:
+      - KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID}
   nginx:
     image: nginx:latest
     container_name: nginx-proxy
