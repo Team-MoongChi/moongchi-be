@@ -12,6 +12,7 @@ services:
     environment:
       KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID}
       KAKAO_REDIRECT_URI: ${KAKAO_REDIRECT_URI}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
   nginx:
     image: nginx:latest
     container_name: nginx-proxy
