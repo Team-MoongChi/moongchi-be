@@ -1,19 +1,16 @@
 package com.moongchi.moongchi_be.domain.group_boards.service;
 
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.beans.factory.annotation.Value;
 
 @Service
 public class KakaoMapService {
-    private final String kakaoClientId;
 
-    public KakaoMapService(@Value("${kakao.client.id}") String kakaoClientId) {
-        this.kakaoClientId = kakaoClientId;
-    }
-
+    @Value("${KAKAO_CLIENT_ID}")
+    private String kakaoClientId;
 
     public Coordinate getCoordinateFromAddress(String address) {
 
