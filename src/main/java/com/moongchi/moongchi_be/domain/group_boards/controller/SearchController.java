@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,6 +35,6 @@ public class SearchController {
     @GetMapping("/search")
     public ResponseEntity<List<GroupBoardListDto>> search(@RequestParam String keyword){
         List<GroupBoardListDto> groupBoardDtos = searchService.search(keyword);
-        return ResponseEntity.ok(groupBoardDtos);
+        return ResponseEntity.status(HttpStatus.OK).body(groupBoardDtos);
     }
 }

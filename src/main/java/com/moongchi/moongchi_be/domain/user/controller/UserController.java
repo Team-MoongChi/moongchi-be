@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,7 +39,7 @@ public class UserController {
     public ResponseEntity<TokenResponseDto> createUSer(@RequestBody UserDto userDto, HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = CookieUtil.getCookieValue(request, "refresh_token");
         TokenResponseDto tokenResponseDto = userService.createUser(userDto, refreshToken);
-        return ResponseEntity.ok(tokenResponseDto);
+        return ResponseEntity.status(HttpStatus.OK).body(tokenResponseDto);
     }
 
     @Operation(summary = "사용자 정보 조회")
@@ -50,7 +51,7 @@ public class UserController {
     public ResponseEntity<UserDto> getUser(HttpServletRequest request) {
         User user = userService.getUser(request);
         UserDto userDto = new UserDto(user);
-        return ResponseEntity.ok(userDto);
+        return ResponseEntity.status(HttpStatus.OK).body(userDto);
     }
 
     @Operation(summary = "사용자 위치 설정", description = "사용자의 위치 설정")
@@ -61,7 +62,7 @@ public class UserController {
     public ResponseEntity<?> addLocation(@RequestBody UserDto userDto, HttpServletRequest request) {
         User user = userService.getUser(request);
         userService.addLocation(userDto, user);
-        return ResponseEntity.ok("위치 설정이 완료되었습니다.");
+        return ResponseEntity.status(HttpStatus.OK).body("위치 설정이 완료되었습니다.");
     }
 
     @Operation(summary = "사용자 관심 카테고리 추가")
@@ -72,7 +73,7 @@ public class UserController {
     public ResponseEntity<?> addInterestCategory(@RequestBody UserDto userDto, HttpServletRequest request){
         User user = userService.getUser(request);
         userService.addInterestCategory(userDto, user);
-        return ResponseEntity.ok("관심 카테고리가 추가되었습니다.");
+        return ResponseEntity.status(HttpStatus.OK).body("관심 카테고리 설정이 완료되었습니다.");
     }
 
     @Operation(summary = "사용자 이름 이메일 조회", description = "정보 입력시 필요한 정보 조회")
@@ -84,7 +85,7 @@ public class UserController {
     public ResponseEntity<UserBasicDto> getUserNameEmail(HttpServletRequest request){
         String refreshToken = CookieUtil.getCookieValue(request, "refresh_token");
         UserBasicDto userBasicDto = userService.getUserBasic(refreshToken);
-        return ResponseEntity.ok(userBasicDto);
+        return ResponseEntity.status(HttpStatus.OK).body(userBasicDto);
     }
 
     @Operation(summary = "회원 정보 수정", description = "회원 닉네임 프로필 사진 수정")
@@ -95,7 +96,7 @@ public class UserController {
     public ResponseEntity<?> updateUser(@RequestBody UserDto userDto, HttpServletRequest request){
         User user = userService.getUser(request);
         userService.updateUser(userDto, user);
-        return ResponseEntity.ok("회원정보 수정이 완료되었습니다.");
+        return ResponseEntity.status(HttpStatus.OK).body("회원 정보 수정이 완료되었습니더.");
     }
 
     @Operation(summary = "사용자의 리뷰 키워드 조회", description = "사용자 별 리뷰 조회")
@@ -106,6 +107,6 @@ public class UserController {
     @GetMapping("/reviews")
     public ResponseEntity<ReviewKeywordDto> getReviewKeywords(HttpServletRequest request) {
         ReviewKeywordDto dto = userService.getUserLatestReviewKeywords(request);
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.status(HttpStatus.OK).body(dto);
     }
 }

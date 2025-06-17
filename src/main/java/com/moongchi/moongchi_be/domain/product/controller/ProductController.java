@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,8 +36,9 @@ public class ProductController {
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductResponseDto.class))))
     })
     @GetMapping
-    public List<ProductResponseDto> getAll() {
-        return productService.getAllProducts();
+    public ResponseEntity<List<ProductResponseDto>> getAll() {
+        List<ProductResponseDto> productResponseDtos = productService.getAllProducts();
+        return ResponseEntity.status(HttpStatus.OK).body(productResponseDtos);
     }
 
     @Operation(summary = "단일 상품 조회", description = "productId로 상품 상세정보를 조회합니다.")
@@ -50,7 +52,7 @@ public class ProductController {
             @Parameter(description = "상품 ID", required = true)
             @PathVariable Long productId) {
         ProductResponseDto product = productService.getProductById(productId);
-        return ResponseEntity.ok(product);
+        return ResponseEntity.status(HttpStatus.OK).body(product);
     }
 
     @Operation(summary = "상품별 공구글 목록 조회", description = "특정 상품에 연결된 공구글 리스트를 조회합니다.")
@@ -63,7 +65,7 @@ public class ProductController {
             @Parameter(description = "상품 ID", required = true)
             @PathVariable Long productId){
         List<GroupBoardDto> groupBoardListDto = groupBoardService.getProductGroupBoardList(productId);
-        return ResponseEntity.ok(groupBoardListDto);
+        return ResponseEntity.status(HttpStatus.OK).body(groupBoardListDto);
     }
 
     @Operation(summary = "상품 검색", description = "키워드(상품명/카테고리명)로 상품을 검색합니다. (대분류/중분류/소분류도 가능)")
@@ -79,7 +81,7 @@ public class ProductController {
         List<ProductResponseDto> dtos = products.stream()
                 .map(ProductResponseDto::from)
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(dtos);
+        return ResponseEntity.status(HttpStatus.OK).body(dtos);
     }
 
     @Operation(summary = "카테고리 별 상품 조회", description = "카테고리 별로 상품을 조회합니다.")
@@ -90,7 +92,7 @@ public class ProductController {
     @GetMapping("/categories/{categoryId}")
     public ResponseEntity<List<ProductResponseDto>> categoryProducts(@PathVariable Long categoryId){
         List<ProductResponseDto> productResponseDtos = productService.getProductCategoryList(categoryId);
-        return ResponseEntity.ok(productResponseDtos);
+        return ResponseEntity.status(HttpStatus.OK).body(productResponseDtos);
     }
 
     @Operation(summary = "쇼핑몰 메인화면", description = "카테고리(대뷴류) 별로 8개씩 랜덤 상품 조회")
@@ -101,6 +103,6 @@ public class ProductController {
     @GetMapping("/main")
     public ResponseEntity<List<List<ProductResponseDto>>> mainProduct(){
         List<List<ProductResponseDto>> productResponseDtos = productService.getMainProductList();
-        return ResponseEntity.ok(productResponseDtos);
+        return ResponseEntity.status(HttpStatus.OK).body(productResponseDtos);
     }
 }
