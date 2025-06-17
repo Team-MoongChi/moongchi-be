@@ -1,6 +1,5 @@
 package com.moongchi.moongchi_be.domain.favoriite_product.controller;
 
-import com.moongchi.moongchi_be.common.dto.ApiResponseDto;
 import com.moongchi.moongchi_be.domain.favoriite_product.service.FavoriteProductService;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardListDto;
 import com.moongchi.moongchi_be.domain.product.dto.ProductResponseDto;

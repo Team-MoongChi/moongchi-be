@@ -84,14 +84,18 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(dtos);
     }
 
-    @Operation(summary = "카테고리 별 상품 조회", description = "카테고리 별로 상품을 조회합니다.")
+    @Operation(
+            summary = "카테고리 별 상품 무한 스크롤 조회",
+            description = "카테고리 ID에 해당하는 상품을 무한 스크롤 방식으로 20개씩 조회" +
+                    "처음 요청 시에는 lastId를 생략하고, 이후에는 이전 응답의 마지막 상품 ID를 lastId로 전달"
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "조회 성공",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductResponseDto.class))))
     })
-    @GetMapping("/categories/{categoryId}")
-    public ResponseEntity<List<ProductResponseDto>> categoryProducts(@PathVariable Long categoryId){
-        List<ProductResponseDto> productResponseDtos = productService.getProductCategoryList(categoryId);
+    @GetMapping("/categories/{categoryId}/scroll")
+    public ResponseEntity<List<ProductResponseDto>> categoryProducts(@PathVariable Long categoryId, @RequestParam(required = false) Long lastId){
+        List<ProductResponseDto> productResponseDtos = productService.getProductCategoryList(categoryId, lastId, 20);
         return ResponseEntity.status(HttpStatus.OK).body(productResponseDtos);
     }
 

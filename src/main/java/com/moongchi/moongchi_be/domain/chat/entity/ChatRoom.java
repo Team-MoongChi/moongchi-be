@@ -21,7 +21,7 @@ public class ChatRoom {
     @Column(name = "chat_room_id")
     private Long id;
 
-    @Column(name = "title", length = 20, nullable = false)
+    @Column(name = "title", nullable = false)
     private String title;
 
     @Builder.Default
