@@ -34,6 +34,9 @@ public class ProductResponseDto {
     @Schema(description = "추천수")
     private Integer likeCount;
 
+    @Schema(description = "대분류 카테고리 Id")
+    private Long largeCategoryId;
+
     @Schema(description = "대분류 카테고리")
     private String largeCategory;
 
@@ -54,12 +57,14 @@ public class ProductResponseDto {
                 product.getProductUrl(),
                 product.getRating(),
                 null,
+                null,
                 category != null ? category.getLargeCategory() : null,
                 category != null ? category.getMediumCategory() : null,
                 category != null ? category.getSmallCategory() : null
         );
     }
-    public static ProductResponseDto from(Product product, int likeCount) {
+
+    public static ProductResponseDto from(Product product, int likeCount, Long largeCategoryId) {
         Category category = product.getCategory();
         return new ProductResponseDto(
                 product.getId(),
@@ -69,6 +74,7 @@ public class ProductResponseDto {
                 product.getProductUrl(),
                 product.getRating(),
                 likeCount,
+                largeCategoryId,
                 category != null ? category.getLargeCategory() : null,
                 category != null ? category.getMediumCategory() : null,
                 category != null ? category.getSmallCategory() : null

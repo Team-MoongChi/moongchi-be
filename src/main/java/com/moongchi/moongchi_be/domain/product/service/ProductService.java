@@ -38,7 +38,10 @@ public class ProductService {
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         int likeCount = getLikeCount(productId);
-        return ProductResponseDto.from(product, likeCount);
+        Category largeCategory = categoryRepository.findByLargeCategoryAndMediumCategoryIsNullAndSmallCategoryIsNull(product.getCategory().getLargeCategory())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+        Long largeCategoryId = largeCategory.getId();
+        return ProductResponseDto.from(product, likeCount, largeCategoryId);
     }
 
     public List<Product> searchProducts(String keyword) {
