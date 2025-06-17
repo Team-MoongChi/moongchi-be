@@ -10,7 +10,10 @@ import com.moongchi.moongchi_be.domain.product.dto.ProductResponseDto;
 import com.moongchi.moongchi_be.domain.product.entity.Product;
 import com.moongchi.moongchi_be.domain.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,25 +69,31 @@ public class ProductService {
         return favoriteProductRepository.countByProductId(productId);
     }
 
-    public List<ProductResponseDto> getProductCategoryList(Long categoryId) {
+    public List<ProductResponseDto> getProductCategoryList(Long categoryId, Long lastId, int size) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
-        List<Product> products;
+        List<Long> categoryIds;
         if (category.getMediumCategory() == null && category.getSmallCategory() == null) {
-            List<Long> allIds = categoryRepository.findByLargeCategory(category.getLargeCategory())
-                    .stream()
-                    .map(Category::getId)
-                    .toList();
-            products = productRepository.findByCategoryIdIn(allIds);
+            categoryIds = categoryRepository.findByLargeCategory(category.getLargeCategory())
+                    .stream().map(Category::getId).toList();
         } else if (category.getSmallCategory() == null) {
-            List<Long> allIds = categoryRepository.findByLargeCategoryAndMediumCategory(
-                    category.getLargeCategory(), category.getMediumCategory()
-            ).stream().map(Category::getId).toList();
-            products = productRepository.findByCategoryIdIn(allIds);
+            categoryIds = categoryRepository.findByLargeCategoryAndMediumCategory(
+                            category.getLargeCategory(), category.getMediumCategory())
+                    .stream().map(Category::getId).toList();
         } else {
-            products = productRepository.findByCategoryId(categoryId);
+            categoryIds = List.of(categoryId);
         }
+
+        Pageable pageable = PageRequest.of(0, size, Sort.by(Sort.Direction.DESC, "id"));
+
+        List<Product> products;
+        if (lastId == null) {
+            products = productRepository.findTopNByCategoryIdsOrderByIdDesc(categoryIds, pageable);
+        } else {
+            products = productRepository.findTopNByCategoryIdsAndIdLessThanOrderByIdDesc(categoryIds, lastId, pageable);
+        }
+
         return products.stream().map(ProductResponseDto::from).toList();
     }
 
