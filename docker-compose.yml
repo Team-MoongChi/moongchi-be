@@ -9,6 +9,9 @@ services:
     restart: always
     env_file:
       - .env
+    environment:
+      KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID}
+      KAKAO_REDIRECT_URI: ${KAKAO_REDIRECT_URI}
   nginx:
     image: nginx:latest
     container_name: nginx-proxy

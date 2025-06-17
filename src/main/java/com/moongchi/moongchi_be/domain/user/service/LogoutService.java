@@ -3,17 +3,17 @@ package com.moongchi.moongchi_be.domain.user.service;
 import com.moongchi.moongchi_be.domain.user.dto.LogoutResponseDto;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import io.github.cdimascio.dotenv.Dotenv;
 
 @Service
 @RequiredArgsConstructor
 public class LogoutService {
 
-    @Value("${kakao.client.id}")
+    @Value("${KAKAO_CLIENT_ID}")
     private String kakaoClientId;
 
-    @Value("${kakao.redirect.uri}")
+    @Value("${KAKAO_REDIRECT_URI}")
     private String kakaoRedirectUri;
 
     private final UserService userService;
