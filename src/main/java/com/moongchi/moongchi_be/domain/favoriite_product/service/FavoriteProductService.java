@@ -3,6 +3,7 @@ package com.moongchi.moongchi_be.domain.favoriite_product.service;
 import com.moongchi.moongchi_be.common.exception.custom.CustomException;
 import com.moongchi.moongchi_be.common.exception.errorcode.ErrorCode;
 import com.moongchi.moongchi_be.domain.favoriite_product.entity.FavoriteProduct;
+import com.moongchi.moongchi_be.domain.favoriite_product.entity.ProductType;
 import com.moongchi.moongchi_be.domain.favoriite_product.repository.FavoriteProductRepository;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardListDto;
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupBoard;
@@ -37,6 +38,7 @@ public class FavoriteProductService {
         FavoriteProduct favoriteProduct = FavoriteProduct.builder()
                 .user(user)
                 .groupBoard(groupBoard)
+                .productType(ProductType.GROUP)
                 .build();
 
         favoriteProductRepository.save(favoriteProduct);
@@ -77,6 +79,7 @@ public class FavoriteProductService {
         FavoriteProduct favoriteProduct = FavoriteProduct.builder()
                 .user(user)
                 .product(product)
+                .productType(ProductType.SHOPPING)
                 .build();
 
         favoriteProductRepository.save(favoriteProduct);

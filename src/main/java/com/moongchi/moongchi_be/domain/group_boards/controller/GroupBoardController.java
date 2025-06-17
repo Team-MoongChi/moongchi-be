@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,27 +38,27 @@ public class GroupBoardController {
     public ResponseEntity<?> createPost(@RequestBody GroupBoardRequestDto dto, HttpServletRequest request) {
         User user = userService.getUser(request);
         groupBoardService.createPost(dto, user);
-        return ResponseEntity.ok("게시글이 추가되었습니다.");
+        return ResponseEntity.status(HttpStatus.CREATED).body("게시물이 추가되었습니다.");
     }
 
     @Operation(summary = "공동 구매 게시글 수정", description = "공동 구매 게시글 수정")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "게시글 수정 성공")
     })
-    @PutMapping("/{group_board_id}")
-    public ResponseEntity<?> updatePost(@PathVariable("group_board_id") Long groupBoardId, @RequestBody GroupBoardRequestDto dto) {
+    @PutMapping("/{groupBoardId}")
+    public ResponseEntity<?> updatePost(@PathVariable Long groupBoardId, @RequestBody GroupBoardRequestDto dto) {
         groupBoardService.updatePost(groupBoardId, dto);
-        return ResponseEntity.ok("게시글이 수정되었습니다.");
+        return ResponseEntity.status(HttpStatus.OK).body("게시글이 수정되었습니다.");
     }
 
     @Operation(summary = "공동 구매 게시글 삭제", description = "공동 구매 게시글 삭제")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "게시글 삭제 성공")
     })
-    @DeleteMapping("/{group_board_id}")
-    public ResponseEntity<?> deletePost(@PathVariable("group_board_id") Long groupBoardId) {
+    @DeleteMapping("/{groupBoardId}")
+    public ResponseEntity<?> deletePost(@PathVariable Long groupBoardId) {
         groupBoardService.deletePost(groupBoardId);
-        return ResponseEntity.ok("게시글이 삭제되었습니다.");
+        return ResponseEntity.status(HttpStatus.OK).body("게시글이 삭제되었습니다.");
     }
 
     @Operation(summary = "공동 구매 게시글 목록 조회", description = "공동 구매 게시글 위치기반 목록 조회")
@@ -70,34 +71,34 @@ public class GroupBoardController {
     public ResponseEntity<List<GroupBoardListDto>> getGroupBoardList(HttpServletRequest request){
         User user = userService.getUser(request);
         List<GroupBoardListDto> groupBoards = groupBoardService.getGroupBoardList(user);
-        return ResponseEntity.ok(groupBoards);
+        return ResponseEntity.status(HttpStatus.OK).body(groupBoards);
     }
 
     @Operation(summary = "공동 구매 게시글 상세 조회", description = "공동 구매 게시글 상세 정보 조회")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "조회 성공",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = GroupBoardDto.class))))
+                    content = @Content(schema = @Schema(implementation = GroupBoardDto.class)))
     })
-    @GetMapping("/{group_board_id}")
-    public ResponseEntity<GroupBoardDto> getGroupBoard(@PathVariable("group_board_id") Long groupBoardId, HttpServletRequest request){
+    @GetMapping("/{groupBoardId}")
+    public ResponseEntity<GroupBoardDto> getGroupBoard(@PathVariable Long groupBoardId, HttpServletRequest request){
         User user = userService.getUser(request);
         GroupBoardDto groupBoardDto = groupBoardService.getGroupBoard(groupBoardId, user);
-        return ResponseEntity.ok(groupBoardDto);
+        return ResponseEntity.status(HttpStatus.OK).body(groupBoardDto);
     }
 
     @Operation(summary = "공동 구매 참여", description = "공동 구매 참여")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "참여 성공")
     })
-    @PostMapping("/{group_board_id}/join")
+    @PostMapping("/{groupBoardId}/join")
     public ResponseEntity<Void> joinGroupBoard(
-            @PathVariable("group_board_id") Long groupBoardId,
+            @PathVariable Long groupBoardId,
             HttpServletRequest request) {
 
         User currentUser = userService.getUser(request);
         groupBoardService.joinGroupBoard(currentUser.getId(), groupBoardId);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @Operation(summary = "내가 올린 공동 구매 게시글 목록 조회", description = "내가 올린 공동 구매 게시글 목록 조회")
@@ -109,7 +110,7 @@ public class GroupBoardController {
     public ResponseEntity<List<GroupBoardListDto>> getMyGroupBoard(HttpServletRequest request){
         User user = userService.getUser(request);
         List<GroupBoardListDto> groupBoards = groupBoardService.getMyGroupBoard(user);
-        return ResponseEntity.ok(groupBoards);
+        return ResponseEntity.status(HttpStatus.OK).body(groupBoards);
     }
 
     @Operation(summary = "카테고리 별 공동 구매 게시글 목록 조회", description = "카테고리 별 공동 구매 게시글 목록 조회")
@@ -117,11 +118,11 @@ public class GroupBoardController {
             @ApiResponse(responseCode = "200", description = "조회 성공",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = GroupBoardListDto.class))))
     })
-    @GetMapping("categories/{category_id}")
-    public ResponseEntity<List<GroupBoardListDto>> getGroupBoardCategory(@PathVariable("category_id") Long categoryId, HttpServletRequest request){
+    @GetMapping("categories/{categoryId}")
+    public ResponseEntity<List<GroupBoardListDto>> getGroupBoardCategory(@PathVariable Long categoryId, HttpServletRequest request){
         User user = userService.getUser(request);
         List<GroupBoardListDto> groupBoards = groupBoardService.getGroupBoardCategory(categoryId, user);
-        return ResponseEntity.ok(groupBoards);
+        return ResponseEntity.status(HttpStatus.OK).body(groupBoards);
     }
 
     @Operation(summary = "사용자 별 공동 구매 게시글 목록 조회", description = "사용자 별 공동 구매 게시글 목록 조회")
@@ -129,10 +130,10 @@ public class GroupBoardController {
             @ApiResponse(responseCode = "200", description = "조회 성공",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = GroupBoardListDto.class))))
     })
-    @GetMapping("/users/{user_id}")
-    public ResponseEntity<List<GroupBoardListDto>> getUserGroupBoard(@PathVariable("user_id") Long userId){
+    @GetMapping("/users/{userId}")
+    public ResponseEntity<List<GroupBoardListDto>> getUserGroupBoard(@PathVariable Long userId){
         List<GroupBoardListDto> groupBoards = groupBoardService.getUserGroupBoard(userId);
-        return ResponseEntity.ok(groupBoards);
+        return ResponseEntity.status(HttpStatus.OK).body(groupBoards);
     }
 
 
@@ -141,10 +142,10 @@ public class GroupBoardController {
             @ApiResponse(responseCode = "200", description = "조회 성공",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = GroupBoardDto.class))))
     })
-    @GetMapping("/{group_board_id}/edit")
-    public ResponseEntity<GroupBoardDto> getEditGroupBoard(@PathVariable("group_board_id") Long groupBoardId){
+    @GetMapping("/{groupBoardId}/edit")
+    public ResponseEntity<GroupBoardDto> getEditGroupBoard(@PathVariable Long groupBoardId){
         GroupBoardDto groupBoardDto = groupBoardService.getEditGroupBoard(groupBoardId);
-        return ResponseEntity.ok(groupBoardDto);
+        return ResponseEntity.status(HttpStatus.OK).body(groupBoardDto);
     }
 
 }

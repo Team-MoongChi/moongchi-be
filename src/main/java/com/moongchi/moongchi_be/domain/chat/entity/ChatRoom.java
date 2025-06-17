@@ -41,7 +41,7 @@ public class ChatRoom {
     private LocalDateTime sendAt;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "group_board_id")
+    @JoinColumn(name = "group_board_id", nullable = false)
     private GroupBoard groupBoard;
 
 }

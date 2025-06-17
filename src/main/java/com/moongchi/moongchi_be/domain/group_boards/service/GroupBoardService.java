@@ -62,8 +62,8 @@ public class GroupBoardService {
                 .longitude(coordinate.getLongitude())
                 .content(dto.getContent())
                 .boardStatus(BoardStatus.OPEN)
-                .deadline(dto.getDeadLine())
-                .totalUsers(dto.getTotalUsers())
+                .deadline(dto.getDeadline())
+                .totalUsers(dto.getTotalUser())
                 .user(user)
                 .build();
 
@@ -106,8 +106,8 @@ public class GroupBoardService {
         Category category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
-        groupProduct.update(dto.getName(), dto.getPrice(), dto.getQuantity(), category);
-        groupBoard.update(dto.getName(), dto.getContent(), dto.getLocation(), dto.getDeadLine(), dto.getTotalUsers(), groupProduct);
+        groupProduct.update(dto.getName(), dto.getPrice(), dto.getQuantity(), category, dto.getImages());
+        groupBoard.update(dto.getName(), dto.getContent(), dto.getLocation(), dto.getDeadline(), dto.getTotalUser(), groupProduct);
 
         groupBoardRepository.save(groupBoard);
     }

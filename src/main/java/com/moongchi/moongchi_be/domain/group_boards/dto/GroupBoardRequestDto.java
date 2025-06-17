@@ -15,12 +15,12 @@ import java.util.List;
 public class GroupBoardRequestDto {
 
     private String name;
-    private int totalUsers;
+    private int totalUser;
     private String quantity;
     private int price;
     private String location;
     private String content;
-    private LocalDate deadLine;
+    private LocalDate deadline;
     private Long categoryId;
     private Long productId;
     private List<String> images;

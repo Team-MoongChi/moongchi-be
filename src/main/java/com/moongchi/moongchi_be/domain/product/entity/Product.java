@@ -24,16 +24,16 @@ public class Product {
     @Column(name = "product_id")
     private Long id;
 
-    @Column(length = 20, name = "name")
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "price")
+    @Column(name = "price", nullable = false)
     private int price;
 
-    @Column(name = "img_url",length = 250)
+    @Column(name = "img_url",length = 250, nullable = false)
     private String imgUrl;
 
-    @Column(name = "product_url", length = 250)
+    @Column(name = "product_url", length = 250, nullable = false)
     private String productUrl;
 
     @Column(name = "rating")
