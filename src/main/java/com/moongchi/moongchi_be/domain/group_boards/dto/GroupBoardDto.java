@@ -17,9 +17,11 @@ import java.util.List;
 public class GroupBoardDto {
     private Long id;
     private String title;
+    private String name;
     private Integer price;
     private String content;
     private String location;
+    private String quantity;
     private BoardStatus boardStatus;
     private LocalDate deadline;
     private Integer totalUser;
@@ -27,6 +29,7 @@ public class GroupBoardDto {
     private String productName;
     private Integer productPrice;
     private String productUrl;
+    private Long categoryId;
     private int likeCount;
     private boolean editable;
     private Long chatRoomId;

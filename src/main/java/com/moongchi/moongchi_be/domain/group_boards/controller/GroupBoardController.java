@@ -134,4 +134,17 @@ public class GroupBoardController {
         List<GroupBoardListDto> groupBoards = groupBoardService.getUserGroupBoard(userId);
         return ResponseEntity.ok(groupBoards);
     }
+
+
+    @Operation(summary = "공동 구매 게시글 수정 화면", description = "공동 구매 게시글 수정 시 조회")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "조회 성공",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = GroupBoardDto.class))))
+    })
+    @GetMapping("/{group_board_id}/edit")
+    public ResponseEntity<GroupBoardDto> getEditGroupBoard(@PathVariable("group_board_id") Long groupBoardId){
+        GroupBoardDto groupBoardDto = groupBoardService.getEditGroupBoard(groupBoardId);
+        return ResponseEntity.ok(groupBoardDto);
+    }
+
 }

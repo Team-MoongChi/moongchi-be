@@ -212,6 +212,34 @@ public class GroupBoardService {
                 .collect(Collectors.toList());
     }
 
+    //사진 총원 총수량 상품명 총가격 장소 모집마감 날짜 카테고리
+    public GroupBoardDto getEditGroupBoard(Long groupBoardId){
+        GroupBoard groupBoard = groupBoardRepository.findById(groupBoardId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        Long largeCategoryId = 0L;
+        if (groupBoard.getGroupProduct().getProduct() != null) {
+            Category largeCategory = categoryRepository.findByLargeCategoryAndMediumCategoryIsNullAndSmallCategoryIsNull(
+                            groupBoard.getGroupProduct().getProduct().getCategory().getLargeCategory())
+                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+            largeCategoryId = largeCategory.getId();
+        } else {
+            largeCategoryId = groupBoard.getGroupProduct().getCategory().getId();
+        }
+
+        return GroupBoardDto.builder()
+                .totalUser(groupBoard.getTotalUsers())
+                .quantity(groupBoard.getGroupProduct().getQuantity())
+                .name(groupBoard.getGroupProduct().getName())
+                .price(groupBoard.getGroupProduct().getPrice())
+                .location(groupBoard.getLocation())
+                .deadline(groupBoard.getDeadline())
+                .categoryId(largeCategoryId)
+                .images(groupBoard.getGroupProduct().getImages())
+                .content(groupBoard.getContent())
+                .build();
+    }
+
     public int getLikeCount(Long groupBoardId){
         return favoriteProductRepository.countByGroupBoardId(groupBoardId);
     }
