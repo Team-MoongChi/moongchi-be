@@ -9,6 +9,7 @@ import com.moongchi.moongchi_be.domain.chat.service.ChatMessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
@@ -22,7 +23,7 @@ public class ChatSocketController {
     private final ParticipantRepository participantRepository;
 
     @MessageMapping("/chat.sendMessage")
-    public void sendMessage(ChatMessageRequestDto dto, Principal principal) {
+    public void sendMessage(@Payload ChatMessageRequestDto dto, Principal principal) {
         try {
             if ("SYSTEM".equalsIgnoreCase(dto.getMessageType())) {
                 throw new CustomException(ErrorCode.FORBIDDEN);
@@ -30,7 +31,7 @@ public class ChatSocketController {
             Long userId = getUserIdFromPrincipal(principal);
 
             Participant participant = participantRepository
-                    .findByChatRoomIdAndUserId(dto.getChatRoomId(),userId)
+                    .findWithChatRoomByChatRoomIdAndUserId(dto.getChatRoomId(),userId)
                     .orElseThrow(() -> new CustomException(ErrorCode.FORBIDDEN));
 
             chatMessageService.sendMessage(participant, dto);
