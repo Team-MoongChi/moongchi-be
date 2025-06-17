@@ -342,7 +342,7 @@ public class GroupBoardService {
                 .currentUsers(participants.size())
                 .productName(product != null ? product.getName() : null)
                 .productPrice(product != null ? product.getPrice() : null)
-                .productUrl(product != null ? product.getProductUrl() : null)
+                .productId(product != null ? product.getId() : null)
                 .chatRoomId(board.getChatRoom().getId())
                 .likeCount(likeCount)
                 .editable(editable)

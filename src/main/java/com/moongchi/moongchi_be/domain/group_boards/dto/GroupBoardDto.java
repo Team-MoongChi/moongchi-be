@@ -28,7 +28,7 @@ public class GroupBoardDto {
     private Integer currentUsers;
     private String productName;
     private Integer productPrice;
-    private String productUrl;
+    private Long productId;
     private Long categoryId;
     private int likeCount;
     private boolean editable;
