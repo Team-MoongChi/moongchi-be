@@ -1,7 +1,11 @@
 package com.moongchi.moongchi_be.domain.chat.controller;
 
+import com.moongchi.moongchi_be.common.exception.custom.CustomException;
+import com.moongchi.moongchi_be.common.exception.errorcode.ErrorCode;
 import com.moongchi.moongchi_be.domain.chat.dto.ChatMessageRequestDto;
 import com.moongchi.moongchi_be.domain.chat.dto.MessageDto;
+import com.moongchi.moongchi_be.domain.chat.entity.Participant;
+import com.moongchi.moongchi_be.domain.chat.repository.ParticipantRepository;
 import com.moongchi.moongchi_be.domain.chat.service.ChatMessageService;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import com.moongchi.moongchi_be.domain.user.service.UserService;
@@ -21,6 +25,8 @@ public class ChatMessageController {
 
     private final ChatMessageService chatMessageService;
     private final UserService userService;
+    private final ParticipantRepository participantRepository;
+
 
     @Operation(summary = "채팅 메시지 전송", description = "채팅방에 메시지를 보냅니다.")
     @PostMapping
@@ -30,7 +36,11 @@ public class ChatMessageController {
             HttpServletRequest servletRequest
     ) {
         User user = userService.getUser(servletRequest);
-        MessageDto dto = chatMessageService.sendMessage(chatRoomId, user.getId(),request);
+
+        Participant participant = participantRepository
+                .findByChatRoomIdAndUserId(chatRoomId, user.getId())
+                .orElseThrow(() -> new CustomException(ErrorCode.FORBIDDEN));
+        MessageDto dto = chatMessageService.sendMessage(participant, request);
         return ResponseEntity.status(201).body(dto);
     }
 
