@@ -26,13 +26,13 @@ public class GroupBoard {
     @Column(name = "group_board_id")
     private Long id;
 
-    @Column
+    @Column(nullable = false)
     private String title;
 
     @Column
     private String content;
 
-    @Column
+    @Column(nullable = false)
     private String location;
 
     @Column
@@ -42,21 +42,21 @@ public class GroupBoard {
     private double longitude;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "board_status")
+    @Column(name = "board_status", nullable = false)
     private BoardStatus boardStatus;
 
-    @Column
+    @Column(nullable = false)
     private LocalDate deadline;
 
-    @Column(name = "total_users")
+    @Column(name = "total_users", nullable = false)
     private int totalUsers;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "group_product_id")
+    @JoinColumn(name = "group_product_id", nullable = false)
     private GroupProduct groupProduct;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @OneToOne(mappedBy = "groupBoard",cascade = CascadeType.ALL, orphanRemoval = true)

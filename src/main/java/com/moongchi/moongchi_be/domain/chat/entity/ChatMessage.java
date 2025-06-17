@@ -2,6 +2,7 @@ package com.moongchi.moongchi_be.domain.chat.entity;
 
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -20,10 +21,13 @@ public class ChatMessage {
     @Id
     private String id;
 
+    @NotNull
     private Long chatRoomId;
 
+    @NotNull
     private Long participantId;
 
+    @NotNull
     private String message;
 
     @Builder.Default

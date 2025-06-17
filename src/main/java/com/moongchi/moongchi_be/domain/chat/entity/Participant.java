@@ -21,11 +21,11 @@ public class Participant {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role")
+    @Column(name = "role", nullable = false)
     private Role role;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "payment_status")
+    @Column(name = "payment_status", nullable = false)
     private PaymentStatus paymentStatus;
 
     @Builder.Default

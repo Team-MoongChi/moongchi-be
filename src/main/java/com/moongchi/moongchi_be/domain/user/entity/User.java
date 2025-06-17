@@ -30,7 +30,7 @@ public class User {
     @Column(name = "user_id")
     private Long id;
 
-    @Column
+    @Column(nullable = false)
     private String name;
 
     @Column
@@ -67,7 +67,7 @@ public class User {
     @Column(name = "interest_category")
     private String interestCategory;
 
-    @Column(name = "user_role")
+    @Column(name = "role")
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
 
