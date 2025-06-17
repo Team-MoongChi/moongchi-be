@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -35,7 +36,6 @@ public class ChatRoomService {
     private final ChatMessageService chatMessageService;
 
     //채팅방 조회
-    @Transactional(readOnly = true)
     public List<ChatRoomResponseDto> getUserChatRooms(Long userId) {
         List<Participant> participants = participantRepository.findByUserId(userId);
 
@@ -71,14 +71,16 @@ public class ChatRoomService {
                             .build();
                 })
 
+                .sorted(Comparator.comparing(ChatRoomResponseDto::getLastMessageTime,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
                 .collect(Collectors.toList());
     }
 
     //채팅방 상세조회
-    @Transactional(readOnly = true)
     public ChatRoomDetailDto getChatRoomDetail(Long chatRoomId,Long userId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
         GroupProduct product = chatRoom.getGroupBoard().getGroupProduct();
         String imgUrl = null;
         int price = 0;
@@ -120,13 +122,14 @@ public class ChatRoomService {
         List<MessageDto> messages = chatMessageRepository
                 .findByChatRoomIdOrderBySendAtAsc(chatRoomId)
                 .stream()
-                .map(m -> new MessageDto(
-                        m.getId(),
-                        m.getParticipantId(),
-                        m.getMessage(),
-                        m.getMessageType().name(),
-                        m.getSendAt()
-                ))
+                .map(m -> MessageDto.builder()
+                        .id(m.getId())
+                        .participantId(m.getParticipantId())
+                        .message(m.getMessage())
+                        .messageType(m.getMessageType().name())
+                        .sendAt(m.getSendAt())
+                        .build()
+                )
                 .collect(Collectors.toList());
 
         return new ChatRoomDetailDto(
@@ -164,7 +167,7 @@ public class ChatRoomService {
                 .build();
         participantRepository.save(participant);
         String welcomeMsg = "안녕하세요! 공구 완료 시점까지 여러분과 함께 할 뭉치예요. 뭉치면 산다! 공구 인원이 모두 모이면 알려줄게요.";
-        sendSystemMessage(savedChatRoom.getId(), welcomeMsg);
+        chatMessageService.sendSystemMessage(savedChatRoom.getId(), welcomeMsg,ChatRoomStatus.RECRUITING);
 
         savedChatRoom.setSendAt(LocalDateTime.now());
         chatRoomRepository.save(savedChatRoom);
@@ -225,7 +228,7 @@ public class ChatRoomService {
             chatRoom.setStatus(next);
             chatRoomRepository.save(chatRoom);
 
-            // 상태별 메시지 내용 생성 (예시)
+            // 상태별 메시지 내용 생성 (예시) TODO: 피그마에 맞게 메세지내용 바꾸기
             String msg = switch (next) {
                 case RECRUITED -> "모집이 완료되었습니다! 결제를 진행해 주세요.";
                 case PAYING -> "일부 결제가 완료되었습니다. 나머지 인원도 결제해 주세요.";
@@ -233,23 +236,12 @@ public class ChatRoomService {
                 case COMPLETED -> "거래가 모두 완료되었습니다. 리뷰를 작성해 보세요!";
                 default -> "채팅방 상태가 " + next.name() + "로 변경되었습니다.";
             };
-            sendSystemMessage(chatRoomId, msg);
+            chatMessageService.sendSystemMessage(chatRoomId, msg,next);
         }
         return next;
-
-
     }
 
-    public void sendSystemMessage(Long chatRoomId, String message) {
-        ChatMessage systemMsg = ChatMessage.builder()
-                .chatRoomId(chatRoomId)
-                .participantId(null)
-                .message(message)
-                .messageType(MessageType.SYSTEM)
-                .build();
-        chatMessageRepository.save(systemMsg);
-    }
-
+    //거래중
     public void pay(Long chatRoomId, Long userId) {
         Participant participant = participantRepository
                 .findByChatRoomIdAndUserId(chatRoomId,userId)
@@ -265,6 +257,7 @@ public class ChatRoomService {
         updateChatRoomStatus(chatRoom.getId());
     }
 
+    //거래완료
     public void tradeComplete(Long chatRoomId, Long userId) {
         Participant participant = participantRepository
                 .findByChatRoomIdAndUserId(chatRoomId,userId)
@@ -288,6 +281,7 @@ public class ChatRoomService {
 
     }
 
+    //리뷰작성
     public ReviewResponseDto writeReviewByChatRoom(Long chatRoomId, Long userId, Long targetParticipantId, ReviewRequestDto dto) {
         Participant writerParticipant = participantRepository
                 .findByChatRoomIdAndUserId(chatRoomId, userId)

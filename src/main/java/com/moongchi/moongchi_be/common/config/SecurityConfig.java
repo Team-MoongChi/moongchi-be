@@ -40,6 +40,7 @@ public class SecurityConfig {
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 )
                 .authorizeHttpRequests((auth) -> auth
+                        .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/api/users/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/swagger-ui/index.html#").permitAll()
@@ -49,7 +50,6 @@ public class SecurityConfig {
                         .failureHandler(oAuth2FailureHandler)
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
-        ;
         return http.build();
     }
 
