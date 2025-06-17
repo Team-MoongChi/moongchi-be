@@ -56,7 +56,7 @@ public class GroupBoardService {
         Coordinate coordinate = kakaoMapService.getCoordinateFromAddress(dto.getLocation());
 
         GroupBoard groupBoard = GroupBoard.builder()
-                .title(dto.getName() + " 공구합니다.")
+                .title(dto.getName() + "  " + dto.getQuantity() + " 공구합니다.")
                 .location(dto.getLocation())
                 .latitude(coordinate.getLatitude())
                 .longitude(coordinate.getLongitude())
