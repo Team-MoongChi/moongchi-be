@@ -217,15 +217,7 @@ public class GroupBoardService {
         GroupBoard groupBoard = groupBoardRepository.findById(groupBoardId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
-        Long largeCategoryId = 0L;
-        if (groupBoard.getGroupProduct().getProduct() != null) {
-            Category largeCategory = categoryRepository.findByLargeCategoryAndMediumCategoryIsNullAndSmallCategoryIsNull(
-                            groupBoard.getGroupProduct().getProduct().getCategory().getLargeCategory())
-                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
-            largeCategoryId = largeCategory.getId();
-        } else {
-            largeCategoryId = groupBoard.getGroupProduct().getCategory().getId();
-        }
+        Long largeCategoryId = getLargeCategoryId(groupBoard);
 
         return GroupBoardDto.builder()
                 .totalUser(groupBoard.getTotalUsers())
@@ -292,12 +284,16 @@ public class GroupBoardService {
                 ? product.getImgUrl()
                 : (!groupProduct.getImages().isEmpty() ? groupProduct.getImages().get(0) : null);
 
+        Long largeCategoryId = getLargeCategoryId(board);
 
         return GroupBoardListDto.builder()
                 .id(board.getId())
                 .title(board.getTitle())
                 .price(groupProduct.getPrice())
                 .location(board.getLocation())
+                .latitude(board.getLatitude())
+                .longitude(board.getLongitude())
+                .largeCategoryId(largeCategoryId)
                 .boardStatus(board.getBoardStatus())
                 .image(imageUrl)
                 .createAt(board.getCreatedAt())
@@ -349,6 +345,19 @@ public class GroupBoardService {
                 .images(product != null ? Collections.singletonList(product.getImgUrl()) : groupProduct.getImages())
                 .participants(participants)
                 .build();
+    }
+
+    private Long getLargeCategoryId(GroupBoard groupBoard){
+        Long largeCategoryId = 0L;
+        if (groupBoard.getGroupProduct().getProduct() != null) {
+            Category largeCategory = categoryRepository.findByLargeCategoryAndMediumCategoryIsNullAndSmallCategoryIsNull(
+                            groupBoard.getGroupProduct().getProduct().getCategory().getLargeCategory())
+                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+            largeCategoryId = largeCategory.getId();
+        } else {
+            largeCategoryId = groupBoard.getGroupProduct().getCategory().getId();
+        }
+        return largeCategoryId;
     }
 
 }
