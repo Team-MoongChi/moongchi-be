@@ -67,7 +67,7 @@ public class User {
     @Column(name = "interest_category")
     private String interestCategory;
 
-    @Column(name = "role")
+    @Column(name = "user_role")
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
 
