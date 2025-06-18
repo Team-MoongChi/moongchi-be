@@ -29,7 +29,16 @@ public interface GroupBoardRepository extends JpaRepository<GroupBoard, Long> {
 
     List<GroupBoard> findByUserId(Long userId);
 
-    List<GroupBoard> findByTitleContaining(String keyword);
+    @Query(value = "SELECT * FROM group_boards g " +
+            "WHERE g.title LIKE %:keyword% " +
+            "AND (6371 * acos(cos(radians(:userLat)) * cos(radians(g.latitude)) * cos(radians(g.longitude) - radians(:userLng)) + sin(radians(:userLat)) * sin(radians(g.latitude)))) < 0.75",
+            nativeQuery = true)
+    List<GroupBoard> findSearchLocationNear(
+            @Param("keyword") String keyword,
+            @Param("userLat") double userLat,
+            @Param("userLng") double userLng);
+
+
     @Query("SELECT gb FROM GroupBoard gb WHERE gb.groupProduct.product.id = :productId")
     List<GroupBoard> findByProductId(@Param("productId") Long productId);
    
