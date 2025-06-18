@@ -17,6 +17,8 @@ import java.util.List;
 public class ChatRoomDetailDto {
     @Schema(description = "채팅방 ID")
     private Long id;
+    @Schema(description = "공구방 ID")
+    private Long groupBoardId;
     @Schema(description = "채팅방 제목")
     private String title;
     @Schema(description = "채팅방 상태")

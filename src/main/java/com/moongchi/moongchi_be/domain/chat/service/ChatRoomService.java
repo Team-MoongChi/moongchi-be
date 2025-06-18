@@ -171,6 +171,7 @@ public class ChatRoomService {
 
         return new ChatRoomDetailDto(
                 chatRoom.getId(),
+                chatRoom.getGroupBoard().getId(),
                 chatRoom.getTitle(),
                 chatRoom.getStatus().getKorean(),
                 imgUrl,
