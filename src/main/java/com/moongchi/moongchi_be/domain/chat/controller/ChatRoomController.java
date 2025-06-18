@@ -39,7 +39,14 @@ public class ChatRoomController {
         ChatRoomDetailDto dto = chatRoomService.getChatRoomDetail(chatRoomId,currentUser.getId());
         return ResponseEntity.ok(dto);
     }
-    
+
+    @PatchMapping("/{chatRoomId}/purchase-complete")
+    public ResponseEntity<Void> markAsPurchased(@PathVariable Long chatRoomId, HttpServletRequest request) {
+        User user = userService.getUser(request);
+        chatRoomService.markAsPurchased(chatRoomId, user.getId());
+        return ResponseEntity.ok().build();
+    }
+
     //채팅 진행 상태 변경
     @PatchMapping("/{chatRoomId}/status")
     public ResponseEntity<ChatRoomStatusResponse> updateChatRoomStatus(@PathVariable Long chatRoomId) {

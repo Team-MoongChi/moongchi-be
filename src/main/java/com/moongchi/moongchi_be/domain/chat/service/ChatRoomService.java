@@ -59,6 +59,17 @@ public class ChatRoomService {
                     String lastMessage = lastMessageOpt.map(ChatMessage::getMessage).orElse(null);
                     LocalDateTime lastMessageTime = lastMessageOpt.map(ChatMessage::getSendAt).orElse(null);
 
+                    Participant participant = board.getParticipants().stream()
+                            .filter(p -> p.getUser().getId().equals(userId))
+                            .findFirst()
+                            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+                    LocalDateTime lastReadAt = participant.getLastReadAt();
+                    long unreadCount = (lastReadAt == null)
+                            ? chatMessageRepository.countByChatRoomId(chatRoom.getId())
+                            : chatMessageRepository.countByChatRoomIdAndSendAtAfter(chatRoom.getId(), lastReadAt);
+
+
                     return ChatRoomResponseDto.builder()
                             .id(chatRoom.getId())
                             .title(title)
@@ -67,7 +78,7 @@ public class ChatRoomService {
                             .participantCount(participantRepository.countByGroupBoardId(board.getId()))
                             .lastMessage(lastMessage)
                             .lastMessageTime(lastMessageTime)
-                            .unreadCount(0)
+                            .unreadCount((int)unreadCount)
                             .build();
                 })
 
@@ -122,14 +133,36 @@ public class ChatRoomService {
         List<MessageDto> messages = chatMessageRepository
                 .findByChatRoomIdOrderBySendAtAsc(chatRoomId)
                 .stream()
-                .map(m -> MessageDto.builder()
-                        .id(m.getId())
-                        .participantId(m.getParticipantId())
-                        .message(m.getMessage())
-                        .messageType(m.getMessageType().name())
-                        .sendAt(m.getSendAt())
-                        .build()
-                )
+                .map(m -> {
+                    if (m.getMessageType() == MessageType.SYSTEM) {
+                        String buttonType = null;
+                        String buttonVisibleTo = null;
+
+                        if (m.getMessage().contains("결제를 진행해 주세요")) {
+                            buttonType = "GO_TO_PAYMENT";
+                            buttonVisibleTo = "ALL";
+                        } else if (m.getMessage().contains("결제가 모두 완료")) {
+                            buttonType = "CONFIRM_PURCHASE";
+                            buttonVisibleTo = "LEADER";
+                        } else if (m.getMessage().contains("물건을 받고")) {
+                            buttonType = "MARK_TRADE_COMPLETE";
+                            buttonVisibleTo = "MEMBER";
+                        } else if (m.getMessage().contains("리뷰를 남겨")) {
+                            buttonType = "WRITE_REVIEW";
+                            buttonVisibleTo = "ALL";
+                        }
+
+                        return MessageDto.from(
+                                m,
+                                chatRoom.getStatus(),
+                                buttonType,
+                                buttonVisibleTo
+                        );
+                    } else {
+                        return MessageDto.from(m);
+                    }
+                })
+
                 .collect(Collectors.toList());
 
         return new ChatRoomDetailDto(
@@ -167,7 +200,7 @@ public class ChatRoomService {
                 .build();
         participantRepository.save(participant);
         String welcomeMsg = "안녕하세요! 공구 완료 시점까지 여러분과 함께 할 뭉치예요. 뭉치면 산다! 공구 인원이 모두 모이면 알려줄게요.";
-        chatMessageService.sendSystemMessage(savedChatRoom.getId(), welcomeMsg,ChatRoomStatus.RECRUITING);
+        chatMessageService.sendSystemMessage(savedChatRoom.getId(), welcomeMsg,ChatRoomStatus.RECRUITING,null,"ALL");
 
         savedChatRoom.setSendAt(LocalDateTime.now());
         chatRoomRepository.save(savedChatRoom);
@@ -199,28 +232,20 @@ public class ChatRoomService {
         ChatRoomStatus next = prev;
 
         switch (prev) {
-
             case RECRUITING:
                 if (currentParticipants == requiredParticipants) {
                     next = ChatRoomStatus.RECRUITED;
                 }
                 break;
             case RECRUITED:
-            case PAYING:
-                if (allPaid) {
-                    next = ChatRoomStatus.PURCHASED;
-                } else if (anyPaid) {
-                    next = ChatRoomStatus.PAYING;
-                }
+                if (allPaid) next = ChatRoomStatus.PAYING;
                 break;
-
+            case PAYING:
+                break;
             case PURCHASED:
                 if (allTraded) {
                     next = ChatRoomStatus.COMPLETED;
                 }
-                break;
-
-            default:
                 break;
         }
 
@@ -228,16 +253,28 @@ public class ChatRoomService {
             chatRoom.setStatus(next);
             chatRoomRepository.save(chatRoom);
 
-            // 상태별 메시지 내용 생성 (예시) TODO: 피그마에 맞게 메세지내용 바꾸기
-            String msg = switch (next) {
-                case RECRUITED -> "모집이 완료되었습니다! 결제를 진행해 주세요.";
-                case PAYING -> "일부 결제가 완료되었습니다. 나머지 인원도 결제해 주세요.";
-                case PURCHASED -> "공동구매가 완료되었습니다! 거래 장소/시간을 공지해 주세요.";
-                case COMPLETED -> "거래가 모두 완료되었습니다. 리뷰를 작성해 보세요!";
-                default -> "채팅방 상태가 " + next.name() + "로 변경되었습니다.";
-            };
-            chatMessageService.sendSystemMessage(chatRoomId, msg,next);
+            // 상태별 시스템 메시지 전송
+            switch (next) {
+                case RECRUITED:
+                    chatMessageService.sendSystemMessage(chatRoomId, "모집이 완료되었습니다! 결제를 진행해 주세요.",
+                            ChatRoomStatus.RECRUITED, "GO_TO_PAYMENT", "ALL");
+                    break;
+
+                case PAYING:
+                    chatMessageService.sendSystemMessage(chatRoomId, "결제가 모두 완료 되었어요. 방장님 물품을 구매 후 구매 완료를 눌러주세요!",
+                            ChatRoomStatus.PAYING, "CONFIRM_PURCHASE", "LEADER");
+                    break;
+
+                case PURCHASED:
+                    break;
+
+                case COMPLETED:
+                    chatMessageService.sendSystemMessage(chatRoomId, "공구가 완료 되었습니다. 팀원들과 리뷰를 남겨주세요!",
+                            ChatRoomStatus.COMPLETED, "WRITE_REVIEW", "ALL");
+                    break;
+            }
         }
+
         return next;
     }
 
@@ -255,6 +292,42 @@ public class ChatRoomService {
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         updateChatRoomStatus(chatRoom.getId());
+    }
+    
+    //구매 완료
+    public void markAsPurchased(Long chatRoomId, Long userId) {
+        Participant leader = participantRepository.findByChatRoomIdAndUserId(chatRoomId, userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        if (leader.getRole() != Role.LEADER) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        if (chatRoom.getStatus() != ChatRoomStatus.PAYING) {
+            throw new CustomException(ErrorCode.CONFLICT);
+        }
+
+        chatRoom.setStatus(ChatRoomStatus.PURCHASED);
+        chatRoomRepository.save(chatRoom);
+
+        chatMessageService.sendSystemMessage(
+                chatRoomId,
+                "구매가 완료되었어요! 거래 장소와 시간을 채팅으로 정해주세요.",
+                ChatRoomStatus.PURCHASED,
+                null,
+                "ALL"
+        );
+
+        chatMessageService.sendSystemMessage(
+                chatRoomId,
+                "물건을 받고 '거래 완료' 버튼을 눌러주세요.",
+                null,
+                "MARK_TRADE_COMPLETE",
+                "MEMBER"
+        );
     }
 
     //거래완료
