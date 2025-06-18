@@ -59,9 +59,9 @@ public class ChatRoomController {
 
     @Operation(summary = "공구 결제 완료", description = "채팅방에서 내 결제 상태를 '완료(PAID)'로 변경합니다.")
     @PostMapping("/{chatRoomId}/pay")
-    public ResponseEntity<Void> pay (@PathVariable Long chatRoomId,HttpServletRequest request){
+    public ResponseEntity<Void> pay (@PathVariable Long chatRoomId,@RequestBody PaymentRequestDto paymentRequestDto, HttpServletRequest request){
         User user = userService.getUser(request);
-        chatRoomService.pay(chatRoomId,user.getId());
+        chatRoomService.pay(chatRoomId,user.getId(), paymentRequestDto.getImpUid());
         return ResponseEntity.ok().build();
     }
 

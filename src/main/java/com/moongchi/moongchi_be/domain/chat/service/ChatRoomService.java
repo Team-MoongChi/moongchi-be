@@ -1,5 +1,6 @@
 package com.moongchi.moongchi_be.domain.chat.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moongchi.moongchi_be.common.exception.custom.CustomException;
 import com.moongchi.moongchi_be.common.exception.errorcode.ErrorCode;
 import com.moongchi.moongchi_be.domain.chat.dto.*;
@@ -14,16 +15,18 @@ import com.moongchi.moongchi_be.domain.group_boards.enums.BoardStatus;
 import com.moongchi.moongchi_be.domain.group_boards.repository.GroupBoardRepository;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatRoomService {
@@ -34,6 +37,13 @@ public class ChatRoomService {
     private final GroupBoardRepository groupBoardRepository;
     private final ReviewRepository reviewRepository;
     private final ChatMessageService chatMessageService;
+
+    @Value("${IMP_KEY}")
+    private String impKey;
+
+    @Value("${IMP_API_SECRET}")
+    private String impSecretKey;
+
 
     //채팅방 조회
     public List<ChatRoomResponseDto> getUserChatRooms(Long userId) {
@@ -77,7 +87,7 @@ public class ChatRoomService {
     }
 
     //채팅방 상세조회
-    public ChatRoomDetailDto getChatRoomDetail(Long chatRoomId,Long userId) {
+    public ChatRoomDetailDto getChatRoomDetail(Long chatRoomId, Long userId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
@@ -98,25 +108,25 @@ public class ChatRoomService {
         List<ParticipantDto> participants = participantRepository.findAllByChatRoomId(chatRoomId).stream()
                 .map(p -> {
 
-                            boolean isMe = p.getUser().getId().equals(userId);
-                            boolean reviewed = false;
-                            if(!isMe) {
-                                reviewed = reviewRepository.existsByParticipantIdAndParticipantGroupBoardId(p.getId(), p.getGroupBoard().getId());
-                            }
+                    boolean isMe = p.getUser().getId().equals(userId);
+                    boolean reviewed = false;
+                    if (!isMe) {
+                        reviewed = reviewRepository.existsByParticipantIdAndParticipantGroupBoardId(p.getId(), p.getGroupBoard().getId());
+                    }
 
-                          return new ParticipantDto(
-                                    p.getId(),
-                                    p.getUser().getId(),
-                                    p.getUser().getNickname(),
-                                    p.getUser().getProfileUrl(),
-                                    p.getRole().toString(),
-                                    p.getPaymentStatus().toString(),
-                                    p.isTradeCompleted(),
-                                    perPersonPrice,
-                                    isMe,
-                                    reviewed
-                            );
-                        })
+                    return new ParticipantDto(
+                            p.getId(),
+                            p.getUser().getId(),
+                            p.getUser().getNickname(),
+                            p.getUser().getProfileUrl(),
+                            p.getRole().toString(),
+                            p.getPaymentStatus().toString(),
+                            p.isTradeCompleted(),
+                            perPersonPrice,
+                            isMe,
+                            reviewed
+                    );
+                })
                 .collect(Collectors.toList());
 
         List<MessageDto> messages = chatMessageRepository
@@ -149,7 +159,7 @@ public class ChatRoomService {
     @Transactional
     public ChatRoom createChatRoomWithParticipant(GroupBoard groupBoard, User creator) {
         ChatRoom chatRoom = new ChatRoom();
-        chatRoom.setTitle(groupBoard.getGroupProduct().getName() + " " + groupBoard.getGroupProduct().getQuantity() + " 공구방" );
+        chatRoom.setTitle(groupBoard.getGroupProduct().getName() + " " + groupBoard.getGroupProduct().getQuantity() + " 공구방");
         chatRoom.setStatus(ChatRoomStatus.RECRUITING);
         chatRoom.setGroupBoard(groupBoard);
         chatRoom.setCreatedAt(LocalDateTime.now());
@@ -167,7 +177,7 @@ public class ChatRoomService {
                 .build();
         participantRepository.save(participant);
         String welcomeMsg = "안녕하세요! 공구 완료 시점까지 여러분과 함께 할 뭉치예요. 뭉치면 산다! 공구 인원이 모두 모이면 알려줄게요.";
-        chatMessageService.sendSystemMessage(savedChatRoom.getId(), welcomeMsg,ChatRoomStatus.RECRUITING);
+        chatMessageService.sendSystemMessage(savedChatRoom.getId(), welcomeMsg, ChatRoomStatus.RECRUITING);
 
         savedChatRoom.setSendAt(LocalDateTime.now());
         chatRoomRepository.save(savedChatRoom);
@@ -236,15 +246,27 @@ public class ChatRoomService {
                 case COMPLETED -> "거래가 모두 완료되었습니다. 리뷰를 작성해 보세요!";
                 default -> "채팅방 상태가 " + next.name() + "로 변경되었습니다.";
             };
-            chatMessageService.sendSystemMessage(chatRoomId, msg,next);
+            chatMessageService.sendSystemMessage(chatRoomId, msg, next);
         }
         return next;
     }
 
     //거래중
-    public void pay(Long chatRoomId, Long userId) {
+    public void pay(Long chatRoomId, Long userId, String impUid) {
+        ChatRoomDetailDto chatRoomDetailDto = getChatRoomDetail(chatRoomId, userId);
+        int perPersonPrice = chatRoomDetailDto.getParticipants().stream()
+                .filter(ParticipantDto::isMe)
+                .findFirst()
+                .map(ParticipantDto::getPerPersonPrice)
+                .orElse(0);
+
+
+        if (!verifyPayment(impUid, perPersonPrice)) {
+            throw new CustomException(ErrorCode.NOT_FOUND);
+        }
+
         Participant participant = participantRepository
-                .findByChatRoomIdAndUserId(chatRoomId,userId)
+                .findByChatRoomIdAndUserId(chatRoomId, userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         participant.setPaymentStatus(PaymentStatus.PAID);
@@ -260,7 +282,7 @@ public class ChatRoomService {
     //거래완료
     public void tradeComplete(Long chatRoomId, Long userId) {
         Participant participant = participantRepository
-                .findByChatRoomIdAndUserId(chatRoomId,userId)
+                .findByChatRoomIdAndUserId(chatRoomId, userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         participant.setTradeCompleted(true);
@@ -319,6 +341,62 @@ public class ChatRoomService {
                 review.getParticipant().getGroupBoard().getId(),
                 review.getCreatedAt()
         );
+    }
+
+    public boolean verifyPayment(String impUid, int expectedAmount) {
+        String accessToken = getAccessToken();
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + accessToken);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<Map> response = restTemplate.exchange(
+                "https://api.iamport.kr/payments/" + impUid,
+                HttpMethod.GET,
+                entity,
+                Map.class
+        );
+
+        Map<String, Object> paymentData = (Map<String, Object>) response.getBody().get("response");
+
+        int amount = (int) paymentData.get("amount");
+        String status = (String) paymentData.get("status");
+
+        return status.equals("paid") && amount == expectedAmount;
+    }
+
+    public String getAccessToken() {
+        String url = "https://api.iamport.kr/users/getToken";
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        Map<String, String> body = new HashMap<>();
+        body.put("imp_key", impKey);
+        body.put("imp_secret", impSecretKey);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String requestBody;
+        try {
+            requestBody = objectMapper.writeValueAsString(body);
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
+
+        ResponseEntity<PortOneResponseDto> response = restTemplate.postForEntity(url, entity,
+                PortOneResponseDto.class);
+
+        PortOneResponseDto responseBody = response.getBody();
+        if (responseBody == null || responseBody.getCode() != 0) {
+            throw new CustomException(ErrorCode.NOT_FOUND);
+        }
+
+        return response.getBody().getResponse().getAccess_token();
+
     }
 
 }
