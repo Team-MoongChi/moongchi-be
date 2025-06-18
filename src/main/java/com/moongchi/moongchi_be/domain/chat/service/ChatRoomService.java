@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -138,7 +139,10 @@ public class ChatRoomService {
                         String buttonType = null;
                         String buttonVisibleTo = null;
 
-                        if (m.getMessage().contains("결제를 진행해 주세요")) {
+                        if(m.getMessage().contains("현재 공구는")) {
+                            buttonType="SHOW_PARTICIPANTS";
+                            buttonVisibleTo="ALL";
+                        } else if (m.getMessage().contains("결제를 진행해 주세요")) {
                             buttonType = "GO_TO_PAYMENT";
                             buttonVisibleTo = "ALL";
                         } else if (m.getMessage().contains("결제가 모두 완료")) {
@@ -199,8 +203,14 @@ public class ChatRoomService {
                 .paymentStatus(PaymentStatus.PAID)
                 .build();
         participantRepository.save(participant);
-        String welcomeMsg = "안녕하세요! 공구 완료 시점까지 여러분과 함께 할 뭉치예요. 뭉치면 산다! 공구 인원이 모두 모이면 알려줄게요.";
-        chatMessageService.sendSystemMessage(savedChatRoom.getId(), welcomeMsg,ChatRoomStatus.RECRUITING,null,"ALL");
+        // 1. 인사 메시지
+        String welcomeMsg1 = "안녕하세요! 공구 완료 시점까지 여러분과 함께 할 뭉치예요. 뭉치면 산다!";
+        chatMessageService.sendSystemMessage(savedChatRoom.getId(), welcomeMsg1, ChatRoomStatus.RECRUITING, null, "ALL");
+
+        // 2. 모집 마감 안내 메시지
+        String welcomeMsg2 = String.format("현재 공구는 %s까지 모집 예정이에요. 함께할 분들을 기다리고 있어요! 아래 링크로 주변에 공구 소식을 알려보세요 !",
+                groupBoard.getDeadline().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")));
+        chatMessageService.sendSystemMessage(savedChatRoom.getId(), welcomeMsg2, ChatRoomStatus.RECRUITING, "SHOW_PARTICIPANTS", "ALL");
 
         savedChatRoom.setSendAt(LocalDateTime.now());
         chatRoomRepository.save(savedChatRoom);
@@ -225,7 +235,6 @@ public class ChatRoomService {
 
         List<Participant> participants = participantRepository.findAllByChatRoomId(chatRoomId);
         boolean allPaid = participants.stream().allMatch(p -> p.getPaymentStatus() == PaymentStatus.PAID);
-        boolean anyPaid = participants.stream().anyMatch(p -> p.getPaymentStatus() == PaymentStatus.PAID);
         boolean allTraded = participants.stream().allMatch(Participant::isTradeCompleted);
 
         ChatRoomStatus prev = chatRoom.getStatus();
