@@ -42,7 +42,8 @@ public class ChatMessageService {
         return dto;
     }
 
-    public void sendSystemMessage(Long chatRoomId, String message, ChatRoomStatus status) {
+    public void sendSystemMessage(Long chatRoomId, String message,ChatRoomStatus status,
+                                  String buttonType, String buttonVisibleTo) {
         ChatMessage systemMsg = ChatMessage.builder()
                 .chatRoomId(chatRoomId)
                 .participantId(null)
@@ -51,9 +52,9 @@ public class ChatMessageService {
                 .sendAt(LocalDateTime.now())
                 .build();
 
-        messageRepo.save(systemMsg);
+        ChatMessage saved = messageRepo.save(systemMsg);
 
-        MessageDto dto = MessageDto.from(systemMsg,status);
+        MessageDto dto = MessageDto.from(saved,status,buttonType,buttonVisibleTo);
         messagingTemplate.convertAndSend("/topic/chatroom." + chatRoomId, dto);
     }
 

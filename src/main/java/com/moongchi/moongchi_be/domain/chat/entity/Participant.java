@@ -32,6 +32,9 @@ public class Participant {
     @Column(nullable = false, name = "trade_completed")
     private boolean tradeCompleted = false;
 
+    @Column(name = "last_read_at")
+    private LocalDateTime lastReadAt;
+
     @Column(name = "join_at")
     private LocalDateTime joinedAt;
 

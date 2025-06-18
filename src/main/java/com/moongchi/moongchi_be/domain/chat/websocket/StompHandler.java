@@ -28,31 +28,48 @@ public class StompHandler implements ChannelInterceptor {
         if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
             String rawToken = accessor.getFirstNativeHeader("Authorization");
             if (rawToken == null || !rawToken.startsWith("Bearer ")) {
+                log.warn("❌ WebSocket STOMP 인증 실패: Authorization 헤더가 없거나 형식이 잘못됨.");
                 throw new CustomException(ErrorCode.UNAUTHORIZED);
             }
 
             String token = rawToken.substring(7);
             if (!jwtTokenProvider.validateToken(token)) {
+                log.warn("❌ WebSocket STOMP 인증 실패: 유효하지 않은 JWT 토큰.");
                 throw new CustomException(ErrorCode.UNAUTHORIZED);
             }
 
             Long userId = jwtTokenProvider.getUserId(token);
             String sessionId = accessor.getSessionId();
 
-            String uri = accessor.getNativeHeader("origin") != null ? accessor.getNativeHeader("origin").toString() : accessor.getDestination();
             String chatRoomIdHeader = accessor.getFirstNativeHeader("chatRoomId");
             if (chatRoomIdHeader == null) {
+                log.warn("❌ WebSocket STOMP 연결 실패: chatRoomId 헤더가 누락됨. userId={}", userId);
                 throw new CustomException(ErrorCode.FORBIDDEN);
             }
             Long chatRoomId = Long.parseLong(chatRoomIdHeader);
 
             if (limiter.isExceedingLimit(userId, chatRoomId)) {
+                log.warn("❌ WebSocket STOMP 연결 제한 초과: userId={}, chatRoomId={}", userId, chatRoomId);
                 throw new CustomException(ErrorCode.CONFLICT);
             }
 
             limiter.connect(userId, chatRoomId, sessionId);
             accessor.setUser(new StompPrincipal(String.valueOf(userId)));
-//            log.info("🧠 [CONNECT] userId={}, chatRoomId={}, sessionId={}", userId, chatRoomId, sessionId);
+
+            log.info("✅ [STOMP CONNECT SUCCESS] userId={}, chatRoomId={}, sessionId={}", userId, chatRoomId, sessionId);
+        } else if (accessor != null && StompCommand.DISCONNECT.equals(accessor.getCommand())) {
+            String sessionId = accessor.getSessionId();
+            if (sessionId != null) {
+                log.info("⚡️ [STOMP DISCONNECT] sessionId={}", sessionId);
+            }
+        } else if (accessor != null && StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
+            String sessionId = accessor.getSessionId();
+            String destination = accessor.getDestination();
+            log.info("🔥 [STOMP SUBSCRIBE] sessionId={}, destination={}", sessionId, destination);
+        } else if (accessor != null && StompCommand.SEND.equals(accessor.getCommand())) {
+            String sessionId = accessor.getSessionId();
+            String destination = accessor.getDestination();
+            log.debug("➡️ [STOMP SEND] sessionId={}, destination={}", sessionId, destination);
         }
 
         return message;

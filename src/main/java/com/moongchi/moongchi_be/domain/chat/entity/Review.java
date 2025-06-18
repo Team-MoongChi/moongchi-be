@@ -26,10 +26,10 @@ public class Review {
     private Double star;
 
     @Convert(converter = StringListConverter.class)
-    @Column(name = "keywords", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "keywords", columnDefinition = "TEXT")
     private List<String> keywords;
 
-    @Column(name = "review", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "review", columnDefinition = "TEXT")
     private String review;
 
     @Column(name = "created_at")

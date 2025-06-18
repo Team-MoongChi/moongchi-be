@@ -20,10 +20,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        // 헤더에서 JWT 토큰 추출
-        String token = jwtTokenProvider.resolveToken(request);
+        String path = request.getRequestURI();
+        if (path.startsWith("/ws/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-        // 토큰이 유효한 경우 인증 정보 설정
+        String token = jwtTokenProvider.resolveToken(request);
         if (token != null && jwtTokenProvider.validateToken(token)) {
             Authentication authentication = jwtTokenProvider.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -31,4 +34,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
+
 }
