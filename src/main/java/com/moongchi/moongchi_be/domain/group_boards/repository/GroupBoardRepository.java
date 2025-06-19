@@ -1,11 +1,14 @@
 package com.moongchi.moongchi_be.domain.group_boards.repository;
 
 import com.moongchi.moongchi_be.domain.group_boards.entity.GroupBoard;
+import com.moongchi.moongchi_be.domain.group_boards.enums.BoardStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,4 +46,7 @@ public interface GroupBoardRepository extends JpaRepository<GroupBoard, Long> {
     List<GroupBoard> findByProductId(@Param("productId") Long productId);
    
     Optional<GroupBoard> findByChatRoomId(Long chatRoomId);
+
+    List<GroupBoard> findByBoardStatusAndDeadlineBetween(BoardStatus boardStatus, LocalDate from, LocalDate to);
+    List<GroupBoard> findByBoardStatusAndDeadlineBefore(BoardStatus boardStatus, LocalDate time);
 }
