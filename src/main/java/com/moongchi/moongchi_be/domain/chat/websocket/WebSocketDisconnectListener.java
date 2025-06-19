@@ -25,7 +25,7 @@ public class WebSocketDisconnectListener {
         if (info != null) {
             participantRepository.findByChatRoomIdAndUserId(info.chatRoomId(), info.userId())
                     .ifPresentOrElse(participant -> {
-                        participant.setLastReadAt(LocalDateTime.now());
+                        participant.setReadAt(LocalDateTime.now());
                         participantRepository.save(participant);
 //                        log.info("✅ 읽음 처리 완료: userId={}, chatRoomId={}", info.userId(), info.chatRoomId());
                     }, () -> {
