@@ -24,10 +24,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -483,6 +479,26 @@ public class ChatRoomService {
 
         return response.getBody().getResponse().getAccess_token();
 
+    }
+
+    @Transactional
+    public void leaveChatRoom(Long chatRoomId, Long userId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        if (chatRoom.getStatus() == ChatRoomStatus.RECRUITED) {
+            throw new CustomException(ErrorCode.CONFLICT);
+        }
+
+        Participant participant = participantRepository
+                .findByChatRoomIdAndUserId(chatRoomId, userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.CONFLICT));
+
+        if (participant.getRole() == Role.LEADER) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+
+        participantRepository.delete(participant);
     }
 
 }
