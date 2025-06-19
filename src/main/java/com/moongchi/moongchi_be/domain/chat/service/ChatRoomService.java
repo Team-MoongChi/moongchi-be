@@ -79,7 +79,7 @@ public class ChatRoomService {
                             .findFirst()
                             .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
-                    LocalDateTime lastReadAt = participant.getLastReadAt();
+                    LocalDateTime lastReadAt = participant.getReadAt();
                     long unreadCount = (lastReadAt == null)
                             ? chatMessageRepository.countByChatRoomId(chatRoom.getId())
                             : chatMessageRepository.countByChatRoomIdAndSendAtAfter(chatRoom.getId(), lastReadAt);
