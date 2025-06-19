@@ -26,12 +26,13 @@ public class UserDto {
     private LocalDate birth;
     private Gender gender;
     private String interestCategory;
-    private double latitude;
-    private double longitude;
+    private Double latitude;
+    private Double longitude;
     private String address;
     private UserRole userRole;
-    private double mannerLeader;
-    private double mannerParticipant;
+    private Double mannerLeader;
+    private Double mannerParticipant;
+    private ReviewKeywordDto reviewKeywordDto;
 
     public UserDto(User user) {
         this.id = user.getId();

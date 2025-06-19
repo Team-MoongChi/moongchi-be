@@ -17,6 +17,7 @@ import com.moongchi.moongchi_be.domain.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @Service
@@ -88,15 +89,13 @@ public class UserService {
         this.userRepository.save(newUser);
     }
 
-    public void updateUser(UserDto userDto,  User user) {
+    public void updateUser(UserDto userDto, User user) {
         User updateUser = user.editUser(userDto.getNickname(), userDto.getProfileUrl());
         this.userRepository.save(updateUser);
     }
 
-    public ReviewKeywordDto getUserLatestReviewKeywords(HttpServletRequest request) {
-        User user = getUser(request);
-
-        List<Participant> myParticipants = participantRepository.findByUserId(user.getId());
+    public ReviewKeywordDto getUserLatestReviewKeywords(Long userId) {
+        List<Participant> myParticipants = participantRepository.findByUserId(userId);
         List<Long> participantIds = myParticipants.stream().map(Participant::getId).toList();
 
         List<Review> reviews = reviewRepository.findTop4ByParticipantIdInOrderByIdDesc(participantIds);
@@ -109,6 +108,23 @@ public class UserService {
                 .limit(4)
                 .toList();
 
-        return new ReviewKeywordDto(user.getId(), keywords);
+        return new ReviewKeywordDto(userId, keywords);
+    }
+
+    public UserDto getUserInfo(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        ReviewKeywordDto reviewKeywordDto = getUserLatestReviewKeywords(userId);
+
+        UserDto userDto = UserDto.builder()
+                .nickname(user.getNickname())
+                .profileUrl(user.getProfileUrl())
+                .mannerLeader(user.getMannerPercent().getLeaderPercent())
+                .mannerParticipant(user.getMannerPercent().getParticipantPercent())
+                .reviewKeywordDto(reviewKeywordDto)
+                .build();
+
+        return userDto;
     }
 }
