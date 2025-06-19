@@ -29,7 +29,7 @@ public class FavoriteProduct {
     @Column(name = "product_type")
     private ProductType productType;
 
-    @Column(name = "create_at")
+    @Column(name = "created_at")
     @CreationTimestamp
     private LocalDateTime createAt;
 
