@@ -42,7 +42,7 @@ public class GroupBoard {
     private double longitude;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "board_status", nullable = false)
+    @Column(name = "status", nullable = false)
     private BoardStatus boardStatus;
 
     @Column(nullable = false)
