@@ -106,7 +106,14 @@ public class UserController {
     })
     @GetMapping("/reviews")
     public ResponseEntity<ReviewKeywordDto> getReviewKeywords(HttpServletRequest request) {
-        ReviewKeywordDto dto = userService.getUserLatestReviewKeywords(request);
+        User user = userService.getUser(request);
+        ReviewKeywordDto dto = userService.getUserLatestReviewKeywords(user.getId());
         return ResponseEntity.status(HttpStatus.OK).body(dto);
+    }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserDto> getUserInfo(@PathVariable Long userId){
+        UserDto userDto = userService.getUserInfo(userId);
+        return ResponseEntity.status(HttpStatus.OK).body(userDto);
     }
 }
