@@ -97,4 +97,12 @@ public class ChatRoomController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "채팅방 나가기", description = "채팅방 상태가 RECRUITED가 아닐 때만 나갈 수 있습니다.")
+    @DeleteMapping("/{chatRoomId}/leave")
+    public ResponseEntity<Void> leaveChatRoom(@PathVariable Long chatRoomId, HttpServletRequest request) {
+        User currentUser = userService.getUser(request);
+        chatRoomService.leaveChatRoom(chatRoomId,currentUser.getId());
+        return ResponseEntity.noContent().build();
+    }
+
 }
