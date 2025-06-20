@@ -154,6 +154,7 @@ public class GroupBoardService {
         participant.setTradeCompleted(false);
         participant.setRole(Role.MEMBER);
         participant.setJoinedAt(LocalDateTime.now());
+        participant.setReadAt(LocalDateTime.now());
         participantRepository.save(participant);
 
         if (participantRepository.countByGroupBoardId(groupBoardId) == board.getTotalUsers()) {
