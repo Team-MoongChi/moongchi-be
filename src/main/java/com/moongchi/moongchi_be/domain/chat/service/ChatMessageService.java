@@ -43,7 +43,7 @@ public class ChatMessageService {
     }
 
     public void sendSystemMessage(Long chatRoomId, String message,ChatRoomStatus status,
-                                  String buttonType, String buttonVisibleTo) {
+                                  String chatStatus, String buttonVisibleTo) {
         ChatMessage systemMsg = ChatMessage.builder()
                 .chatRoomId(chatRoomId)
                 .participantId(null)
@@ -54,7 +54,7 @@ public class ChatMessageService {
 
         ChatMessage saved = messageRepo.save(systemMsg);
 
-        MessageDto dto = MessageDto.from(saved,status,buttonType,buttonVisibleTo);
+        MessageDto dto = MessageDto.from(saved,status,chatStatus,buttonVisibleTo);
         messagingTemplate.convertAndSend("/topic/chatroom." + chatRoomId, dto);
     }
 

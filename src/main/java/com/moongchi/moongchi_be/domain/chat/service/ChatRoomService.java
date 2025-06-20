@@ -146,30 +146,35 @@ public class ChatRoomService {
                 .stream()
                 .map(m -> {
                     if (m.getMessageType() == MessageType.SYSTEM) {
-                        String buttonType = null;
+                        String chatStatus = null;
                         String buttonVisibleTo = null;
-
-                        if(m.getMessage().contains("현재 공구는")) {
-                            buttonType="SHOW_PARTICIPANTS";
+                        if(m.getMessage().contains("안녕하세요!")) {
+                            chatStatus="RECRUITING";
+                            buttonVisibleTo="ALL";
+                        } else if(m.getMessage().contains("현재 공구는")) {
+                            chatStatus="RECRUITING";
                             buttonVisibleTo="ALL";
                         } else if (m.getMessage().contains("결제를 진행해 주세요")) {
-                            buttonType = "GO_TO_PAYMENT";
+                            chatStatus = "RECRUITED";
                             buttonVisibleTo = "ALL";
                         } else if (m.getMessage().contains("결제가 모두 완료")) {
-                            buttonType = "CONFIRM_PURCHASE";
+                            chatStatus = "PAYING";
                             buttonVisibleTo = "LEADER";
+                        }else if (m.getMessage().contains("구매가 완료되었어요!")) {
+                            chatStatus = "PURCHASED";
+                            buttonVisibleTo = "ALL";
                         } else if (m.getMessage().contains("물건을 받고")) {
-                            buttonType = "MARK_TRADE_COMPLETE";
+                            chatStatus = "PURCHASED";
                             buttonVisibleTo = "MEMBER";
                         } else if (m.getMessage().contains("리뷰를 남겨")) {
-                            buttonType = "WRITE_REVIEW";
+                            chatStatus = "COMPLETED";
                             buttonVisibleTo = "ALL";
                         }
 
                         return MessageDto.from(
                                 m,
                                 chatRoom.getStatus(),
-                                buttonType,
+                                chatStatus,
                                 buttonVisibleTo
                         );
                     } else {
@@ -216,11 +221,11 @@ public class ChatRoomService {
         participantRepository.save(participant);
         
         String welcomeMsg1 = "안녕하세요! 공구 완료 시점까지 여러분과 함께 할 뭉치예요. 뭉치면 산다!";
-        chatMessageService.sendSystemMessage(savedChatRoom.getId(), welcomeMsg1, ChatRoomStatus.RECRUITING, null, "ALL");
+        chatMessageService.sendSystemMessage(savedChatRoom.getId(), welcomeMsg1, ChatRoomStatus.RECRUITING, "RECRUITING", "ALL");
 
         String welcomeMsg2 = String.format("현재 공구는 %s까지 모집 예정이에요. 함께할 분들을 기다리고 있어요! 아래 링크로 주변에 공구 소식을 알려보세요 !",
                 groupBoard.getDeadline().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")));
-        chatMessageService.sendSystemMessage(savedChatRoom.getId(), welcomeMsg2, ChatRoomStatus.RECRUITING, "SHOW_PARTICIPANTS", "ALL");
+        chatMessageService.sendSystemMessage(savedChatRoom.getId(), welcomeMsg2, ChatRoomStatus.RECRUITING, "RECRUITING", "ALL");
 
         savedChatRoom.setSendAt(LocalDateTime.now());
         chatRoomRepository.save(savedChatRoom);
@@ -276,12 +281,12 @@ public class ChatRoomService {
             switch (next) {
                 case RECRUITED:
                     chatMessageService.sendSystemMessage(chatRoomId, "모집이 완료되었습니다! 결제를 진행해 주세요.",
-                            ChatRoomStatus.RECRUITED, "GO_TO_PAYMENT", "ALL");
+                            ChatRoomStatus.RECRUITED, "RECRUITED", "ALL");
                     break;
 
                 case PAYING:
                     chatMessageService.sendSystemMessage(chatRoomId, "결제가 모두 완료 되었어요. 방장님 물품을 구매 후 구매 완료를 눌러주세요!",
-                            ChatRoomStatus.PAYING, "CONFIRM_PURCHASE", "LEADER");
+                            ChatRoomStatus.PAYING, "PAYING", "LEADER");
                     break;
 
                 case PURCHASED:
@@ -289,7 +294,7 @@ public class ChatRoomService {
 
                 case COMPLETED:
                     chatMessageService.sendSystemMessage(chatRoomId, "공구가 완료 되었습니다. 팀원들과 리뷰를 남겨주세요!",
-                            ChatRoomStatus.COMPLETED, "WRITE_REVIEW", "ALL");
+                            ChatRoomStatus.COMPLETED, "COMPLETED", "ALL");
                     break;
             }
         }
@@ -348,15 +353,15 @@ public class ChatRoomService {
                 chatRoomId,
                 "구매가 완료되었어요! 거래 장소와 시간을 채팅으로 정해주세요.",
                 ChatRoomStatus.PURCHASED,
-                null,
+                "PURCHASED",
                 "ALL"
         );
 
         chatMessageService.sendSystemMessage(
                 chatRoomId,
                 "물건을 받고 '거래 완료' 버튼을 눌러주세요.",
-                null,
-                "MARK_TRADE_COMPLETE",
+                ChatRoomStatus.PURCHASED,
+                "PURCHASED",
                 "MEMBER"
         );
     }
