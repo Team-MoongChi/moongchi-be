@@ -129,7 +129,7 @@ public class GroupBoardService {
                 .collect(Collectors.toList());
     }
 
-    public void joinGroupBoard(Long userId, Long groupBoardId) {
+    public Participant joinGroupBoard(Long userId, Long groupBoardId) {
         GroupBoard board = groupBoardRepository.findById(groupBoardId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
@@ -147,15 +147,18 @@ public class GroupBoardService {
             groupBoardRepository.save(board);
         }
 
-        Participant participant = new Participant();
-        participant.setUser(userRepository.findById(userId).orElseThrow());
-        participant.setGroupBoard(board);
-        participant.setPaymentStatus(PaymentStatus.UNPAID);
-        participant.setTradeCompleted(false);
-        participant.setRole(Role.MEMBER);
-        participant.setJoinedAt(LocalDateTime.now());
-        participant.setReadAt(LocalDateTime.now());
-        participantRepository.save(participant);
+        Participant p = Participant.builder()
+                .user(userRepository.findById(userId).orElseThrow())
+                .groupBoard(board)
+                .paymentStatus(PaymentStatus.UNPAID)
+                .tradeCompleted(false)
+                .role(Role.MEMBER)
+                .joinedAt(LocalDateTime.now())
+                .readAt(LocalDateTime.now())
+                .build();
+
+        participantRepository.save(p);
+
 
         if (participantRepository.countByGroupBoardId(groupBoardId) == board.getTotalUsers()) {
             board.updateStatus(BoardStatus.CLOSED);
@@ -166,6 +169,7 @@ public class GroupBoardService {
             chatRoomService.updateChatRoomStatus(chatRoom.getId());
 
         }
+        return p;
     }
 
     @Transactional(readOnly = true)

@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Setter @Getter
 @AllArgsConstructor
 @Builder
@@ -23,6 +25,8 @@ public class ParticipantDto {
     private String role;
     @Schema(description = "결제 상태(PAID/UNPAID)")
     private String payStatement;
+    @Schema(description = "입장 시간")
+    private LocalDateTime joinAt;
     @Schema(description = "거래완료 여부")
     private boolean tradeCompleted;
     @Schema(description = "n분의 1 금액")

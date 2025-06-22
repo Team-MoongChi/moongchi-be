@@ -58,4 +58,20 @@ public class ChatMessageService {
         messagingTemplate.convertAndSend("/topic/chatroom." + chatRoomId, dto);
     }
 
+    public void publishPresenceEvent(Long roomId, Participant joined) {
+        MessageDto dto = MessageDto.builder()
+                .id(null)
+                .participantId(joined.getUser().getId())
+                .message(joined.getUser().getNickname() + "님이 입장했습니다")
+                .messageType("ENTER")
+                .sendAt(joined.getJoinedAt())               
+                .build();
+
+        messagingTemplate.convertAndSend(
+                "/topic/chatroom." + roomId,
+                dto
+        );
+    }
+
+
 }

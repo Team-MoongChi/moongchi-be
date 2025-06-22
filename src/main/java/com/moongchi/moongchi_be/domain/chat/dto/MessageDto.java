@@ -58,4 +58,13 @@ public class MessageDto {
                 .buttonVisibleTo(buttonVisibleTo)
                 .build();
     }
+    public static MessageDto ofEnter(ParticipantDto p) {
+        return MessageDto.builder()
+                .id(null)
+                .participantId(p.getUserId())
+                .message(p.getNickname() + "님이 입장했습니다")
+                .messageType("ENTER")
+                .sendAt(p.getJoinAt())
+                .build();
+    }
 }
