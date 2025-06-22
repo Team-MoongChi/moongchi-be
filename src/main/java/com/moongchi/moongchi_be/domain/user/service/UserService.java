@@ -13,6 +13,7 @@ import com.moongchi.moongchi_be.domain.user.dto.UserBasicDto;
 import com.moongchi.moongchi_be.domain.user.dto.UserDto;
 import com.moongchi.moongchi_be.domain.user.entity.MannerPercent;
 import com.moongchi.moongchi_be.domain.user.entity.User;
+import com.moongchi.moongchi_be.domain.user.repository.MannerPercentRepository;
 import com.moongchi.moongchi_be.domain.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final ParticipantRepository participantRepository;
     private final ReviewRepository reviewRepository;
+    private final MannerPercentRepository mannerPercentRepository;
     private final AuthService authService;
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -126,5 +128,15 @@ public class UserService {
                 .build();
 
         return userDto;
+    }
+
+    public void updateMannerPercent(UserDto userDto,User user){
+        MannerPercent mannerPercent = mannerPercentRepository.findById(user.getMannerPercent().getId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+
+        if(!userDto.getMannerLeader().equals(mannerPercent.getLeaderPercent()) || !userDto.getMannerParticipant().equals(mannerPercent.getParticipantPercent())){
+            mannerPercent.update(userDto.getMannerLeader(), userDto.getMannerParticipant());
+            userRepository.save(user);
+        }
     }
 }
