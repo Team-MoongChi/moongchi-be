@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class GroupBoardRecommendService {
 
-    @Value("${RECOMMEND_GROUP_API}")
+    @Value("${RECOMMEND_GROUP_URL}")
     private String apiUrl;
 
     @Value("${RECOMMEND_KEY_PREFIX}")

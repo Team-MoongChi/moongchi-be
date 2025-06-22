@@ -7,27 +7,33 @@ import com.moongchi.moongchi_be.domain.chat.entity.Participant;
 import com.moongchi.moongchi_be.domain.chat.entity.Review;
 import com.moongchi.moongchi_be.domain.chat.repository.ParticipantRepository;
 import com.moongchi.moongchi_be.domain.chat.repository.ReviewRepository;
-import com.moongchi.moongchi_be.domain.user.dto.ReviewKeywordDto;
-import com.moongchi.moongchi_be.domain.user.dto.TokenResponseDto;
-import com.moongchi.moongchi_be.domain.user.dto.UserBasicDto;
-import com.moongchi.moongchi_be.domain.user.dto.UserDto;
+import com.moongchi.moongchi_be.domain.user.dto.*;
 import com.moongchi.moongchi_be.domain.user.entity.MannerPercent;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import com.moongchi.moongchi_be.domain.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
+
+    @Value("${NEW_USER_URL}")
+    private String url;
+
+    private final RestTemplate restTemplate;
     private final UserRepository userRepository;
     private final ParticipantRepository participantRepository;
     private final ReviewRepository reviewRepository;
     private final AuthService authService;
     private final JwtTokenProvider jwtTokenProvider;
+
 
     public TokenResponseDto createUser(UserDto userDto, String refreshToken) {
         if (refreshToken == null || !jwtTokenProvider.validateToken(refreshToken)) {
@@ -87,6 +93,32 @@ public class UserService {
     public void addInterestCategory(UserDto userDto, User user) {
         User newUser = user.updateInterest(userDto.getInterestCategory());
         this.userRepository.save(newUser);
+
+        NewUserRequestDto requestBody = NewUserRequestDto.builder()
+                .userId(user.getId())
+                .birth(user.getBirth())
+                .gender(user.getGender())
+                .address(user.getAddress())
+                .interestCategory(user.getInterestCategory())
+                .build();
+
+        System.out.println(requestBody);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<NewUserRequestDto> requestEntity = new HttpEntity<>(requestBody, headers);
+
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    requestEntity,
+                    String.class
+            );
+            System.out.println("API 응답: " + response.getBody());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void updateUser(UserDto userDto, User user) {
