@@ -1,6 +1,7 @@
 package com.moongchi.moongchi_be.domain.chat.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.lang.Nullable;
 import com.moongchi.moongchi_be.common.exception.custom.CustomException;
 import com.moongchi.moongchi_be.common.exception.errorcode.ErrorCode;
 import com.moongchi.moongchi_be.domain.chat.dto.*;
@@ -17,6 +18,9 @@ import com.moongchi.moongchi_be.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -99,7 +103,7 @@ public class ChatRoomService {
     }
 
     //채팅방 상세조회
-    public ChatRoomDetailDto getChatRoomDetail(Long chatRoomId, Long userId) {
+    public ChatRoomDetailDto getChatRoomDetail(Long chatRoomId, Long userId, @Nullable LocalDateTime before, int size) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
@@ -141,48 +145,25 @@ public class ChatRoomService {
                 })
                 .collect(Collectors.toList());
 
-        List<MessageDto> messages = chatMessageRepository
-                .findByChatRoomIdOrderBySendAtAsc(chatRoomId)
-                .stream()
-                .map(m -> {
-                    if (m.getMessageType() == MessageType.SYSTEM) {
-                        String chatStatus = null;
-                        String buttonVisibleTo = null;
-                        if(m.getMessage().contains("안녕하세요!")) {
-                            chatStatus="RECRUITING";
-                            buttonVisibleTo="ALL";
-                        } else if(m.getMessage().contains("현재 공구는")) {
-                            chatStatus="RECRUITING";
-                            buttonVisibleTo="ALL";
-                        } else if (m.getMessage().contains("결제를 진행해 주세요")) {
-                            chatStatus = "RECRUITED";
-                            buttonVisibleTo = "ALL";
-                        } else if (m.getMessage().contains("결제가 모두 완료")) {
-                            chatStatus = "PAYING";
-                            buttonVisibleTo = "LEADER";
-                        }else if (m.getMessage().contains("구매가 완료되었어요!")) {
-                            chatStatus = "PURCHASED";
-                            buttonVisibleTo = "ALL";
-                        } else if (m.getMessage().contains("물건을 받고")) {
-                            chatStatus = "PURCHASED";
-                            buttonVisibleTo = "MEMBER";
-                        } else if (m.getMessage().contains("리뷰를 남겨")) {
-                            chatStatus = "COMPLETED";
-                            buttonVisibleTo = "ALL";
-                        }
 
-                        return MessageDto.from(
-                                m,
-                                chatRoom.getStatus(),
-                                chatStatus,
-                                buttonVisibleTo
-                        );
-                    } else {
-                        return MessageDto.from(m);
-                    }
-                })
+        List<MessageDto> messages;
+        if (before != null) {
+            Pageable pageable = PageRequest.of(0, size);
+            Slice<ChatMessage> slice = chatMessageRepository
+                    .findByChatRoomIdAndSendAtBeforeOrderBySendAtDesc(chatRoomId, before, pageable);
 
-                .collect(Collectors.toList());
+            messages = slice.getContent().stream()
+                    .map(m -> mapToDto(m, chatRoom.getStatus(), userId))
+                    .collect(Collectors.toList());
+            Collections.reverse(messages);
+
+        } else {
+            messages = chatMessageRepository
+                    .findByChatRoomIdOrderBySendAtAsc(chatRoomId)
+                    .stream()
+                    .map(m -> mapToDto(m, chatRoom.getStatus(), userId))
+                    .collect(Collectors.toList());
+        }
 
         return new ChatRoomDetailDto(
                 chatRoom.getId(),
@@ -192,9 +173,34 @@ public class ChatRoomService {
                 imgUrl,
                 price,
                 chatRoom.getGroupBoard().getDeadline(),
+                chatRoom.getGroupBoard().getLocation(),
                 participants,
                 messages
         );
+    }
+
+    private MessageDto mapToDto(ChatMessage m, ChatRoomStatus roomStatus, Long userId) {
+        if (m.getMessageType() == MessageType.SYSTEM) {
+            String chatStatus = null, buttonVisibleTo = null;
+            String content = m.getMessage();
+            if (content.contains("안녕하세요!")) {
+                chatStatus = "RECRUITING"; buttonVisibleTo = "ALL";
+            } else if (content.contains("현재 공구는")) {
+                chatStatus = "RECRUITING"; buttonVisibleTo = "ALL";
+            } else if (content.contains("결제를 진행해 주세요")) {
+                chatStatus = "RECRUITED";  buttonVisibleTo = "ALL";
+            } else if (content.contains("결제가 모두 완료")) {
+                chatStatus = "PAYING";     buttonVisibleTo = "LEADER";
+            } else if (content.contains("구매가 완료되었어요!")) {
+                chatStatus = "PURCHASED";  buttonVisibleTo = "ALL";
+            } else if (content.contains("물건을 받고")) {
+                chatStatus = "PURCHASED";  buttonVisibleTo = "MEMBER";
+            } else if (content.contains("리뷰를 남겨")) {
+                chatStatus = "COMPLETED";  buttonVisibleTo = "ALL";
+            }
+            return MessageDto.from(m, roomStatus, chatStatus, buttonVisibleTo);
+        }
+        return MessageDto.from(m);
     }
 
 
@@ -300,6 +306,10 @@ public class ChatRoomService {
         }
 
         return next;
+    }
+
+    public ChatRoomDetailDto getChatRoomDetail(Long chatRoomId, Long userId) {
+        return getChatRoomDetail(chatRoomId, userId, null, Integer.MAX_VALUE);
     }
 
     //거래중

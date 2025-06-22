@@ -1,5 +1,6 @@
 package com.moongchi.moongchi_be.domain.chat.controller;
 
+import com.mongodb.lang.Nullable;
 import com.moongchi.moongchi_be.domain.chat.dto.*;
 import com.moongchi.moongchi_be.domain.chat.entity.ChatRoom;
 import com.moongchi.moongchi_be.domain.chat.entity.ChatRoomStatus;
@@ -10,9 +11,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Tag(name = "채팅", description = "채팅 관련 API")
@@ -32,11 +35,32 @@ public class ChatRoomController {
         return ResponseEntity.ok(chatRooms);
     }
 
-    @Operation(summary = "채팅방 상세 조회", description = "채팅방의 상세 정보, 참여자, 메시지 목록을 반환합니다.")
+    @Operation(
+            summary = "채팅방 상세 조회 (메시지 페이징 지원)",
+            description = "before, size 파라미터가 있으면 해당 시점 이전 메시지(size개)만 반환합니다."
+    )
     @GetMapping("/{chatRoomId}")
-    public ResponseEntity<ChatRoomDetailDto> getChatRoomDetail(@PathVariable Long chatRoomId, HttpServletRequest request) {
+    public ResponseEntity<ChatRoomDetailDto> getChatRoomDetail(
+            @PathVariable Long chatRoomId,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            @Nullable LocalDateTime before,
+            @RequestParam(defaultValue = "20") int size,
+            HttpServletRequest request
+    ) {
         User currentUser = userService.getUser(request);
-        ChatRoomDetailDto dto = chatRoomService.getChatRoomDetail(chatRoomId,currentUser.getId());
+
+        LocalDateTime cursor = (before != null)
+                ? before
+                : LocalDateTime.now();
+
+        ChatRoomDetailDto dto = chatRoomService.getChatRoomDetail(
+                chatRoomId,
+                currentUser.getId(),
+                cursor,
+                size
+        );
+
         return ResponseEntity.ok(dto);
     }
 
