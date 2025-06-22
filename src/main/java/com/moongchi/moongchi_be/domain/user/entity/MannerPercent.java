@@ -31,4 +31,9 @@ public class MannerPercent {
     public void updateUser(User user) {
         this.user = user;
     }
+
+    public void update(Double leaderPercent, Double participantPercent){
+        this.leaderPercent = leaderPercent;
+        this.participantPercent = participantPercent;
+    }
 }

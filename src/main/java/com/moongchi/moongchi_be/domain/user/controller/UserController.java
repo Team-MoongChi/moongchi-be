@@ -111,9 +111,26 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(dto);
     }
 
+    @Operation(summary = "특정 사용자 정보 조회", description = "사용자 프로필 클릭시 정보 조회")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "조회 성공",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserDto.class))))
+    })
     @GetMapping("/{userId}")
     public ResponseEntity<UserDto> getUserInfo(@PathVariable Long userId){
         UserDto userDto = userService.getUserInfo(userId);
         return ResponseEntity.status(HttpStatus.OK).body(userDto);
+    }
+
+    @Operation(summary = "사용자의 매너 퍼센트 업데이트", description = "사용자 매너 퍼센트 수정시 업데이트")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "업데이트 성공")
+    })
+    @PostMapping("/manner-percent")
+    public ResponseEntity<?> updateMannerPercent(@RequestBody UserDto userDto ,HttpServletRequest request){
+        User user  = userService.getUser(request);
+        userService.updateMannerPercent(userDto,user);
+        return ResponseEntity.status(HttpStatus.OK).body("매너 퍼센트 업데이트 성공");
+
     }
 }
