@@ -54,13 +54,13 @@ public class ChatMessageService {
     public void publishLeaveEvent(Long roomId, String nickname) {
         ChatMessage leaveMsg = ChatMessage.builder()
                 .chatRoomId(roomId)
-                .messageType(MessageType.SYSTEM)
+                .messageType(MessageType.LEAVE)
                 .message(nickname + "님이 나갔습니다.")
                 .sendAt(LocalDateTime.now())
                 .build();
         messageRepo.save(leaveMsg);
 
-        MessageDto dto = MessageDto.from(leaveMsg, null, null);
+        MessageDto dto = MessageDto.from(leaveMsg);
         messagingTemplate.convertAndSend("/topic/rooms/" + roomId, dto);
     }
 
