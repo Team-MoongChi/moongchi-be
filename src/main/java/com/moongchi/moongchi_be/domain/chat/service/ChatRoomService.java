@@ -27,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -196,8 +195,6 @@ public class ChatRoomService {
             String content = m.getMessage();
             if (content.contains("안녕하세요!")) {
                 chatStatus = "RECRUITING"; buttonVisibleTo = "ALL";
-            } else if (content.contains("현재 공구는")) {
-                chatStatus = "RECRUITING"; buttonVisibleTo = "ALL";
             } else if (content.contains("결제를 진행해 주세요")) {
                 chatStatus = "RECRUITED";  buttonVisibleTo = "ALL";
             } else if (content.contains("결제가 모두 완료")) {
@@ -237,12 +234,8 @@ public class ChatRoomService {
                 .build();
         participantRepository.save(participant);
         
-        String welcomeMsg1 = "안녕하세요! 공구 완료 시점까지 여러분과 함께 할 뭉치예요. 뭉치면 산다!";
-        chatMessageService.sendSystemMessage(savedChatRoom.getId(), welcomeMsg1, ChatRoomStatus.RECRUITING, "RECRUITING", "ALL");
-
-        String welcomeMsg2 = String.format("현재 공구는 %s까지 모집 예정이에요. 함께할 분들을 기다리고 있어요! 아래 링크로 주변에 공구 소식을 알려보세요 !",
-                groupBoard.getDeadline().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")));
-        chatMessageService.sendSystemMessage(savedChatRoom.getId(), welcomeMsg2, ChatRoomStatus.RECRUITING, "RECRUITING", "ALL");
+        String welcomeMsg = "안녕하세요! 공구 완료 시점까지 여러분과 함께 할 뭉치예요. 뭉치면 산다!";
+        chatMessageService.sendSystemMessage(savedChatRoom.getId(), welcomeMsg, ChatRoomStatus.RECRUITING, "RECRUITING", "ALL");
 
         savedChatRoom.setSendAt(LocalDateTime.now());
         chatRoomRepository.save(savedChatRoom);
