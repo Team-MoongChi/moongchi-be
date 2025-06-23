@@ -26,13 +26,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-
-        String path1 = request.getRequestURI();
-        if (path1.startsWith("/api/group-boards/**")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         String token = jwtTokenProvider.resolveToken(request);
         if (token != null && jwtTokenProvider.validateToken(token)) {
             Authentication authentication = jwtTokenProvider.getAuthentication(token);
