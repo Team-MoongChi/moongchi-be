@@ -6,10 +6,8 @@ import com.moongchi.moongchi_be.common.auth.jwt.JwtTokenProvider;
 import com.moongchi.moongchi_be.common.auth.oauth2.OAuth2FailureHandler;
 import com.moongchi.moongchi_be.common.auth.oauth2.OAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -19,7 +17,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.ForwardedHeaderFilter;
 
 import java.util.Arrays;
 
@@ -63,7 +60,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "https://moong-chi.kro.kr"));
+        configuration.setAllowedOrigins(Arrays.asList("https://moongchi-phi.vercel.app", "https://moong-chi.kro.kr"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With"));
         configuration.setAllowCredentials(true);
