@@ -137,45 +137,39 @@ public class GroupBoardService {
         GroupBoard board = groupBoardRepository.findById(groupBoardId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
-        if (participantRepository.existsByUserIdAndGroupBoardId(userId, groupBoardId)) {
-            throw new CustomException(ErrorCode.CONFLICT);
-        }
-
         int currentCount = participantRepository.countByGroupBoardId(groupBoardId);
-        if (currentCount >= board.getTotalUsers()) {
+        if (participantRepository.existsByUserIdAndGroupBoardId(userId, groupBoardId)
+                || currentCount >= board.getTotalUsers()) {
             throw new CustomException(ErrorCode.CONFLICT);
         }
 
-        if(board.getTotalUsers() - (participantRepository.countByGroupBoardId(groupBoardId) + 1) == 1) {
-            board.updateStatus(BoardStatus.CLOSING_SOON);
-            groupBoardRepository.save(board);
-        }
-
+        LocalDateTime now = LocalDateTime.now();
         Participant p = Participant.builder()
                 .user(userRepository.findById(userId).orElseThrow())
                 .groupBoard(board)
                 .paymentStatus(PaymentStatus.UNPAID)
                 .tradeCompleted(false)
                 .role(Role.MEMBER)
-                .joinedAt(LocalDateTime.now())
-                .readAt(LocalDateTime.now())
+                .joinedAt(now)
+                .readAt(now)
                 .build();
 
         participantRepository.save(p);
-
 
         ChatRoom chatRoom = chatRoomRepository.findByGroupBoard(board)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
         chatMessageService.publishPresenceEvent(chatRoom.getId(), p);
 
+
         int newCount = participantRepository.countByGroupBoardId(groupBoardId);
         if (newCount == board.getTotalUsers()) {
             board.updateStatus(BoardStatus.CLOSED);
             groupBoardRepository.save(board);
-
             chatRoomService.updateChatRoomStatus(chatRoom.getId());
+        } else if(board.getTotalUsers() - (participantRepository.countByGroupBoardId(groupBoardId) + 1) == 1) {
+            board.updateStatus(BoardStatus.CLOSING_SOON);
+            groupBoardRepository.save(board);
         }
-
         return p;
     }
 

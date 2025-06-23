@@ -1,7 +1,5 @@
 package com.moongchi.moongchi_be.domain.group_boards.controller;
 
-import com.moongchi.moongchi_be.domain.chat.entity.ChatRoom;
-import com.moongchi.moongchi_be.domain.chat.entity.Participant;
 import com.moongchi.moongchi_be.domain.chat.service.ChatMessageService;
 import com.moongchi.moongchi_be.domain.chat.service.ChatRoomService;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardDto;
@@ -98,12 +96,7 @@ public class GroupBoardController {
             HttpServletRequest request) {
         User currentUser = userService.getUser(request);
 
-        Participant joined = groupBoardService.joinGroupBoard(currentUser.getId(), groupBoardId);
-
-        ChatRoom room = chatRoomService.getChatRoom(groupBoardId);
-        Long roomId = room.getId();
-
-        chatMessageService.publishPresenceEvent(roomId, joined);
+        groupBoardService.joinGroupBoard(currentUser.getId(), groupBoardId);
 
         return ResponseEntity.ok().build();
     }
