@@ -45,6 +45,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/group-boards/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/group-boards/like").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
                         .requestMatchers("/swagger-ui/index.html#").permitAll()
                         .anyRequest().authenticated())
                 .oauth2Login(oauth2 -> oauth2

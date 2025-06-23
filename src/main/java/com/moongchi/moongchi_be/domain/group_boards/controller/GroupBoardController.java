@@ -1,5 +1,6 @@
 package com.moongchi.moongchi_be.domain.group_boards.controller;
 
+import com.moongchi.moongchi_be.common.exception.custom.CustomException;
 import com.moongchi.moongchi_be.domain.chat.service.ChatMessageService;
 import com.moongchi.moongchi_be.domain.chat.service.ChatRoomService;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardDto;
@@ -85,7 +86,12 @@ public class GroupBoardController {
     })
     @GetMapping("/{groupBoardId}")
     public ResponseEntity<GroupBoardDto> getGroupBoard(@PathVariable Long groupBoardId, HttpServletRequest request){
-        User user = userService.getUser(request);
+        User user = null;
+        try {
+            user = userService.getUser(request);
+        } catch (CustomException e) {
+        }
+        
         GroupBoardDto groupBoardDto = groupBoardService.getGroupBoard(groupBoardId, user);
         return ResponseEntity.status(HttpStatus.OK).body(groupBoardDto);
     }

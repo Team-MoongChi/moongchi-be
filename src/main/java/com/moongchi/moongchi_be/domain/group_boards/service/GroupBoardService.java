@@ -179,7 +179,8 @@ public class GroupBoardService {
     public GroupBoardDto getGroupBoard(Long groupBoardId,  User user) {
         GroupBoard groupBoard = groupBoardRepository.findById(groupBoardId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
-        Long currentUserId = user.getId();
+        Long currentUserId = (user != null) ? user.getId() : null;
+
         return convertToDto(groupBoard, currentUserId);
     }
 
@@ -333,7 +334,10 @@ public class GroupBoardService {
                     }).collect(Collectors.toList());
         }
 
-        boolean editable = board.getUser().getId().equals(currentUserId);
+        boolean editable = false;
+        if(currentUserId != null){
+            editable = board.getUser().getId().equals(currentUserId);
+        }
         int likeCount = getLikeCount(board.getId());
         return GroupBoardDto.builder()
                 .id(board.getId())
