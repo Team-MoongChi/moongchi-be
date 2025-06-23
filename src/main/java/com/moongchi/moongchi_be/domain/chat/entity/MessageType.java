@@ -4,5 +4,6 @@ public enum MessageType {
     TEXT,
     IMAGE,
     SYSTEM,
-    ENTER
+    ENTER,
+    LEAVE
 }

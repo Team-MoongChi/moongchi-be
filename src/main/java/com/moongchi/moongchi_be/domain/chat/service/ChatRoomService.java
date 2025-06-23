@@ -29,7 +29,6 @@ import org.springframework.web.client.RestTemplate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -166,15 +165,6 @@ public class ChatRoomService {
                     .collect(Collectors.toList());
         }
 
-        List<MessageDto> enters = participants.stream()
-                .map(p -> MessageDto.ofEnter(p))
-                .collect(Collectors.toList());
-
-        List<MessageDto> all = Stream.concat(messages.stream(), enters.stream())
-                .sorted(Comparator.comparing(MessageDto::getSendAt))
-                .toList();
-
-
         return new ChatRoomDetailDto(
                 chatRoom.getId(),
                 chatRoom.getGroupBoard().getId(),
@@ -185,7 +175,7 @@ public class ChatRoomService {
                 chatRoom.getGroupBoard().getDeadline(),
                 chatRoom.getGroupBoard().getLocation(),
                 participants,
-                all
+                messages
         );
     }
 
@@ -495,7 +485,7 @@ public class ChatRoomService {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
-        if (chatRoom.getStatus() == ChatRoomStatus.RECRUITED) {
+        if (chatRoom.getStatus() != ChatRoomStatus.COMPLETED) {
             throw new CustomException(ErrorCode.CONFLICT);
         }
 
@@ -503,11 +493,15 @@ public class ChatRoomService {
                 .findByChatRoomIdAndUserId(chatRoomId, userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.CONFLICT));
 
-        if (participant.getRole() == Role.LEADER) {
-            throw new CustomException(ErrorCode.FORBIDDEN);
-        }
+        String nickname = participant.getUser().getNickname();
+        chatMessageService.publishLeaveEvent(chatRoomId, nickname);
 
         participantRepository.delete(participant);
+
+        long remaining = participantRepository.countByChatRoomId(chatRoomId);
+        if (remaining == 0) {
+            chatRoomRepository.delete(chatRoom);
+        }
     }
 
 }
