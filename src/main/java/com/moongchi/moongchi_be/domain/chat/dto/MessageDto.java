@@ -35,6 +35,12 @@ public class MessageDto {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @Schema(description = "버튼이 보일 대상 (예: LEADER, PARTICIPANT, ALL)")
     private String buttonVisibleTo;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Schema(description = "유저 닉네임")
+    private String senderNickname;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Schema(description = "유저 프로필 url")
+    private String senderProfileUrl;
 
     public static MessageDto from(ChatMessage message) {
         return MessageDto.builder()
