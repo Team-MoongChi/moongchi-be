@@ -19,19 +19,19 @@ public class GroupBoardScheduler {
 
     @Scheduled(cron = "0 0 0 * * *")
     public void updateStatus(){
-        LocalDate now = LocalDate.now();
-        LocalDate tomorrow = now.plusDays(1);
-        LocalDate dayAfterTomorrow = now.plusDays(2);
+        LocalDate today = LocalDate.now();
+        LocalDate yesterday = today.minusDays(1);
+        LocalDate closingSoon = today.plusDays(3);
 
         // 모집중 -> 마감임박
-        List<GroupBoard> toClosingSoon = groupBoardRepository.findByBoardStatusAndDeadlineBetween(BoardStatus.OPEN, now, tomorrow);
+        List<GroupBoard> toClosingSoon = groupBoardRepository.findByBoardStatusAndDeadlineBetween(BoardStatus.OPEN, today, closingSoon.minusDays(1));
 
         for (GroupBoard board : toClosingSoon) {
             board.updateStatus(BoardStatus.CLOSING_SOON);
         }
 
         // 마감임박 -> 모집마감
-        List<GroupBoard> toClosed = groupBoardRepository.findByBoardStatusAndDeadlineBefore(BoardStatus.CLOSING_SOON, dayAfterTomorrow);
+        List<GroupBoard> toClosed = groupBoardRepository.findByBoardStatusAndDeadlineBefore(BoardStatus.CLOSING_SOON, today);
 
         for (GroupBoard board : toClosed){
             board.updateStatus(BoardStatus.CLOSED);
