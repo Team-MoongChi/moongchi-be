@@ -24,34 +24,6 @@ public class ChatMessageService {
     private final ChatMessageRepository messageRepo;
     private final SimpMessagingTemplate messagingTemplate;
 
-    public void publishPresenceEvent(Long roomId, Participant joined) {
-        ChatMessage saved = messageRepo.save(
-                ChatMessage.builder()
-                        .chatRoomId(roomId)
-                        .participantId(joined.getId())
-                        .message(joined.getUser().getNickname() + "님이 입장했습니다")
-                        .messageType(MessageType.ENTER)
-                        .sendAt(joined.getJoinedAt())
-                        .build()
-        );
-
-        MessageDto dto = MessageDto.builder()
-                .id(saved.getId().toString())
-                .participantId(saved.getParticipantId())
-                .message(saved.getMessage())
-                .messageType(saved.getMessageType().name())
-                .sendAt(saved.getSendAt())
-                .senderNickname(joined.getUser().getNickname())
-                .senderProfileUrl(joined.getUser().getProfileUrl())
-                .build();
-
-        messagingTemplate.convertAndSend(
-                "/topic/chatroom." + roomId,
-                dto
-        );
-    }
-
-
     public MessageDto sendMessage(Participant participant, ChatMessageRequestDto req) {
         Long chatRoomId = participant.getGroupBoard().getChatRoom().getId();
 
@@ -85,5 +57,21 @@ public class ChatMessageService {
         MessageDto dto = MessageDto.from(saved,status,chatStatus,buttonVisibleTo);
         messagingTemplate.convertAndSend("/topic/chatroom." + chatRoomId, dto);
     }
+
+    public void publishPresenceEvent(Long roomId, Participant joined) {
+        MessageDto dto = MessageDto.builder()
+                .id(null)
+                .participantId(joined.getUser().getId())
+                .message(joined.getUser().getNickname() + "님이 입장했습니다")
+                .messageType("ENTER")
+                .sendAt(joined.getJoinedAt())               
+                .build();
+
+        messagingTemplate.convertAndSend(
+                "/topic/chatroom." + roomId,
+                dto
+        );
+    }
+
 
 }

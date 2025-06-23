@@ -29,6 +29,7 @@ import org.springframework.web.client.RestTemplate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -165,6 +166,14 @@ public class ChatRoomService {
                     .collect(Collectors.toList());
         }
 
+        List<MessageDto> enters = participants.stream()
+                .map(p -> MessageDto.ofEnter(p))
+                .collect(Collectors.toList());
+
+        List<MessageDto> all = Stream.concat(messages.stream(), enters.stream())
+                .sorted(Comparator.comparing(MessageDto::getSendAt))
+                .toList();
+
 
         return new ChatRoomDetailDto(
                 chatRoom.getId(),
@@ -176,7 +185,7 @@ public class ChatRoomService {
                 chatRoom.getGroupBoard().getDeadline(),
                 chatRoom.getGroupBoard().getLocation(),
                 participants,
-                messages
+                all
         );
     }
 
