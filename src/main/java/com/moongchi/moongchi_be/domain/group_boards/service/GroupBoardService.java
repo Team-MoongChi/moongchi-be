@@ -11,6 +11,7 @@ import com.moongchi.moongchi_be.domain.chat.entity.PaymentStatus;
 import com.moongchi.moongchi_be.domain.chat.entity.Role;
 import com.moongchi.moongchi_be.domain.chat.repository.ChatRoomRepository;
 import com.moongchi.moongchi_be.domain.chat.repository.ParticipantRepository;
+import com.moongchi.moongchi_be.domain.chat.service.ChatMessageService;
 import com.moongchi.moongchi_be.domain.chat.service.ChatRoomService;
 import com.moongchi.moongchi_be.domain.favoriite_product.repository.FavoriteProductRepository;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardDto;
@@ -51,6 +52,7 @@ public class GroupBoardService {
     private final UserService userService;
     private final KakaoMapService kakaoMapService;
     private final ChatRoomService chatRoomService;
+    private final ChatMessageService chatMessageService;
 
     @Transactional
     public void createPost(GroupBoardRequestDto dto, User user) {
@@ -162,15 +164,18 @@ public class GroupBoardService {
         participantRepository.save(p);
 
 
-        if (participantRepository.countByGroupBoardId(groupBoardId) == board.getTotalUsers()) {
+        ChatRoom chatRoom = chatRoomRepository.findByGroupBoard(board)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+        chatMessageService.publishPresenceEvent(chatRoom.getId(), p);
+
+        int newCount = participantRepository.countByGroupBoardId(groupBoardId);
+        if (newCount == board.getTotalUsers()) {
             board.updateStatus(BoardStatus.CLOSED);
             groupBoardRepository.save(board);
 
-            ChatRoom chatRoom = chatRoomRepository.findByGroupBoard(board)
-                    .orElseThrow();
             chatRoomService.updateChatRoomStatus(chatRoom.getId());
-
         }
+
         return p;
     }
 
