@@ -201,8 +201,6 @@ public class ChatRoomService {
                 chatStatus = "PAYING";     buttonVisibleTo = "LEADER";
             } else if (content.contains("구매가 완료되었어요!")) {
                 chatStatus = "PURCHASED";  buttonVisibleTo = "ALL";
-            } else if (content.contains("물건을 받고")) {
-                chatStatus = "PURCHASED";  buttonVisibleTo = "MEMBER";
             } else if (content.contains("리뷰를 남겨")) {
                 chatStatus = "COMPLETED";  buttonVisibleTo = "ALL";
             }
@@ -369,14 +367,6 @@ public class ChatRoomService {
                 ChatRoomStatus.PURCHASED,
                 "PURCHASED",
                 "ALL"
-        );
-
-        chatMessageService.sendSystemMessage(
-                chatRoomId,
-                "물건을 받고 '거래 완료' 버튼을 눌러주세요.",
-                ChatRoomStatus.PURCHASED,
-                "PURCHASED",
-                "MEMBER"
         );
     }
 
