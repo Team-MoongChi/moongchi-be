@@ -100,6 +100,8 @@ public class GroupBoardService {
 
     @Transactional
     public void updatePost(Long group_board_id, GroupBoardRequestDto dto) {
+        Coordinate coordinate = kakaoMapService.getCoordinateFromAddress(dto.getLocation());
+
         GroupBoard groupBoard = groupBoardRepository.findById(group_board_id)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
         GroupProduct groupProduct = groupProductRepository.findById(groupBoard.getGroupProduct().getId())
@@ -108,7 +110,7 @@ public class GroupBoardService {
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         groupProduct.update(dto.getName(), dto.getPrice(), dto.getQuantity(), category, dto.getImages());
-        groupBoard.update(dto.getName(), dto.getContent(), dto.getLocation(), dto.getDeadline(), dto.getTotalUser(), groupProduct);
+        groupBoard.update(dto.getName(), dto.getContent(), dto.getLocation(), coordinate.getLatitude(), coordinate.getLongitude(), dto.getDeadline(), dto.getTotalUser(), groupProduct);
 
         groupBoardRepository.save(groupBoard);
     }

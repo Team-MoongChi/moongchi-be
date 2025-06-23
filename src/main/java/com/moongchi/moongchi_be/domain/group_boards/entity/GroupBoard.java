@@ -82,10 +82,12 @@ public class GroupBoard {
         groupProduct.updateGroupBoard(this);
     }
 
-    public void update(String title, String content, String location, LocalDate deadline, int totalUsers, GroupProduct groupProduct) {
+    public void update(String title, String content, String location, double latitude, double longitude, LocalDate deadline, int totalUsers, GroupProduct groupProduct) {
         this.title = title + "공구합니다.";
         this.content = content;
         this.location = location;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.deadline = deadline;
         this.totalUsers = totalUsers;
         this.groupProduct = groupProduct;
