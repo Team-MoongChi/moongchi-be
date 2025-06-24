@@ -22,7 +22,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws/chat")
-                .setAllowedOrigins("https://moongchi-nqeun0cpm-jiwons-projects-be89921d.vercel.app")
+                .setAllowedOrigins("https://moongchi-git-refactor-98-deploy-d90e1e-jiwons-projects-be89921d.vercel.app")
                 .withSockJS();
     }
 
