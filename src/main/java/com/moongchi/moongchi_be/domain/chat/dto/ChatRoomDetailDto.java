@@ -29,6 +29,8 @@ public class ChatRoomDetailDto {
     private int price;
     @Schema(description = "마감일자")
     private LocalDate deadline;
+    @Schema(description = "공구장소")
+    private String location;
     @Schema(description = "참여자 리스트")
     private List<ParticipantDto> participants;
     @Schema(description = "메시지 리스트")

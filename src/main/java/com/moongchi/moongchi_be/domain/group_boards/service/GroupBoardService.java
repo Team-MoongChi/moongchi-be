@@ -11,6 +11,7 @@ import com.moongchi.moongchi_be.domain.chat.entity.PaymentStatus;
 import com.moongchi.moongchi_be.domain.chat.entity.Role;
 import com.moongchi.moongchi_be.domain.chat.repository.ChatRoomRepository;
 import com.moongchi.moongchi_be.domain.chat.repository.ParticipantRepository;
+import com.moongchi.moongchi_be.domain.chat.service.ChatMessageService;
 import com.moongchi.moongchi_be.domain.chat.service.ChatRoomService;
 import com.moongchi.moongchi_be.domain.favoriite_product.repository.FavoriteProductRepository;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardDto;
@@ -51,6 +52,7 @@ public class GroupBoardService {
     private final UserService userService;
     private final KakaoMapService kakaoMapService;
     private final ChatRoomService chatRoomService;
+    private final ChatMessageService chatMessageService;
 
     @Transactional
     public void createPost(GroupBoardRequestDto dto, User user) {
@@ -100,6 +102,8 @@ public class GroupBoardService {
 
     @Transactional
     public void updatePost(Long group_board_id, GroupBoardRequestDto dto) {
+        Coordinate coordinate = kakaoMapService.getCoordinateFromAddress(dto.getLocation());
+
         GroupBoard groupBoard = groupBoardRepository.findById(group_board_id)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
         GroupProduct groupProduct = groupProductRepository.findById(groupBoard.getGroupProduct().getId())
@@ -108,7 +112,7 @@ public class GroupBoardService {
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         groupProduct.update(dto.getName(), dto.getPrice(), dto.getQuantity(), category, dto.getImages());
-        groupBoard.update(dto.getName(), dto.getContent(), dto.getLocation(), dto.getDeadline(), dto.getTotalUser(), groupProduct);
+        groupBoard.update(dto.getName(), dto.getContent(), dto.getLocation(), coordinate.getLatitude(), coordinate.getLongitude(), dto.getDeadline(), dto.getTotalUser(), groupProduct);
 
         groupBoardRepository.save(groupBoard);
     }
@@ -129,49 +133,54 @@ public class GroupBoardService {
                 .collect(Collectors.toList());
     }
 
-    public void joinGroupBoard(Long userId, Long groupBoardId) {
+    public Participant joinGroupBoard(Long userId, Long groupBoardId) {
         GroupBoard board = groupBoardRepository.findById(groupBoardId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
-        if (participantRepository.existsByUserIdAndGroupBoardId(userId, groupBoardId)) {
-            throw new CustomException(ErrorCode.CONFLICT);
-        }
-
         int currentCount = participantRepository.countByGroupBoardId(groupBoardId);
-        if (currentCount >= board.getTotalUsers()) {
+        if (participantRepository.existsByUserIdAndGroupBoardId(userId, groupBoardId)
+                || currentCount >= board.getTotalUsers()) {
             throw new CustomException(ErrorCode.CONFLICT);
         }
 
-        if(board.getTotalUsers() - (participantRepository.countByGroupBoardId(groupBoardId) + 1) == 1) {
+        LocalDateTime now = LocalDateTime.now();
+        Participant p = Participant.builder()
+                .user(userRepository.findById(userId).orElseThrow())
+                .groupBoard(board)
+                .paymentStatus(PaymentStatus.UNPAID)
+                .tradeCompleted(false)
+                .role(Role.MEMBER)
+                .joinedAt(now)
+                .readAt(now)
+                .build();
+
+        participantRepository.save(p);
+
+        ChatRoom chatRoom = chatRoomRepository.findByGroupBoard(board)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+        chatMessageService.publishPresenceEvent(chatRoom.getId(), p);
+
+        int newCount = participantRepository.countByGroupBoardId(groupBoardId);
+        if (newCount == board.getTotalUsers()) {
+            board.updateStatus(BoardStatus.CLOSED);
+            groupBoardRepository.save(board);
+
+            chatRoomService.updateChatRoomStatus(chatRoom.getId());
+        } else if(board.getTotalUsers() - (participantRepository.countByGroupBoardId(groupBoardId) + 1) == 1) {
             board.updateStatus(BoardStatus.CLOSING_SOON);
             groupBoardRepository.save(board);
         }
 
-        Participant participant = new Participant();
-        participant.setUser(userRepository.findById(userId).orElseThrow());
-        participant.setGroupBoard(board);
-        participant.setPaymentStatus(PaymentStatus.UNPAID);
-        participant.setTradeCompleted(false);
-        participant.setRole(Role.MEMBER);
-        participant.setJoinedAt(LocalDateTime.now());
-        participantRepository.save(participant);
 
-        if (participantRepository.countByGroupBoardId(groupBoardId) == board.getTotalUsers()) {
-            board.updateStatus(BoardStatus.CLOSED);
-            groupBoardRepository.save(board);
-
-            ChatRoom chatRoom = chatRoomRepository.findByGroupBoard(board)
-                    .orElseThrow();
-            chatRoomService.updateChatRoomStatus(chatRoom.getId());
-
-        }
+        return p;
     }
 
     @Transactional(readOnly = true)
     public GroupBoardDto getGroupBoard(Long groupBoardId,  User user) {
         GroupBoard groupBoard = groupBoardRepository.findById(groupBoardId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
-        Long currentUserId = user.getId();
+        Long currentUserId = (user != null) ? user.getId() : null;
+
         return convertToDto(groupBoard, currentUserId);
     }
 
@@ -325,7 +334,10 @@ public class GroupBoardService {
                     }).collect(Collectors.toList());
         }
 
-        boolean editable = board.getUser().getId().equals(currentUserId);
+        boolean editable = false;
+        if(currentUserId != null){
+            editable = board.getUser().getId().equals(currentUserId);
+        }
         int likeCount = getLikeCount(board.getId());
         return GroupBoardDto.builder()
                 .id(board.getId())

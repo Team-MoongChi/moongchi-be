@@ -24,6 +24,46 @@ public class ChatMessageService {
     private final ChatMessageRepository messageRepo;
     private final SimpMessagingTemplate messagingTemplate;
 
+    public void publishPresenceEvent(Long roomId, Participant joined) {
+        ChatMessage saved = messageRepo.save(
+                ChatMessage.builder()
+                        .chatRoomId(roomId)
+                        .participantId(joined.getId())
+                        .message(joined.getUser().getNickname() + "님이 입장했습니다")
+                        .messageType(MessageType.ENTER)
+                        .sendAt(joined.getJoinedAt())
+                        .build()
+        );
+
+        MessageDto dto = MessageDto.builder()
+                .id(saved.getId().toString())
+                .participantId(saved.getParticipantId())
+                .message(saved.getMessage())
+                .messageType(saved.getMessageType().name())
+                .sendAt(saved.getSendAt())
+                .senderNickname(joined.getUser().getNickname())
+                .senderProfileUrl(joined.getUser().getProfileUrl())
+                .build();
+
+        messagingTemplate.convertAndSend(
+                "/topic/chatroom." + roomId,
+                dto
+        );
+    }
+
+    public void publishLeaveEvent(Long roomId, String nickname) {
+        ChatMessage leaveMsg = ChatMessage.builder()
+                .chatRoomId(roomId)
+                .messageType(MessageType.LEAVE)
+                .message(nickname + "님이 나갔습니다.")
+                .sendAt(LocalDateTime.now())
+                .build();
+        messageRepo.save(leaveMsg);
+
+        MessageDto dto = MessageDto.from(leaveMsg);
+        messagingTemplate.convertAndSend("/topic/rooms/" + roomId, dto);
+    }
+
     public MessageDto sendMessage(Participant participant, ChatMessageRequestDto req) {
         Long chatRoomId = participant.getGroupBoard().getChatRoom().getId();
 
@@ -43,7 +83,7 @@ public class ChatMessageService {
     }
 
     public void sendSystemMessage(Long chatRoomId, String message,ChatRoomStatus status,
-                                  String buttonType, String buttonVisibleTo) {
+                                  String chatStatus, String buttonVisibleTo) {
         ChatMessage systemMsg = ChatMessage.builder()
                 .chatRoomId(chatRoomId)
                 .participantId(null)
@@ -54,7 +94,7 @@ public class ChatMessageService {
 
         ChatMessage saved = messageRepo.save(systemMsg);
 
-        MessageDto dto = MessageDto.from(saved,status,buttonType,buttonVisibleTo);
+        MessageDto dto = MessageDto.from(saved,status,chatStatus,buttonVisibleTo);
         messagingTemplate.convertAndSend("/topic/chatroom." + chatRoomId, dto);
     }
 

@@ -1,5 +1,8 @@
 package com.moongchi.moongchi_be.domain.group_boards.controller;
 
+import com.moongchi.moongchi_be.common.exception.custom.CustomException;
+import com.moongchi.moongchi_be.domain.chat.service.ChatMessageService;
+import com.moongchi.moongchi_be.domain.chat.service.ChatRoomService;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardDto;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardListDto;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardRequestDto;
@@ -34,6 +37,9 @@ public class GroupBoardController {
     private final GroupBoardService groupBoardService;
     private final UserService userService;
     private final GroupBoardRecommendService groupBoardRecommendService;
+    private final ChatRoomService chatRoomService;
+    private final ChatMessageService chatMessageService;
+
 
     @Operation(summary = "공동구매 게시글 추가", description = "공동구매 게시글 업로드")
     @ApiResponses(value = {
@@ -85,26 +91,27 @@ public class GroupBoardController {
                     content = @Content(schema = @Schema(implementation = GroupBoardDto.class)))
     })
     @GetMapping("/{groupBoardId}")
-    public ResponseEntity<GroupBoardDto> getGroupBoard(@PathVariable Long groupBoardId, HttpServletRequest request) {
-        User user = userService.getUser(request);
+    public ResponseEntity<GroupBoardDto> getGroupBoard(@PathVariable Long groupBoardId, HttpServletRequest request){
+        User user = null;
+        try {
+            user = userService.getUser(request);
+        } catch (CustomException e) {
+        }
         GroupBoardDto groupBoardDto = groupBoardService.getGroupBoard(groupBoardId, user);
         return ResponseEntity.status(HttpStatus.OK).body(groupBoardDto);
     }
 
-    @Operation(summary = "공동 구매 참여", description = "공동 구매 참여")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "참여 성공")
-    })
     @PostMapping("/{groupBoardId}/join")
     public ResponseEntity<Void> joinGroupBoard(
             @PathVariable Long groupBoardId,
             HttpServletRequest request) {
-
         User currentUser = userService.getUser(request);
+
         groupBoardService.joinGroupBoard(currentUser.getId(), groupBoardId);
 
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.ok().build();
     }
+
 
     @Operation(summary = "내가 올린 공동 구매 게시글 목록 조회", description = "내가 올린 공동 구매 게시글 목록 조회")
     @ApiResponses(value = {

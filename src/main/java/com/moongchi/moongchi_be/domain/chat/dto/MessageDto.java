@@ -31,10 +31,16 @@ public class MessageDto {
     private String status;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @Schema(description = "버튼 타입 (예: PURCHASE_COMPLETE, TRADE_COMPLETE)")
-    private String buttonType;
+    private String chatStatus;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @Schema(description = "버튼이 보일 대상 (예: LEADER, PARTICIPANT, ALL)")
     private String buttonVisibleTo;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Schema(description = "유저 닉네임")
+    private String senderNickname;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Schema(description = "유저 프로필 url")
+    private String senderProfileUrl;
 
     public static MessageDto from(ChatMessage message) {
         return MessageDto.builder()
@@ -46,7 +52,7 @@ public class MessageDto {
                 .build();
     }
 
-    public static MessageDto from(ChatMessage message, ChatRoomStatus status, String buttonType, String buttonVisibleTo) {
+    public static MessageDto from(ChatMessage message, ChatRoomStatus status, String chatStatus, String buttonVisibleTo) {
         return MessageDto.builder()
                 .id(message.getId())
                 .participantId(message.getParticipantId())
@@ -54,8 +60,17 @@ public class MessageDto {
                 .messageType(message.getMessageType().name())
                 .sendAt(message.getSendAt())
                 .status(status != null ? status.getKorean() : null)
-                .buttonType(buttonType)
+                .chatStatus(chatStatus)
                 .buttonVisibleTo(buttonVisibleTo)
+                .build();
+    }
+    public static MessageDto ofEnter(ParticipantDto p) {
+        return MessageDto.builder()
+                .id(null)
+                .participantId(p.getUserId())
+                .message(p.getNickname() + "님이 입장했습니다")
+                .messageType("ENTER")
+                .sendAt(p.getJoinAt())
                 .build();
     }
 }
