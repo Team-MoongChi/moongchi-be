@@ -15,7 +15,7 @@ public class NewUserRequestDto {
 
     @JsonProperty("user_id")
     private Long userId;
-    private LocalDate birth;
+    private String birth;
     private Gender gender;
     private String address;
     private String interestCategory;

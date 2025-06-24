@@ -19,6 +19,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -96,9 +97,11 @@ public class UserService {
         User newUser = user.updateInterest(userDto.getInterestCategory());
         this.userRepository.save(newUser);
 
+        String birthString = user.getBirth().format(DateTimeFormatter.ISO_LOCAL_DATE);
+
         NewUserRequestDto requestBody = NewUserRequestDto.builder()
                 .userId(user.getId())
-                .birth(user.getBirth())
+                .birth(birthString)
                 .gender(user.getGender())
                 .address(user.getAddress())
                 .interestCategory(user.getInterestCategory())
