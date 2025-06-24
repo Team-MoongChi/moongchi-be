@@ -29,8 +29,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
 
-    private static final String CALLBACK_URI = "https://moongchi-phi.vercel.app/oauth/callback";
-    private static final String SIGNUP_URI = "https://moongchi-phi.vercel.app/signup";
+    private static final String CALLBACK_URI = "https://moong-chi.com/oauth/callback";
+    private static final String SIGNUP_URI = "https://moong-chi.com/signup";
 
 
     @Override
