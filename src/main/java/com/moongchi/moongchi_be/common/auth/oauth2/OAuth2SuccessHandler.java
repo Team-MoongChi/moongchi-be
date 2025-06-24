@@ -28,7 +28,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
-    private final CookieUtil cookieUtil;
 
     private static final String CALLBACK_URI = "https://moongchi-phi.vercel.app/oauth/callback";
     private static final String SIGNUP_URI = "https://moongchi-phi.vercel.app/signup";
@@ -52,7 +51,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         // 리프레쉬 토큰 발급
         String refreshToken = jwtTokenProvider.createRefreshToken(user.getId());
-        cookieUtil.addCookie(response, "refresh_token", refreshToken, 7 * 24 * 60 * 60); // 7일 유지
+        CookieUtil.addCookie(response, "refresh_token", refreshToken, 7 * 24 * 60 * 60); // 7일 유지
 
         String targetUrl;
 
@@ -62,7 +61,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         } else {
             //기존유저
             String accessToken = jwtTokenProvider.createToken(user.getId(), user.getUserRole());
-            cookieUtil.addCookie(response, "access_token", accessToken, 60 * 60); // 1시간 유지
+            CookieUtil.addCookie(response, "access_token", accessToken, 60 * 60); // 1시간 유지
 
             targetUrl = CALLBACK_URI;
         }

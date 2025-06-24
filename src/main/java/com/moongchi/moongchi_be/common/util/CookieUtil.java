@@ -45,7 +45,7 @@ public class CookieUtil {
         response.addCookie(cookie);
     }
 
-    public void addCookie(HttpServletResponse response,
+    public static void addCookie(HttpServletResponse response,
                            String name, String value,
                            int maxAgeInSeconds) {
         ResponseCookie cookie = ResponseCookie.from(name, value)
