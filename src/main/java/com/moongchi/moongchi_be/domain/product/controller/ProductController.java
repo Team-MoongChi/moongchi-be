@@ -5,6 +5,9 @@ import com.moongchi.moongchi_be.domain.group_boards.service.GroupBoardService;
 import com.moongchi.moongchi_be.domain.product.dto.ProductResponseDto;
 import com.moongchi.moongchi_be.domain.product.entity.Product;
 import com.moongchi.moongchi_be.domain.product.service.ProductService;
+import com.moongchi.moongchi_be.domain.product.service.ProductRecommendService;
+import com.moongchi.moongchi_be.domain.user.entity.User;
+import com.moongchi.moongchi_be.domain.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -13,7 +16,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,10 +30,13 @@ import java.util.stream.Collectors;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/products")
+@Slf4j
 public class ProductController {
 
     private final ProductService productService;
     private final GroupBoardService groupBoardService;
+    private final UserService userService;
+    private final ProductRecommendService recommendService;
 
     @Operation(summary = "모든 상품 조회", description = "등록된 모든 상품 목록을 조회합니다.")
     @ApiResponses(value = {
@@ -109,4 +117,23 @@ public class ProductController {
         List<List<ProductResponseDto>> productResponseDtos = productService.getMainProductList();
         return ResponseEntity.status(HttpStatus.OK).body(productResponseDtos);
     }
+
+    @Operation(
+            summary = "내 추천 상품 조회",
+            description = "현재 로그인된 사용자의 MLops 추천 상품 목록을 반환합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "추천 상품 리스트 반환"),
+            @ApiResponse(responseCode = "401", description = "인증 정보가 없거나 유효하지 않음"),
+            @ApiResponse(responseCode = "500", description = "서버 내부 에러")
+    })
+    @GetMapping("/recommend")
+    public ResponseEntity<List<ProductResponseDto>> recommendForUser(HttpServletRequest request) {
+        User user = userService.getUser(request);
+        Long userId = user.getId();
+        List<ProductResponseDto> dtos = recommendService.getRecommendProducts(userId);
+        return ResponseEntity.ok(dtos);
+    }
+
+
 }
