@@ -160,11 +160,15 @@ public class GroupBoardController {
         return ResponseEntity.status(HttpStatus.OK).body(groupBoardDto);
     }
 
+    @Operation(summary = "공동 구매 게시글 추천", description = "공동 구매 게시글 추천")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "조회 성공",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = GroupBoardListDto.class))))
+    })
     @GetMapping("/recommend")
     public ResponseEntity<List<GroupBoardListDto>> getReccomendGroupBoard(HttpServletRequest request) {
         User user = userService.getUser(request);
-//        List<GroupBoardListDto> groupBoardListDtos = groupBoardRecommendService.getRecommendGroupBoard(user.getId());
-        List<GroupBoardListDto> groupBoardListDtos = groupBoardRecommendService.getRecommendGroupBoard(2L);
+        List<GroupBoardListDto> groupBoardListDtos = groupBoardRecommendService.getRecommendGroupBoard(user.getId());
 
         return ResponseEntity.status(HttpStatus.OK).body(groupBoardListDtos);
     }
