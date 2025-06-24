@@ -22,8 +22,8 @@ public class GroupBoardListDto {
     private String title;
     private Integer price;
     private String location;
-    private double latitude;
-    private double longitude;
+    private Double latitude;
+    private Double longitude;
     private Long largeCategoryId;
     private BoardStatus boardStatus;
     private Integer totalUsers;
