@@ -1,5 +1,6 @@
 package com.moongchi.moongchi_be.domain.product.controller;
 
+import com.moongchi.moongchi_be.common.log.LogEvent;
 import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardDto;
 import com.moongchi.moongchi_be.domain.group_boards.service.GroupBoardService;
 import com.moongchi.moongchi_be.domain.product.dto.ProductResponseDto;
@@ -56,6 +57,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "상품을 찾을 수 없음")
     })
     @GetMapping("/{productId}")
+    @LogEvent("click")
     public ResponseEntity<ProductResponseDto> getProduct(
             @Parameter(description = "상품 ID", required = true)
             @PathVariable Long productId) {
@@ -81,7 +83,9 @@ public class ProductController {
             @ApiResponse(responseCode = "200", description = "검색 성공",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductResponseDto.class))))
     })
+    
     @GetMapping("/search")
+    @LogEvent("search")
     public ResponseEntity<List<ProductResponseDto>> searchProducts(
             @Parameter(description = "검색 키워드 (상품명 또는 카테고리명)", required = true)
             @RequestParam String keyword) {
@@ -101,7 +105,9 @@ public class ProductController {
             @ApiResponse(responseCode = "200", description = "조회 성공",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductResponseDto.class))))
     })
+
     @GetMapping("/categories/{categoryId}/scroll")
+    @LogEvent("click")
     public ResponseEntity<List<ProductResponseDto>> categoryProducts(@PathVariable Long categoryId, @RequestParam(required = false) Long lastId){
         List<ProductResponseDto> productResponseDtos = productService.getProductCategoryList(categoryId, lastId, 20);
         return ResponseEntity.status(HttpStatus.OK).body(productResponseDtos);

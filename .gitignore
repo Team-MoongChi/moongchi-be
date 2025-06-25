@@ -37,6 +37,10 @@ out/
 .vscode/
 
 .env
+
+logs/
+*.log
+*.json
 /nginx/
 /etc/nginx/sites-available/*
 nginx.conf
