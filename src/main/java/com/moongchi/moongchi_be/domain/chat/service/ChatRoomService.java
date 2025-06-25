@@ -120,11 +120,9 @@ public class ChatRoomService {
         if (product != null) {
             if (product.getProduct() != null && product.getProduct().getImgUrl() != null) {
                 imgUrl = product.getProduct().getImgUrl();
-                price = product.getProduct().getPrice();
             }
             else if (product.getImages() != null && !product.getImages().isEmpty()) {
                 imgUrl = product.getImages().get(0);
-                price = product.getPrice();
 
             }
         }
@@ -185,7 +183,7 @@ public class ChatRoomService {
                 chatRoom.getTitle(),
                 chatRoom.getStatus().getKorean(),
                 imgUrl,
-                price,
+                product.getPrice(),
                 chatRoom.getGroupBoard().getDeadline(),
                 chatRoom.getGroupBoard().getLocation(),
                 participants,
