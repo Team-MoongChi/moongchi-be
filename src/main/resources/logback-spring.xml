@@ -7,7 +7,7 @@
 <!--        <file>logs/activity-log.json</file>-->
 
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/activity-log.%d{yyyy-MM-dd}.json</fileNamePattern>
+            <fileNamePattern>logs/activity-log.%d{yyyy-MM-dd_HH}.json</fileNamePattern>
             <maxHistory>30</maxHistory>
         </rollingPolicy>
         <!-- JSON 인코더 -->
