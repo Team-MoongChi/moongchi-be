@@ -114,6 +114,10 @@ public class GroupBoardService {
         groupProduct.update(dto.getName(), dto.getPrice(), dto.getQuantity(), category, dto.getImages());
         groupBoard.update(dto.getName() + " " + dto.getQuantity() + " " + "공구합니다.", dto.getContent(), dto.getLocation(), coordinate.getLatitude(), coordinate.getLongitude(), dto.getDeadline(), dto.getTotalUser(), groupProduct);
 
+        ChatRoom chatRoom = groupBoard.getChatRoom();
+        chatRoom.setTitle(dto.getName() + " " + dto.getQuantity() + " " + "공구방");
+
+        chatRoomRepository.save(chatRoom);
         groupBoardRepository.save(groupBoard);
     }
 
