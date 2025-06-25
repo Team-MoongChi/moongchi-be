@@ -30,7 +30,7 @@ public class User {
     @Column(name = "user_id")
     private Long id;
 
-    @Column
+    @Column(nullable = false)
     private String name;
 
     @Column
@@ -83,12 +83,12 @@ public class User {
     private MannerPercent mannerPercent;
 
     @CreationTimestamp
-    @Column(name = "create_at")
-    private LocalDateTime createAt;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "update_at")
-    private LocalDateTime updateAt;
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     public User update(String name) {
         this.name = name;

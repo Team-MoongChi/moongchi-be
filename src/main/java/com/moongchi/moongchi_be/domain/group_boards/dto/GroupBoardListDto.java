@@ -3,6 +3,7 @@ package com.moongchi.moongchi_be.domain.group_boards.dto;
 import com.moongchi.moongchi_be.domain.chat.dto.BoardParticipantDto;
 import com.moongchi.moongchi_be.domain.group_boards.enums.BoardStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,6 +22,9 @@ public class GroupBoardListDto {
     private String title;
     private Integer price;
     private String location;
+    private Double latitude;
+    private Double longitude;
+    private Long largeCategoryId;
     private BoardStatus boardStatus;
     private Integer totalUsers;
     private Integer currentUsers;

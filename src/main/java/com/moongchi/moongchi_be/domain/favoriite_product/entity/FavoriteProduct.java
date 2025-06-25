@@ -25,7 +25,11 @@ public class FavoriteProduct {
     @Column(name = "favorite_product_id")
     private Long id;
 
-    @Column(name = "create_at")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "product_type")
+    private ProductType productType;
+
+    @Column(name = "created_at")
     @CreationTimestamp
     private LocalDateTime createAt;
 

@@ -10,28 +10,30 @@ import java.util.Optional;
 
 public interface ParticipantRepository extends JpaRepository<Participant, Long> {
 
-    // 특정 유저가 참여한 모든 참가 정보
     List<Participant> findByUserId(Long userId);
 
-    // 특정 채팅방에 속한 참여자 전체 조회
     @Query("SELECT p FROM Participant p WHERE p.groupBoard.chatRoom.id = :chatRoomId")
     List<Participant> findAllByChatRoomId(@Param("chatRoomId") Long chatRoomId);
 
-    // 채팅방 ID 기준 인원 수
     @Query("SELECT COUNT(p) FROM Participant p JOIN p.groupBoard gb JOIN gb.chatRoom cr WHERE cr.id = :chatRoomId")
     int countByChatRoomId(@Param("chatRoomId") Long chatRoomId);
 
-    // 공구글 ID 기준 인원 수
     @Query("SELECT COUNT(p) FROM Participant p WHERE p.groupBoard.id = :groupBoardId")
     int countByGroupBoardId(@Param("groupBoardId") Long groupBoardId);
 
-    // 이미 참여했는지 확인 (중복 방지용)
     boolean existsByUserIdAndGroupBoardId(Long userId, Long groupBoardId);
 
     @Query("SELECT p FROM Participant p WHERE p.groupBoard.chatRoom.id = :chatRoomId AND p.user.id = :userId")
     Optional<Participant> findByChatRoomIdAndUserId(@Param("chatRoomId") Long chatRoomId, @Param("userId") Long userId);
 
-    Optional<Participant> findByGroupBoardIdAndUserId(Long groupBoardId, Long userId);
-
-
+    @Query("""
+    SELECT p FROM Participant p 
+    JOIN FETCH p.groupBoard gb 
+    JOIN FETCH gb.chatRoom 
+    WHERE gb.chatRoom.id = :chatRoomId AND p.user.id = :userId
+    """)
+    Optional<Participant> findWithChatRoomByChatRoomIdAndUserId(
+            @Param("chatRoomId") Long chatRoomId,
+            @Param("userId") Long userId
+    );
 }

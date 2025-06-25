@@ -26,17 +26,22 @@ public class UserDto {
     private LocalDate birth;
     private Gender gender;
     private String interestCategory;
-    private double latitude;
-    private double longitude;
+    private Double latitude;
+    private Double longitude;
     private String address;
     private UserRole userRole;
-    private double mannerLeader;
-    private double mannerParticipant;
+    private Double mannerLeader;
+    private Double mannerParticipant;
+    private ReviewKeywordDto reviewKeywordDto;
 
     public UserDto(User user) {
         this.id = user.getId();
+        this.name = user.getName();
         this.nickname = user.getNickname();
+        this.phone = user.getPhone();
         this.email = user.getEmail();
+        this.birth = user.getBirth();
+        this.gender = user.getGender();
         this.profileUrl = user.getProfileUrl();
         this.address = user.getAddress();
         this.latitude = user.getLatitude();

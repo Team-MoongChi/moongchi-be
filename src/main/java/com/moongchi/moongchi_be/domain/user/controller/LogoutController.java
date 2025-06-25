@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,6 +42,6 @@ public class LogoutController {
         User user = userService.getUser(request);
         CookieUtil.deleteCookie(response, "refresh_token");
         LogoutResponseDto logoutResponseDto = logoutService.logout(user);
-        return ResponseEntity.ok(logoutResponseDto);
+        return ResponseEntity.status(HttpStatus.OK).body(logoutResponseDto);
     }
 }

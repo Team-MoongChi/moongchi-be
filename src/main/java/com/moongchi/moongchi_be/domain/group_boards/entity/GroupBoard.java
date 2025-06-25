@@ -26,13 +26,13 @@ public class GroupBoard {
     @Column(name = "group_board_id")
     private Long id;
 
-    @Column
+    @Column(nullable = false)
     private String title;
 
     @Column
     private String content;
 
-    @Column
+    @Column(nullable = false)
     private String location;
 
     @Column
@@ -42,21 +42,21 @@ public class GroupBoard {
     private double longitude;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "board_status")
+    @Column(name = "status", nullable = false)
     private BoardStatus boardStatus;
 
-    @Column
+    @Column(nullable = false)
     private LocalDate deadline;
 
-    @Column(name = "total_users")
+    @Column(name = "total_users", nullable = false)
     private int totalUsers;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "group_product_id")
+    @JoinColumn(name = "group_product_id", nullable = false)
     private GroupProduct groupProduct;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @OneToOne(mappedBy = "groupBoard",cascade = CascadeType.ALL, orphanRemoval = true)
@@ -68,13 +68,13 @@ public class GroupBoard {
     @OneToMany(mappedBy = "groupBoard",cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Participant> participants;
 
-    @Column(name = "create_at")
+    @Column(name = "created_at")
     @CreationTimestamp
-    private LocalDateTime createAt;
+    private LocalDateTime createdAt;
 
-    @Column(name = "update_at")
+    @Column(name = "updated_at")
     @UpdateTimestamp
-    private LocalDateTime updateAt;
+    private LocalDateTime updatedAt;
 
     //== 비즈니스 로직 ==//
     public void updateGroupProduct(GroupProduct groupProduct) {
@@ -82,10 +82,12 @@ public class GroupBoard {
         groupProduct.updateGroupBoard(this);
     }
 
-    public void update(String title, String content, String location, LocalDate deadline, int totalUsers, GroupProduct groupProduct) {
+    public void update(String title, String content, String location, double latitude, double longitude, LocalDate deadline, int totalUsers, GroupProduct groupProduct) {
         this.title = title + "공구합니다.";
         this.content = content;
         this.location = location;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.deadline = deadline;
         this.totalUsers = totalUsers;
         this.groupProduct = groupProduct;

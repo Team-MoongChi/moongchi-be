@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,7 +38,7 @@ public class AuthController {
         TokenResponseDto tokenResponseDto = authService.issueToken(refreshToken);
 
         CookieUtil.deleteCookie(response,"access_token");
-        return ResponseEntity.ok(tokenResponseDto);
+        return ResponseEntity.status(HttpStatus.OK).body(tokenResponseDto);
     }
 
     @Operation(summary = "토큰 재발급", description = "토큰 만료 시 토큰 재발급")
@@ -49,7 +50,7 @@ public class AuthController {
     public ResponseEntity<TokenResponseDto> reissueToken(HttpServletRequest request){
         String refreshToken = CookieUtil.getCookieValue(request, "refresh_token");
         TokenResponseDto tokenResponseDto = authService.reissueToken(refreshToken);
-        return ResponseEntity.ok(tokenResponseDto);
+        return ResponseEntity.status(HttpStatus.OK).body(tokenResponseDto);
     }
 
 }

@@ -1,11 +1,11 @@
 package com.moongchi.moongchi_be.common.auth.oauth2;
 
 import com.moongchi.moongchi_be.common.auth.jwt.JwtTokenProvider;
+import com.moongchi.moongchi_be.common.util.CookieUtil;
 import com.moongchi.moongchi_be.domain.user.entity.User;
 import com.moongchi.moongchi_be.domain.user.enums.UserRole;
 import com.moongchi.moongchi_be.domain.user.repository.UserRepository;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -29,8 +29,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
 
-    private static final String CALLBACK_URI = "http://localhost:3000/oauth/callback";
-    private static final String SIGNUP_URI = "http://localhost:3000/signup";
+    private static final String CALLBACK_URI = "https://moong-chi.com/oauth/callback";
+    private static final String SIGNUP_URI = "https://moong-chi.com/signup";
 
 
     @Override
@@ -51,7 +51,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         // 리프레쉬 토큰 발급
         String refreshToken = jwtTokenProvider.createRefreshToken(user.getId());
-        addCookie(response, "refresh_token", refreshToken, 7 * 24 * 60 * 60); // 7일 유지
+        CookieUtil.addCookie(response, "refresh_token", refreshToken, 7 * 24 * 60 * 60); // 7일 유지
 
         String targetUrl;
 
@@ -61,7 +61,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         } else {
             //기존유저
             String accessToken = jwtTokenProvider.createToken(user.getId(), user.getUserRole());
-            addCookie(response, "access_token", accessToken, 60 * 60); // 1시간 유지
+            CookieUtil.addCookie(response, "access_token", accessToken, 60 * 60); // 1시간 유지
 
             targetUrl = CALLBACK_URI;
         }
@@ -90,12 +90,12 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         return userRepository.save(existingUser);
     }
 
-    private void addCookie(HttpServletResponse response, String name, String value, int maxAgeInSeconds) {
-        Cookie cookie = new Cookie(name, value);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(maxAgeInSeconds);
-        response.addCookie(cookie);
-    }
+//    private void addCookie(HttpServletResponse response, String name, String value, int maxAgeInSeconds) {
+//        Cookie cookie = new Cookie(name, value);
+//        cookie.setHttpOnly(true);
+//        cookie.setSecure(true);
+//        cookie.setPath("/");
+//        cookie.setMaxAge(maxAgeInSeconds);
+//        response.addCookie(cookie);
+//    }
 }

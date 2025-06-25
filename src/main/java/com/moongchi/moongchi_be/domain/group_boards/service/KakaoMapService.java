@@ -1,24 +1,16 @@
 package com.moongchi.moongchi_be.domain.group_boards.service;
 
-import io.github.cdimascio.dotenv.Dotenv;
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-
-
-
-
 @Service
 public class KakaoMapService {
-    private final String kakaoClientId;
 
-    public KakaoMapService() {
-        Dotenv dotenv = Dotenv.load();
-        this.kakaoClientId = dotenv.get("KAKAO_CLIENT_ID");
-    }
-
+    @Value("${KAKAO_CLIENT_ID}")
+    private String kakaoClientId;
 
     public Coordinate getCoordinateFromAddress(String address) {
 

@@ -3,6 +3,8 @@ package com.moongchi.moongchi_be.common.util;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 
 public class CookieUtil {
 
@@ -41,6 +43,20 @@ public class CookieUtil {
         cookie.setHttpOnly(true);
         cookie.setSecure(true); // HTTPS 환경에서만 전송 (환경에 따라 조정 가능)
         response.addCookie(cookie);
+    }
+
+    public static void addCookie(HttpServletResponse response,
+                           String name, String value,
+                           int maxAgeInSeconds) {
+        ResponseCookie cookie = ResponseCookie.from(name, value)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(maxAgeInSeconds)
+                .sameSite("None")
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 }
 

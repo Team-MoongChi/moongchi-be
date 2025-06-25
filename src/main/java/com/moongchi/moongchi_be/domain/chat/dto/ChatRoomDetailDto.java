@@ -17,6 +17,8 @@ import java.util.List;
 public class ChatRoomDetailDto {
     @Schema(description = "채팅방 ID")
     private Long id;
+    @Schema(description = "공구방 ID")
+    private Long groupBoardId;
     @Schema(description = "채팅방 제목")
     private String title;
     @Schema(description = "채팅방 상태")
@@ -27,6 +29,8 @@ public class ChatRoomDetailDto {
     private int price;
     @Schema(description = "마감일자")
     private LocalDate deadline;
+    @Schema(description = "공구장소")
+    private String location;
     @Schema(description = "참여자 리스트")
     private List<ParticipantDto> participants;
     @Schema(description = "메시지 리스트")

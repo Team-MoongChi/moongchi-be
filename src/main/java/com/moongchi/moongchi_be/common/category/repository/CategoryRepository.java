@@ -16,8 +16,9 @@ public interface CategoryRepository extends JpaRepository<Category,Long> {
 
     // 대+중+소
     Optional<Category> findByLargeCategoryAndMediumCategoryAndSmallCategory(String large, String medium, String small);
-
     // 전체 대분류 목록
     @Query("SELECT DISTINCT c.largeCategory FROM Category c")
     List<String> findAllLargeCategories();
+
+    Optional<Category> findByLargeCategoryAndMediumCategoryIsNullAndSmallCategoryIsNull(String largeCategory);
 }

@@ -21,7 +21,7 @@ public class ChatRoom {
     @Column(name = "chat_room_id")
     private Long id;
 
-    @Column(name = "title", length = 20, nullable = false)
+    @Column(name = "title", nullable = false)
     private String title;
 
     @Builder.Default
@@ -41,7 +41,7 @@ public class ChatRoom {
     private LocalDateTime sendAt;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "group_board_id")
+    @JoinColumn(name = "group_board_id", nullable = false)
     private GroupBoard groupBoard;
 
 }

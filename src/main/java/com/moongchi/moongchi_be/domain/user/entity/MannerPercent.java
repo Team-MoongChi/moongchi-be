@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class MannerPercent {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "manner_percents_id")
+    @Column(name = "manner_percent_id")
     private Long id;
 
     @Column(name = "leader_percent")
@@ -30,5 +30,10 @@ public class MannerPercent {
 
     public void updateUser(User user) {
         this.user = user;
+    }
+
+    public void update(Double leaderPercent, Double participantPercent){
+        this.leaderPercent = leaderPercent;
+        this.participantPercent = participantPercent;
     }
 }

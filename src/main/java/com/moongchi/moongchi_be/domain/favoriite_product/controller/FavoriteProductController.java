@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,11 +28,11 @@ public class FavoriteProductController {
 
     @Operation(summary = "공구글 찜 추가", description = "공구글에 찜을 추가합니다.")
     @ApiResponse(responseCode = "200", description = "찜 추가 완료")
-    @PostMapping("/group-boards/{group_board_id}/like")
-    public ResponseEntity<?> addLike(@PathVariable("group_board_id") Long groupBoardId, HttpServletRequest request){
+    @PostMapping("/group-boards/{groupBoardId}/like")
+    public ResponseEntity<?> addLike(@PathVariable Long groupBoardId, HttpServletRequest request){
         User user  = userService.getUser(request);
         favoriteProductService.addLike(groupBoardId, user);
-        return ResponseEntity.ok("찜 추가 완료");
+        return ResponseEntity.status(HttpStatus.CREATED).body("찜 완료되었습니다.");
     }
 
     @Operation(
@@ -39,11 +40,11 @@ public class FavoriteProductController {
             description = "특정 공구글(group_board_id)의 찜을 삭제합니다."
     )
     @ApiResponse(responseCode = "200", description = "찜 삭제 완료")
-    @DeleteMapping("/group-boards/{group_board_id}/like")
-    public ResponseEntity<?> removeLike(@PathVariable("group_board_id") Long groupBoardId, HttpServletRequest request){
+    @DeleteMapping("/group-boards/{groupBoardId}/like")
+    public ResponseEntity<?> removeLike(@PathVariable Long groupBoardId, HttpServletRequest request){
         User user  = userService.getUser(request);
         favoriteProductService.removeLike(groupBoardId, user);
-        return ResponseEntity.ok("찜 삭제 완료");
+        return ResponseEntity.status(HttpStatus.OK).body("찜 삭제되었습니다.");
     }
 
     @Operation(
@@ -55,7 +56,7 @@ public class FavoriteProductController {
     public ResponseEntity<List<GroupBoardListDto>> getLikes(HttpServletRequest request){
         User user  = userService.getUser(request);
         List<GroupBoardListDto> groupBoardListDtos = favoriteProductService.getLikes(user);
-        return ResponseEntity.ok(groupBoardListDtos);
+        return ResponseEntity.status(HttpStatus.OK).body(groupBoardListDtos);
     }
 
     @Operation(
@@ -63,11 +64,11 @@ public class FavoriteProductController {
             description = "특정 상품(product_id)에 찜을 추가합니다."
     )
     @ApiResponse(responseCode = "200", description = "찜 추가 완료")
-    @PostMapping("/products/{product_id}/like")
-    public ResponseEntity<?> addProductLike(@PathVariable("product_id") Long productId, HttpServletRequest request){
+    @PostMapping("/products/{productId}/like")
+    public ResponseEntity<?> addProductLike(@PathVariable Long productId, HttpServletRequest request){
         User user  = userService.getUser(request);
         favoriteProductService.addProductLike(productId, user);
-        return ResponseEntity.ok("찜 추가 완료");
+        return ResponseEntity.status(HttpStatus.CREATED).body("찜 완료되었습니다.");
     }
 
     @Operation(
@@ -77,11 +78,11 @@ public class FavoriteProductController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "찜 삭제 완료")
     })
-    @DeleteMapping("/products/{product_id}/like")
-    public ResponseEntity<?> removeProductLike(@PathVariable("product_id") Long productId, HttpServletRequest request){
+    @DeleteMapping("/products/{productId}/like")
+    public ResponseEntity<?> removeProductLike(@PathVariable Long productId, HttpServletRequest request){
         User user  = userService.getUser(request);
         favoriteProductService.removeProductLike(productId, user);
-        return ResponseEntity.ok("찜 삭제 완료");
+        return ResponseEntity.status(HttpStatus.OK).body("찜 삭제되었습니다.");
     }
 
     @Operation(
@@ -93,7 +94,7 @@ public class FavoriteProductController {
     public ResponseEntity<List<ProductResponseDto>> getProductLikes(HttpServletRequest request){
         User user  = userService.getUser(request);
         List<ProductResponseDto> productResponseDtoList = favoriteProductService.getProductLikes(user);
-        return ResponseEntity.ok(productResponseDtoList);
+        return ResponseEntity.status(HttpStatus.OK).body(productResponseDtoList);
     }
 
 
