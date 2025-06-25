@@ -65,9 +65,16 @@ public class ChatRoomService {
                             ? product.getName() + " " + product.getQuantity() + " 공구방"
                             : "상품 정보 없음 공구방";
 
-                    String imgUrl = (product != null && product.getImages() != null && !product.getImages().isEmpty())
-                            ? product.getImages().get(0)
-                            : null;
+                    String imgUrl = null;
+                    if (product != null) {
+                        if (product.getProduct() != null && product.getProduct().getImgUrl() != null) {
+                            imgUrl = product.getProduct().getImgUrl();
+                        }
+                        else if (product.getImages() != null && !product.getImages().isEmpty()) {
+                            imgUrl = product.getImages().get(0);
+                        }
+                    }
+
                     Optional<ChatMessage> lastMessageOpt =
                             chatMessageRepository.findFirstByChatRoomIdOrderBySendAtDesc(chatRoom.getId());
                     String lastMessage = lastMessageOpt.map(ChatMessage::getMessage).orElse(null);
@@ -110,9 +117,16 @@ public class ChatRoomService {
         String imgUrl = null;
         int price = 0;
 
-        if (product != null && product.getImages() != null && !product.getImages().isEmpty()) {
-            imgUrl = product.getImages().get(0);
-            price = product.getPrice();
+        if (product != null) {
+            if (product.getProduct() != null && product.getProduct().getImgUrl() != null) {
+                imgUrl = product.getProduct().getImgUrl();
+                price = product.getProduct().getPrice();
+            }
+            else if (product.getImages() != null && !product.getImages().isEmpty()) {
+                imgUrl = product.getImages().get(0);
+                price = product.getPrice();
+
+            }
         }
 
         int totalUsers = chatRoom.getGroupBoard().getTotalUsers();
