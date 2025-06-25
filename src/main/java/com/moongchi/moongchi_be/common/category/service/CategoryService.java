@@ -39,4 +39,11 @@ public class CategoryService {
         return c.getId();
     }
 
+    public CategoryResponseDto getCategoryName(Long categoryId){
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 카테고리 없음"));
+        CategoryResponseDto categoryResponseDto = new CategoryResponseDto(category);
+        return categoryResponseDto;
+    }
+
 }
