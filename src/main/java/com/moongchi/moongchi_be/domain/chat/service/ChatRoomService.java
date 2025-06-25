@@ -65,9 +65,16 @@ public class ChatRoomService {
                             ? product.getName() + " " + product.getQuantity() + " 공구방"
                             : "상품 정보 없음 공구방";
 
-                    String imgUrl = (product != null && product.getImages() != null && !product.getImages().isEmpty())
-                            ? product.getImages().get(0)
-                            : null;
+                    String imgUrl = null;
+                    if (product != null) {
+                        if (product.getProduct() != null && product.getProduct().getImgUrl() != null) {
+                            imgUrl = product.getProduct().getImgUrl();
+                        }
+                        else if (product.getImages() != null && !product.getImages().isEmpty()) {
+                            imgUrl = product.getImages().get(0);
+                        }
+                    }
+
                     Optional<ChatMessage> lastMessageOpt =
                             chatMessageRepository.findFirstByChatRoomIdOrderBySendAtDesc(chatRoom.getId());
                     String lastMessage = lastMessageOpt.map(ChatMessage::getMessage).orElse(null);
