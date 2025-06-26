@@ -129,7 +129,7 @@ public class ChatRoomService {
 
         int totalUsers = chatRoom.getGroupBoard().getTotalUsers();
         int perPersonPrice = (totalUsers > 0)
-                ? (price / totalUsers)
+                ? (product.getPrice() / totalUsers)
                 : 0;
 
         List<ParticipantDto> participants = participantRepository.findAllByChatRoomId(chatRoomId).stream()
