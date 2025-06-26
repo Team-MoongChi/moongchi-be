@@ -60,6 +60,8 @@ public class ProductRecommendService {
                     productIds = ids;
                     redisTemplate.opsForValue()
                             .set(redisKey, productIds, Duration.ofDays(1));
+                } else {
+                    redisTemplate.delete(redisKey);
                 }
             }
         }
