@@ -78,7 +78,7 @@ public class UserActivityLogger {
                 message.put("item_price", body.get("price"));
 
             } else if(uri.matches("/api/products/categories/\\d+/scroll")){
-                UriTemplate template = new UriTemplate("/api/products/categories/{categoryId}");
+                UriTemplate template = new UriTemplate("/api/products/categories/{categoryId}/scroll");
 
                 Long categoryId = null;
                 if (template.matches(uri)) {
