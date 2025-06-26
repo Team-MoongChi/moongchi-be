@@ -346,7 +346,7 @@ public class GroupBoardService {
 
         boolean isJoin = false;
         for (BoardParticipantDto participant : participants) {
-            if (participant.getId().equals(currentUserId)) {
+            if (participant.getUserId().equals(currentUserId)) {
                 isJoin = true;
             }
         }
