@@ -13,6 +13,9 @@ import java.util.List;
 @Builder
 public class RecommendProductResponse {
 
+    @JsonProperty("doc_id")
+    private Long docId;
+
     @JsonProperty("user_id")
     private Long userId;
 
