@@ -20,7 +20,7 @@ public class RecommendProductResponse {
     private Long userId;
 
     @JsonProperty("recommended_item_ids")
-    private List<Long> recommendedItemIds;
+    private List<String> recommendedItemIds;
 
     @JsonProperty("experiment_id")
     private Long experimentId;
