@@ -32,6 +32,7 @@ public class GroupBoardDto {
     private Long categoryId;
     private int likeCount;
     private boolean editable;
+    private boolean isJoin;
     private Long chatRoomId;
     private List<String> images;
     private List<BoardParticipantDto> participants;

@@ -5,6 +5,7 @@ import com.moongchi.moongchi_be.common.category.repository.CategoryRepository;
 import com.moongchi.moongchi_be.common.exception.custom.CustomException;
 import com.moongchi.moongchi_be.common.exception.errorcode.ErrorCode;
 import com.moongchi.moongchi_be.domain.chat.dto.BoardParticipantDto;
+import com.moongchi.moongchi_be.domain.chat.dto.ParticipantDto;
 import com.moongchi.moongchi_be.domain.chat.entity.ChatRoom;
 import com.moongchi.moongchi_be.domain.chat.entity.Participant;
 import com.moongchi.moongchi_be.domain.chat.entity.PaymentStatus;
@@ -92,7 +93,7 @@ public class GroupBoardService {
                 .quantity(dto.getQuantity())
                 .category(category)
                 .product(product)
-                .images(dto.getImages() == null ? Collections.singletonList(product.getImgUrl()): dto.getImages())
+                .images(dto.getImages() == null ? Collections.singletonList(product.getImgUrl()) : dto.getImages())
                 .build();
 
         groupBoard.updateGroupProduct(groupProduct);
@@ -111,7 +112,7 @@ public class GroupBoardService {
         Category category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
         ChatRoom chatRoom = chatRoomRepository.findById(groupBoard.getChatRoom().getId())
-                .orElseThrow(()-> new CustomException(ErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         groupProduct.update(dto.getName(), dto.getPrice(), dto.getQuantity(), category, dto.getImages());
         groupBoard.update(dto.getName() + " " + dto.getQuantity() + " ", dto.getContent(), dto.getLocation(), coordinate.getLatitude(), coordinate.getLongitude(), dto.getDeadline(), dto.getTotalUser(), groupProduct);
@@ -129,7 +130,7 @@ public class GroupBoardService {
     }
 
     @Transactional(readOnly = true)
-    public List<GroupBoardListDto> getGroupBoardList( User user) {
+    public List<GroupBoardListDto> getGroupBoardList(User user) {
         List<GroupBoard> groupBoards = groupBoardRepository.findNearbyPosts(user.getLatitude(), user.getLongitude());
 
         return groupBoards.stream()
@@ -170,7 +171,7 @@ public class GroupBoardService {
             groupBoardRepository.save(board);
 
             chatRoomService.updateChatRoomStatus(chatRoom.getId());
-        } else if(board.getTotalUsers() - (participantRepository.countByGroupBoardId(groupBoardId) + 1) == 1) {
+        } else if (board.getTotalUsers() - (participantRepository.countByGroupBoardId(groupBoardId) + 1) == 1) {
             board.updateStatus(BoardStatus.CLOSING_SOON);
             groupBoardRepository.save(board);
         }
@@ -180,7 +181,7 @@ public class GroupBoardService {
     }
 
     @Transactional(readOnly = true)
-    public GroupBoardDto getGroupBoard(Long groupBoardId,  User user) {
+    public GroupBoardDto getGroupBoard(Long groupBoardId, User user) {
         GroupBoard groupBoard = groupBoardRepository.findById(groupBoardId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
         Long currentUserId = (user != null) ? user.getId() : null;
@@ -189,7 +190,7 @@ public class GroupBoardService {
     }
 
     @Transactional(readOnly = true)
-    public List<GroupBoardListDto> getMyGroupBoard( User user) {
+    public List<GroupBoardListDto> getMyGroupBoard(User user) {
         List<GroupBoard> groupBoards = groupBoardRepository.findByUserId(user.getId());
 
         return groupBoards.stream()
@@ -198,7 +199,7 @@ public class GroupBoardService {
     }
 
     @Transactional(readOnly = true)
-    public List<GroupBoardListDto> getGroupBoardCategory(Long categoryId,  User user) {
+    public List<GroupBoardListDto> getGroupBoardCategory(Long categoryId, User user) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
         List<GroupBoard> groupBoards = groupBoardRepository.findNearbyPostsByCategory(user.getLatitude(), user.getLongitude(), category.getLargeCategory());
@@ -227,7 +228,7 @@ public class GroupBoardService {
     }
 
     //사진 총원 총수량 상품명 총가격 장소 모집마감 날짜 카테고리
-    public GroupBoardDto getEditGroupBoard(Long groupBoardId){
+    public GroupBoardDto getEditGroupBoard(Long groupBoardId) {
         GroupBoard groupBoard = groupBoardRepository.findById(groupBoardId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
@@ -246,7 +247,7 @@ public class GroupBoardService {
                 .build();
     }
 
-    public int getLikeCount(Long groupBoardId){
+    public int getLikeCount(Long groupBoardId) {
         return favoriteProductRepository.countByGroupBoardId(groupBoardId);
     }
 
@@ -259,7 +260,7 @@ public class GroupBoardService {
                         return BoardParticipantDto.builder()
                                 .userId(user.getId())
                                 .profileUrl(user.getProfileUrl())
-                                .nickname(p.getRole() == Role.LEADER ? user.getNickname():null)
+                                .nickname(p.getRole() == Role.LEADER ? user.getNickname() : null)
                                 .role(p.getRole().toString())
                                 .mannerLeader(p.getRole() == Role.LEADER ? user.getMannerPercent().getLeaderPercent() : null)
                                 .build();
@@ -339,9 +340,17 @@ public class GroupBoardService {
         }
 
         boolean editable = false;
-        if(currentUserId != null){
+        if (currentUserId != null) {
             editable = board.getUser().getId().equals(currentUserId);
         }
+
+        boolean isJoin = false;
+        for (BoardParticipantDto participant : participants) {
+            if (participant.getId().equals(currentUserId)) {
+                isJoin = true;
+            }
+        }
+
         int likeCount = getLikeCount(board.getId());
         return GroupBoardDto.builder()
                 .id(board.getId())
@@ -359,12 +368,13 @@ public class GroupBoardService {
                 .chatRoomId(board.getChatRoom().getId())
                 .likeCount(likeCount)
                 .editable(editable)
+                .isJoin(isJoin)
                 .images(product != null ? Collections.singletonList(product.getImgUrl()) : groupProduct.getImages())
                 .participants(participants)
                 .build();
     }
 
-    private Long getLargeCategoryId(GroupBoard groupBoard){
+    private Long getLargeCategoryId(GroupBoard groupBoard) {
         Long largeCategoryId = 0L;
         if (groupBoard.getGroupProduct().getProduct() != null) {
             Category largeCategory = categoryRepository.findByLargeCategoryAndMediumCategoryIsNullAndSmallCategoryIsNull(
