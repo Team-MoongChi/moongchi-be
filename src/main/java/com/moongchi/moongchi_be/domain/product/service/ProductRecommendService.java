@@ -56,7 +56,7 @@ public class ProductRecommendService {
                 RecommendProductResponse body = resp.getBody();  // getData() 아님
 
                 List<Long> ids = body.getRecommendedItemIds();
-                if (ids != null) {
+                if (ids != null && !ids.isEmpty()) {
                     productIds = ids;
                     redisTemplate.opsForValue()
                             .set(redisKey, productIds, Duration.ofDays(1));
