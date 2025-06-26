@@ -1,8 +1,7 @@
 package com.moongchi.moongchi_be.domain.product.service;
 
-import com.moongchi.moongchi_be.domain.product.dto.MlopsRecommendResponse;
+import com.moongchi.moongchi_be.domain.product.dto.ProductsRecommendDto;
 import com.moongchi.moongchi_be.domain.product.dto.ProductResponseDto;
-import com.moongchi.moongchi_be.domain.product.dto.RecommendProductResponse;
 import com.moongchi.moongchi_be.domain.product.entity.Product;
 import com.moongchi.moongchi_be.domain.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -37,44 +36,38 @@ public class ProductRecommendService {
     public List<ProductResponseDto> getRecommendProducts(Long userId) {
         String redisKey = recommendKeyPrefix + userId;
 
+        Object cached = redisTemplate.opsForValue().get(redisKey);
         List<Long> productIds = new ArrayList<>();
-        Object raw = redisTemplate.opsForValue().get(redisKey);
-        if (raw instanceof List<?> rawList) {
-            productIds = rawList.stream()
-                    .filter(o -> o instanceof Number)
-                    .map(o -> ((Number) o).longValue())
+        if (cached instanceof List<?>) {
+            productIds = ((List<?>) cached).stream()
+                    .filter(e -> e instanceof Number)
+                    .map(e -> ((Number) e).longValue())
                     .collect(Collectors.toList());
         }
 
         if (productIds.isEmpty()) {
             redisTemplate.delete(redisKey);
-
             try {
                 String url = apiUrl.endsWith("/") ? apiUrl + userId : apiUrl + "/" + userId;
-                ResponseEntity<MlopsRecommendResponse> resp =
-                        restTemplate.getForEntity(url, MlopsRecommendResponse.class);
+                ResponseEntity<ProductsRecommendDto> response =
+                        restTemplate.getForEntity(url, ProductsRecommendDto.class);
 
-                if (resp.getStatusCode().is2xxSuccessful()
-                        && resp.getBody() != null
-                        && resp.getBody().getData() != null) {
-
-                    RecommendProductResponse body = resp.getBody().getData();
-                    List<String> strIds = body.getRecommendedItemIds();
-                    List<Long> ids = (strIds == null)
-                            ? Collections.emptyList()
-                            : strIds.stream().map(Long::valueOf).collect(Collectors.toList());
-
-                    if (!ids.isEmpty()) {
-                        productIds = ids;
-                        redisTemplate.opsForValue()
-                                .set(redisKey, productIds, Duration.ofDays(1));
+                if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                    List<String> rawIds = response.getBody().getData().getRecommendedItemIds();
+                    if (rawIds != null && !rawIds.isEmpty()) {
+                        productIds = rawIds.stream()
+                                .map(Long::valueOf)
+                                .collect(Collectors.toList());
+                        // 캐시 저장 (TTL 1일)
+                        redisTemplate.opsForValue().set(redisKey, productIds, Duration.ofDays(1));
                     } else {
-                        log.info("추천 API 빈 리스트 반환, 캐시 삭제: {}", redisKey);
-                        redisTemplate.delete(redisKey);
+                        log.info("MLOps API가 빈 추천 리스트를 반환했습니다: {}", redisKey);
                     }
+                } else {
+                    log.warn("MLOps API 비정상 응답 상태: {} for user {}", response.getStatusCode(), userId);
                 }
             } catch (RestClientException e) {
-                log.error("추천 API 호출 실패: userId={}", userId, e);
+                log.error("MLOps API 호출 중 예외 발생: userId={}", userId, e);
             }
         }
 
@@ -83,11 +76,11 @@ public class ProductRecommendService {
         }
 
         List<Product> products = productRepository.findAllById(productIds);
-        Map<Long, Product> map = products.stream()
+        Map<Long, Product> productMap = products.stream()
                 .collect(Collectors.toMap(Product::getId, Function.identity()));
 
         return productIds.stream()
-                .map(map::get)
+                .map(productMap::get)
                 .filter(Objects::nonNull)
                 .map(ProductResponseDto::from)
                 .collect(Collectors.toList());
