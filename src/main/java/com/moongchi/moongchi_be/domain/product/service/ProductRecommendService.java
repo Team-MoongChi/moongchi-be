@@ -1,5 +1,6 @@
 package com.moongchi.moongchi_be.domain.product.service;
 
+import com.moongchi.moongchi_be.domain.product.dto.MlopsRecommendResponse;
 import com.moongchi.moongchi_be.domain.product.dto.ProductResponseDto;
 import com.moongchi.moongchi_be.domain.product.dto.RecommendProductResponse;
 import com.moongchi.moongchi_be.domain.product.entity.Product;
@@ -49,15 +50,16 @@ public class ProductRecommendService {
         }
         if (productIds.isEmpty()) {
             String url = apiUrl.endsWith("/") ? apiUrl + userId : apiUrl + "/" + userId;
-            ResponseEntity<RecommendProductResponse> resp =
-                    restTemplate.getForEntity(url, RecommendProductResponse.class);
+            ResponseEntity<MlopsRecommendResponse> resp =
+                    restTemplate.getForEntity(url, MlopsRecommendResponse.class);
 
             if (resp.getStatusCode().is2xxSuccessful() && resp.getBody() != null) {
-                RecommendProductResponse body = resp.getBody();  // getData() 아님
+                RecommendProductResponse body = resp.getBody().getData();  // getData() 아님
 
-                List<Long> ids = body.getRecommendedItemIds().stream()
-                        .map(Long::valueOf)
-                        .collect(Collectors.toList());
+                List<String> strIds = body.getRecommendedItemIds();
+                List<Long> ids = (strIds == null)
+                        ? Collections.emptyList()
+                        :strIds.stream().map(Long::valueOf).collect(Collectors.toList());
 
                 if (ids != null && !ids.isEmpty()) {
                     productIds = ids;
