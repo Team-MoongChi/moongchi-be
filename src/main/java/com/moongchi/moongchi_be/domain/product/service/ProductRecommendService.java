@@ -55,7 +55,10 @@ public class ProductRecommendService {
             if (resp.getStatusCode().is2xxSuccessful() && resp.getBody() != null) {
                 RecommendProductResponse body = resp.getBody();  // getData() 아님
 
-                List<Long> ids = body.getRecommendedItemIds();
+                List<Long> ids = body.getRecommendedItemIds().stream()
+                        .map(Long::valueOf)
+                        .collect(Collectors.toList());
+
                 if (ids != null && !ids.isEmpty()) {
                     productIds = ids;
                     redisTemplate.opsForValue()
