@@ -5,7 +5,6 @@ import com.moongchi.moongchi_be.common.category.repository.CategoryRepository;
 import com.moongchi.moongchi_be.common.exception.custom.CustomException;
 import com.moongchi.moongchi_be.common.exception.errorcode.ErrorCode;
 import com.moongchi.moongchi_be.domain.chat.dto.BoardParticipantDto;
-import com.moongchi.moongchi_be.domain.chat.dto.ParticipantDto;
 import com.moongchi.moongchi_be.domain.chat.entity.ChatRoom;
 import com.moongchi.moongchi_be.domain.chat.entity.Participant;
 import com.moongchi.moongchi_be.domain.chat.entity.PaymentStatus;
@@ -143,7 +142,9 @@ public class GroupBoardService {
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
 
         int currentCount = participantRepository.countByGroupBoardId(groupBoardId);
-        if (participantRepository.existsByUserIdAndGroupBoardId(userId, groupBoardId)
+        if (board.getBoardStatus() == BoardStatus.CLOSED
+                ||board.getBoardStatus() == BoardStatus.COMPLETED
+                || participantRepository.existsByUserIdAndGroupBoardId(userId, groupBoardId)
                 || currentCount >= board.getTotalUsers()) {
             throw new CustomException(ErrorCode.CONFLICT);
         }
