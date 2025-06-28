@@ -9,7 +9,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "participants")
-@Getter @Setter
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -39,18 +40,11 @@ public class Participant {
     private LocalDateTime joinedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id",nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = true)
-    @JoinColumn(
-            name = "group_board_id",
-            nullable = true,
-            foreignKey = @ForeignKey(
-                    foreignKeyDefinition =
-                        "FOREIGN KEY(group_board_id) REFERENCES group_boards(id) ON DELETE SET NULL"
-            )
-    )
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_board_id")
     private GroupBoard groupBoard;
 
 }
