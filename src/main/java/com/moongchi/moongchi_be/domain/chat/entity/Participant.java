@@ -43,7 +43,7 @@ public class Participant {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "group_board_id" , nullable = false)
+    @JoinColumn(name = "group_board_id")
     private GroupBoard groupBoard;
 
 }
