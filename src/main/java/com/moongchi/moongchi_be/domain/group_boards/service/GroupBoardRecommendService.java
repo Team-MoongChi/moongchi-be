@@ -65,12 +65,20 @@ public class GroupBoardRecommendService {
                     .map(dto -> dto.getGroupId().longValue())
                     .collect(Collectors.toList());
 
+            System.out.println(groupBoardIds);
+
             redisTemplate.opsForValue().set(redisKey, groupBoardIds, Duration.ofDays(1));
         }
 
         List<GroupBoard> groupBoards = groupBoardRepository.findAllById(groupBoardIds);
         Map<Long, GroupBoard> boardMap = groupBoards.stream()
                 .collect(Collectors.toMap(GroupBoard::getId, Function.identity()));
+
+        for (Long id : groupBoardIds) {
+            if (!boardMap.containsKey(id)) {
+                System.out.println("groupBoard ID {} not found in DB" + id);
+            }
+        }
 
         return groupBoardIds.stream()
                 .map(boardMap::get)
