@@ -45,7 +45,7 @@ public class ProductRecommendService {
                     .collect(Collectors.toList());
         }
 
-        if (productIds.isEmpty()) {
+        if (cached == null || productIds.isEmpty()) {
             redisTemplate.delete(redisKey);
             try {
                 String url = apiUrl.endsWith("/") ? apiUrl + userId : apiUrl + "/" + userId;
