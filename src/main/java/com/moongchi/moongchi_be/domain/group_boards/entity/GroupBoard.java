@@ -65,7 +65,7 @@ public class GroupBoard {
     @OneToMany(mappedBy = "groupBoard", cascade = CascadeType.ALL)
     private List<FavoriteProduct> favoriteProducts;
 
-    @OneToMany(mappedBy = "groupBoard",cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "groupBoard")
     private List<Participant> participants;
 
     @Column(name = "created_at")

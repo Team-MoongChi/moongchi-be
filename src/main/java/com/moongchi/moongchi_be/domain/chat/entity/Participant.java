@@ -42,8 +42,15 @@ public class Participant {
     @JoinColumn(name = "user_id",nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "group_board_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(
+            name = "group_board_id",
+            nullable = true,
+            foreignKey = @ForeignKey(
+                    foreignKeyDefinition =
+                        "FOREIGN KEY(group_board_id) REFERENCES group_boards(id) ON DELETE SET NULL"
+            )
+    )
     private GroupBoard groupBoard;
 
 }
