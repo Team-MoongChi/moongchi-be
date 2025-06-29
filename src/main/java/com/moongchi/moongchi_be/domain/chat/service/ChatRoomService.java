@@ -54,9 +54,9 @@ public class ChatRoomService {
         List<Participant> participants = participantRepository.findByUserId(userId);
 
         return participants.stream()
+                .filter(p -> p.getGroupBoard().getChatRoom() != null)
                 .map(Participant::getGroupBoard)
                 .map(GroupBoard::getChatRoom)
-                .filter(Objects::nonNull)
                 .map(chatRoom -> {
                     GroupBoard board = chatRoom.getGroupBoard();
                     GroupProduct product = board.getGroupProduct();
