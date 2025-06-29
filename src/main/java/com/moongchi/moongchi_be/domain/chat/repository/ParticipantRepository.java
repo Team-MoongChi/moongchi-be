@@ -12,6 +12,15 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
 
     List<Participant> findByUserId(Long userId);
 
+    @Query("""
+              select p
+                from Participant p
+                join p.groupBoard b
+                join b.chatRoom r       -- inner join: chatRoom이 없는 경우 자동 제외
+               where p.user.id = :userId
+            """)
+    List<Participant> findWithChatRoomByUserId(@Param("userId") Long userId);
+
     @Query("SELECT p FROM Participant p WHERE p.groupBoard.chatRoom.id = :chatRoomId")
     List<Participant> findAllByChatRoomId(@Param("chatRoomId") Long chatRoomId);
 
