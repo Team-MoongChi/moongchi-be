@@ -50,12 +50,15 @@ public class ChatRoomService {
 
 
     //채팅방 조회
+    @Transactional(readOnly = true)
     public List<ChatRoomResponseDto> getUserChatRooms(Long userId) {
         List<Participant> participants = participantRepository.findByUserId(userId);
 
         return participants.stream()
                 .map(Participant::getGroupBoard)
+                .filter(Objects::nonNull)
                 .map(GroupBoard::getChatRoom)
+                .filter(Objects::nonNull)
                 .map(chatRoom -> {
                     GroupBoard board = chatRoom.getGroupBoard();
                     GroupProduct product = board.getGroupProduct();
