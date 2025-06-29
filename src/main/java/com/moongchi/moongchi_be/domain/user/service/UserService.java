@@ -15,6 +15,7 @@ import com.moongchi.moongchi_be.domain.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -29,6 +30,10 @@ public class UserService {
     @Value("${NEW_USER_URL}")
     private String url;
 
+    @Value("${RECOMMEND_KEY_PREFIX}")
+    private String recommendKeyPrefix;
+
+    private final RedisTemplate<String, Object> redisTemplate;
     private final RestTemplate restTemplate;
     private final UserRepository userRepository;
     private final ParticipantRepository participantRepository;
@@ -90,7 +95,10 @@ public class UserService {
 
     public void addLocation(UserDto userDto, User user) {
         User newUser = user.updateLocation(userDto.getLatitude(), userDto.getLongitude(), userDto.getAddress());
-        this.userRepository.save(newUser);
+        userRepository.save(newUser);
+
+        String redisKey = recommendKeyPrefix + user.getId();
+        redisTemplate.delete(redisKey);
     }
 
     public void addInterestCategory(UserDto userDto, User user) {

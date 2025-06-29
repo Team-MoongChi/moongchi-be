@@ -38,36 +38,10 @@ public class GroupBoardRecommendService {
         String redisKey = recommendKeyPrefix + userId;
 
         List<?> rawList = (List<?>) redisTemplate.opsForValue().get(redisKey);
-        List<Long> groupBoardIds = new ArrayList<>();
+        List<Long> groupBoardIds = convertToLongs(rawList);
 
-        if (rawList != null) {
-            for (Object obj : rawList) {
-                if (obj instanceof Integer) {
-                    groupBoardIds.add(((Integer) obj).longValue());
-                } else if (obj instanceof Long) {
-                    groupBoardIds.add((Long) obj);
-                }
-            }
-        }
-
-        System.out.println(groupBoardIds);
-
-        if(groupBoardIds.isEmpty()){
-            String url = apiUrl + userId;
-            ResponseEntity<GroupBoardRecommendDto> response = restTemplate.getForEntity(url, GroupBoardRecommendDto.class);
-            System.out.println(response);
-
-            if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
-                return Collections.emptyList();
-            }
-
-            groupBoardIds = response.getBody().getData().getPopularGroups().stream()
-                    .map(dto -> dto.getGroupId().longValue())
-                    .collect(Collectors.toList());
-
-            System.out.println(groupBoardIds);
-
-            redisTemplate.opsForValue().set(redisKey, groupBoardIds, Duration.ofDays(1));
+        if (groupBoardIds.isEmpty()){
+            groupBoardIds = updateRecommendCache(userId, redisKey);
         }
 
         List<GroupBoard> groupBoards = groupBoardRepository.findAllById(groupBoardIds);
@@ -87,7 +61,35 @@ public class GroupBoardRecommendService {
                 .collect(Collectors.toList());
     }
 
-    public GroupBoardListDto convertToListDto(GroupBoard board) {
+    private List<Long> updateRecommendCache(Long userId, String redisKey){
+        String url = apiUrl + userId;
+        ResponseEntity<GroupBoardRecommendDto> response = restTemplate.getForEntity(url, GroupBoardRecommendDto.class);
+
+        if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+                return Collections.emptyList();
+        }
+        List<Long> groupBoardIds = response.getBody().getData().getPopularGroups().stream()
+                    .map(dto -> dto.getGroupId().longValue())
+                    .collect(Collectors.toList());
+
+        redisTemplate.opsForValue().set(redisKey, groupBoardIds, Duration.ofDays(1));
+        return groupBoardIds;
+    }
+
+    private List<Long> convertToLongs(List<?> rawList){
+        if (rawList == null) return new ArrayList<>();
+        List<Long> result = new ArrayList<>();
+        for (Object obj : rawList) {
+            if (obj instanceof Integer) {
+                result.add(((Integer) obj).longValue());
+            } else if (obj instanceof Long) {
+                result.add((Long) obj);
+            }
+        }
+        return result;
+    }
+
+    private GroupBoardListDto convertToListDto(GroupBoard board) {
         GroupProduct groupProduct = board.getGroupProduct();
         Product product = groupProduct.getProduct();
 
