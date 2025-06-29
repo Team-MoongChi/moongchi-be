@@ -51,7 +51,7 @@ public class ChatRoomService {
 
     //채팅방 조회
     public List<ChatRoomResponseDto> getUserChatRooms(Long userId) {
-        List<Participant> participants = participantRepository.findWithChatRoomByUserId(userId);
+        List<Participant> participants = participantRepository.findByUserId(userId);
 
         return participants.stream()
                 .map(Participant::getGroupBoard)
