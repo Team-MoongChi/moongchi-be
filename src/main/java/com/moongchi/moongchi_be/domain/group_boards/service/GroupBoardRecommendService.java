@@ -66,12 +66,14 @@ public class GroupBoardRecommendService {
         String url = apiUrl + userId;
         ResponseEntity<GroupBoardRecommendDto> response = restTemplate.getForEntity(url, GroupBoardRecommendDto.class);
 
-        if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
-                return Collections.emptyList();
+        GroupBoardRecommendDto body = response.getBody();
+
+        if (!response.getStatusCode().is2xxSuccessful() || body == null || body.getData() == null || body.getData().getPopularGroups() == null) {
+            System.out.println("추천 API 응답 비정상: userId = " + userId + ", body = " + body);
+            return Collections.emptyList();
         }
 
-        System.out.println(response.getBody().getData());
-        List<Long> groupBoardIds = response.getBody().getData().getPopularGroups().stream()
+        List<Long> groupBoardIds = body.getData().getPopularGroups().stream()
                     .map(dto -> dto.getGroupId().longValue())
                     .collect(Collectors.toList());
 
