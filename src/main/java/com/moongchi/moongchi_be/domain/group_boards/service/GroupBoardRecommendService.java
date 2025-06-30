@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -74,6 +75,12 @@ public class GroupBoardRecommendService {
 
         redisTemplate.opsForValue().set(redisKey, groupBoardIds, Duration.ofDays(1));
         return groupBoardIds;
+    }
+
+    @Async
+    public void asyncUpdateRecommendCache(Long userId){
+        String redisKey = recommendKeyPrefix + userId;
+        updateRecommendCache(userId, redisKey);
     }
 
     private List<Long> convertToLongs(List<?> rawList){
