@@ -96,9 +96,6 @@ public class UserService {
     public void addLocation(UserDto userDto, User user) {
         User newUser = user.updateLocation(userDto.getLatitude(), userDto.getLongitude(), userDto.getAddress());
         userRepository.save(newUser);
-
-        String redisKey = recommendKeyPrefix + user.getId();
-        redisTemplate.delete(redisKey);
     }
 
     public void addInterestCategory(UserDto userDto, User user) {
