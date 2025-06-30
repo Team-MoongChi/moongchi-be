@@ -15,8 +15,7 @@ public class GroupBoardRecommendScheduler {
     private final GroupBoardRecommendService groupBoardRecommendService;
     private final UserRepository userRepository;
 
-    //    @Scheduled(cron = "0 0 0 * * *")
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 0 1 * * *")
     public void updateRecommend() {
         List<User> users = userRepository.findAllByIdGreaterThanEqual200();
 
