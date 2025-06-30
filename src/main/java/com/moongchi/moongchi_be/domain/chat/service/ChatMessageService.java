@@ -77,15 +77,11 @@ public class ChatMessageService {
                         .build()
         );
 
-        MessageDto dto = MessageDto.builder()
-                .id(saved.getId().toString())
-                .participantId(saved.getParticipantId())
-                .message(saved.getMessage())
-                .messageType(saved.getMessageType().name())
-                .sendAt(saved.getSendAt())
-                .senderNickname(participant.getUser().getNickname())
-                .senderProfileUrl(participant.getUser().getProfileUrl())
-                .build();
+        MessageDto dto = MessageDto.from(
+                saved,
+                participant.getUser().getNickname(),
+                participant.getUser().getProfileUrl()
+        );
 
         messagingTemplate.convertAndSend("/topic/chatroom." + chatRoomId, dto);
         return dto;

@@ -73,4 +73,15 @@ public class MessageDto {
                 .sendAt(p.getJoinAt())
                 .build();
     }
+    public static MessageDto from(ChatMessage message, String senderNickname, String senderProfileUrl) {
+        return MessageDto.builder()
+                .id(message.getId())
+                .participantId(message.getParticipantId())
+                .message(message.getMessage())
+                .messageType(message.getMessageType().name())
+                .sendAt(message.getSendAt())
+                .senderNickname(senderNickname)
+                .senderProfileUrl(senderProfileUrl)
+                .build();
+    }
 }
