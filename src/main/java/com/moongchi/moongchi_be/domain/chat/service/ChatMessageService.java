@@ -35,11 +35,15 @@ public class ChatMessageService {
                         .build()
         );
 
-        MessageDto dto = MessageDto.fromWithSender(
-                saved,
-                joined.getUser().getNickname(),
-                joined.getUser().getProfileUrl()
-        );
+        MessageDto dto = MessageDto.builder()
+                .id(saved.getId().toString())
+                .participantId(saved.getParticipantId())
+                .message(saved.getMessage())
+                .messageType(saved.getMessageType().name())
+                .sendAt(saved.getSendAt())
+                .senderNickname(joined.getUser().getNickname())
+                .senderProfileUrl(joined.getUser().getProfileUrl())
+                .build();
 
         messagingTemplate.convertAndSend(
                 "/topic/chatroom." + roomId,
@@ -57,7 +61,7 @@ public class ChatMessageService {
         messageRepo.save(leaveMsg);
 
         MessageDto dto = MessageDto.from(leaveMsg);
-        messagingTemplate.convertAndSend("/topic/chatroom." + roomId, dto);
+        messagingTemplate.convertAndSend("/topic/rooms/" + roomId, dto);
     }
 
     public MessageDto sendMessage(Participant participant, ChatMessageRequestDto req) {
