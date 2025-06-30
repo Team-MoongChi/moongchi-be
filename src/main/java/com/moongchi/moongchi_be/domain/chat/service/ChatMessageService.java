@@ -61,7 +61,7 @@ public class ChatMessageService {
         messageRepo.save(leaveMsg);
 
         MessageDto dto = MessageDto.from(leaveMsg);
-        messagingTemplate.convertAndSend("/topic/rooms/" + roomId, dto);
+        messagingTemplate.convertAndSend("/topic/rooms." + roomId, dto);
     }
 
     public MessageDto sendMessage(Participant participant, ChatMessageRequestDto req) {
@@ -77,10 +77,20 @@ public class ChatMessageService {
                         .build()
         );
 
-        MessageDto dto = MessageDto.from(saved);
+        MessageDto dto = MessageDto.builder()
+                .id(saved.getId().toString())
+                .participantId(saved.getParticipantId())
+                .message(saved.getMessage())
+                .messageType(saved.getMessageType().name())
+                .sendAt(saved.getSendAt())
+                .senderNickname(participant.getUser().getNickname())
+                .senderProfileUrl(participant.getUser().getProfileUrl())
+                .build();
+
         messagingTemplate.convertAndSend("/topic/chatroom." + chatRoomId, dto);
         return dto;
     }
+
 
     public void sendSystemMessage(Long chatRoomId, String message,ChatRoomStatus status,
                                   String chatStatus, String buttonVisibleTo) {
