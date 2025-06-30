@@ -159,6 +159,8 @@ public class ChatRoomService {
                 })
                 .collect(Collectors.toList());
 
+        Map<Long, ParticipantDto> participantMap = participants.stream()
+                .collect(Collectors.toMap(ParticipantDto::getParticipantId, p -> p));
 
         List<MessageDto> messages;
         if (before != null) {
@@ -167,7 +169,7 @@ public class ChatRoomService {
                     .findByChatRoomIdAndSendAtBeforeOrderBySendAtDesc(chatRoomId, before, pageable);
 
             messages = slice.getContent().stream()
-                    .map(m -> mapToDto(m, chatRoom.getStatus(), userId))
+                    .map(m -> mapToDtoWithSenderInfo(m, chatRoom.getStatus(), userId, participantMap))
                     .collect(Collectors.toList());
             Collections.reverse(messages);
 
@@ -175,7 +177,7 @@ public class ChatRoomService {
             messages = chatMessageRepository
                     .findByChatRoomIdOrderBySendAtAsc(chatRoomId)
                     .stream()
-                    .map(m -> mapToDto(m, chatRoom.getStatus(), userId))
+                    .map(m -> mapToDtoWithSenderInfo(m, chatRoom.getStatus(), userId, participantMap))
                     .collect(Collectors.toList());
         }
 
@@ -193,7 +195,7 @@ public class ChatRoomService {
         );
     }
 
-    private MessageDto mapToDto(ChatMessage m, ChatRoomStatus roomStatus, Long userId) {
+    private MessageDto mapToDtoWithSenderInfo(ChatMessage m, ChatRoomStatus roomStatus, Long userId, Map<Long, ParticipantDto> participantMap) {
         if (m.getMessageType() == MessageType.SYSTEM) {
             String chatStatus = null, buttonVisibleTo = null;
             String content = m.getMessage();
@@ -210,7 +212,14 @@ public class ChatRoomService {
             }
             return MessageDto.from(m, roomStatus, chatStatus, buttonVisibleTo);
         }
-        return MessageDto.from(m);
+        else {
+            ParticipantDto sender = participantMap.get(m.getParticipantId());
+            if (sender != null) {
+                return MessageDto.fromWithSender(m, sender.getNickname(), sender.getProfileUrl());
+            } else {
+                return MessageDto.from(m);
+            }
+        }
     }
 
 
