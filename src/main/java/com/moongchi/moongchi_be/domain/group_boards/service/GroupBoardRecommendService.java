@@ -49,6 +49,7 @@ public class GroupBoardRecommendService {
         Map<Long, GroupBoard> boardMap = groupBoards.stream()
                 .collect(Collectors.toMap(GroupBoard::getId, Function.identity()));
 
+        System.out.println(groupBoardIds);
         for (Long id : groupBoardIds) {
             if (!boardMap.containsKey(id)) {
                 System.out.println("groupBoard ID {} not found in DB" + id);
