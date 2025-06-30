@@ -69,6 +69,8 @@ public class GroupBoardRecommendService {
         if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
                 return Collections.emptyList();
         }
+
+        System.out.println(response.getBody().getData());
         List<Long> groupBoardIds = response.getBody().getData().getPopularGroups().stream()
                     .map(dto -> dto.getGroupId().longValue())
                     .collect(Collectors.toList());
