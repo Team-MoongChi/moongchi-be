@@ -7,6 +7,7 @@ import com.moongchi.moongchi_be.domain.chat.entity.Participant;
 import com.moongchi.moongchi_be.domain.chat.entity.Review;
 import com.moongchi.moongchi_be.domain.chat.repository.ParticipantRepository;
 import com.moongchi.moongchi_be.domain.chat.repository.ReviewRepository;
+import com.moongchi.moongchi_be.domain.group_boards.service.GroupBoardRecommendService;
 import com.moongchi.moongchi_be.domain.user.dto.*;
 import com.moongchi.moongchi_be.domain.user.entity.MannerPercent;
 import com.moongchi.moongchi_be.domain.user.entity.User;
@@ -41,6 +42,7 @@ public class UserService {
     private final MannerPercentRepository mannerPercentRepository;
     private final AuthService authService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final GroupBoardRecommendService groupBoardRecommendService;
 
 
     public TokenResponseDto createUser(UserDto userDto, String refreshToken) {
@@ -126,6 +128,7 @@ public class UserService {
                     String.class
             );
             System.out.println("API 응답: " + response.getBody());
+            groupBoardRecommendService.asyncUpdateRecommendCache(user.getId());
         } catch (Exception e) {
             e.printStackTrace();
         }
