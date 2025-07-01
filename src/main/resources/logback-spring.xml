@@ -8,7 +8,7 @@
 
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>logs/activity-log.%d{yyyy-MM-dd_HH}.json</fileNamePattern>
-            <maxHistory>30</maxHistory>
+            <maxHistory>1</maxHistory>
         </rollingPolicy>
         <!-- JSON 인코더 -->
         <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
