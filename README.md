@@ -55,3 +55,6 @@
 
 - **배포 주소** : <br>
 - **시연 영상** :
+  
+  [![시연영상](https://img.youtube.com/vi/U2UZ9NH2ZiI/0.jpg)](https://youtu.be/U2UZ9NH2ZiI)
+
