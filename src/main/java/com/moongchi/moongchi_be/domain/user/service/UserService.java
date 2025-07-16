@@ -7,6 +7,7 @@ import com.moongchi.moongchi_be.domain.chat.entity.Participant;
 import com.moongchi.moongchi_be.domain.chat.entity.Review;
 import com.moongchi.moongchi_be.domain.chat.repository.ParticipantRepository;
 import com.moongchi.moongchi_be.domain.chat.repository.ReviewRepository;
+import com.moongchi.moongchi_be.domain.group_boards.dto.GroupBoardFirstRecommendDto;
 import com.moongchi.moongchi_be.domain.group_boards.service.GroupBoardRecommendService;
 import com.moongchi.moongchi_be.domain.user.dto.*;
 import com.moongchi.moongchi_be.domain.user.entity.MannerPercent;
@@ -21,8 +22,10 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.Duration;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -121,14 +124,29 @@ public class UserService {
         HttpEntity<NewUserRequestDto> requestEntity = new HttpEntity<>(requestBody, headers);
 
         try {
-            ResponseEntity<String> response = restTemplate.exchange(
+            ResponseEntity<GroupBoardFirstRecommendDto> response = restTemplate.exchange(
                     url,
                     HttpMethod.POST,
                     requestEntity,
-                    String.class
+                    GroupBoardFirstRecommendDto.class
             );
-            System.out.println("API 응답: " + response.getBody());
-            groupBoardRecommendService.asyncUpdateRecommendCache(user.getId());
+            GroupBoardFirstRecommendDto body = response.getBody();
+            if (!response.getStatusCode().is2xxSuccessful() || body == null ||
+                    body.getData() == null || body.getData().getPopularGroups() == null) {
+                System.out.println("추천 응답 비정상: userId = " + user.getId() + ", body = " + body);
+                return;
+            }
+
+
+            List<Long> groupBoardIds = body.getData().getPopularGroups().stream()
+                    .map(dto -> dto.getGroupId().longValue())
+                    .collect(Collectors.toList());
+
+
+            String redisKey = recommendKeyPrefix + user.getId();
+            redisTemplate.opsForValue().set(redisKey, groupBoardIds, Duration.ofDays(1));
+
+            System.out.println("추천 캐시 저장 완료: " + groupBoardIds);
         } catch (Exception e) {
             e.printStackTrace();
         }
