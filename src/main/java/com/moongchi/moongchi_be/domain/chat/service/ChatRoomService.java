@@ -319,6 +319,7 @@ public class ChatRoomService {
     }
 
     //거래중
+    @Transactional
     public void pay(Long chatRoomId, Long userId, String impUid) {
         ChatRoomDetailDto chatRoomDetailDto = getChatRoomDetail(chatRoomId, userId);
         int perPersonPrice = chatRoomDetailDto.getParticipants().stream()
